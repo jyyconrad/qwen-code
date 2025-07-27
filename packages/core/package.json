@@ -4,7 +4,7 @@
   "description": "Qwen Code Core",
   "repository": {
     "type": "git",
-    "url": "git+http://gitlab.alibaba-inc.com/Qwen-Coder/qwen-code.git"
+    "url": "git+http://github.com/jyyconrad/qwen-code.git"
   },
   "type": "module",
   "main": "dist/index.js",
