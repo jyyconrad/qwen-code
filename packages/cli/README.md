@@ -1,17 +1,17 @@
-# Qwen Code
+# iFlyCode
 
-![Qwen Code Screenshot](./docs/assets/qwen-screenshot.png)
+![iFlyCode Screenshot](./docs/assets/iflycode-screenshot.png)
 
-Qwen Code is a command-line AI workflow tool adapted from [**Gemini CLI**](https://github.com/google-gemini/gemini-cli) (Please refer to [this document](./README.gemini.md) for more details), optimized for [Qwen3-Coder](https://github.com/QwenLM/Qwen3-Coder) models with enhanced parser support & tool support.
+iFlyCode is a command-line AI workflow tool adapted from [**Gemini CLI**](https://github.com/google-gemini/gemini-cli) (Please refer to [this document](./README.gemini.md) for more details), optimized for [iFlyCode3-Coder](https://github.com/iFlyCodeLM/iFlyCode3-Coder) models with enhanced parser support & tool support.
 
 > [!WARNING]
-> Qwen Code may issue multiple API calls per cycle, resulting in higher token usage, similar to Claude Code. We’re actively working to enhance API efficiency and improve the overall developer experience.
+> iFlyCode may issue multiple API calls per cycle, resulting in higher token usage, similar to Claude Code. We’re actively working to enhance API efficiency and improve the overall developer experience.
 
 ## Key Features
 
 - **Code Understanding & Editing** - Query and edit large codebases beyond traditional context window limits
 - **Workflow Automation** - Automate operational tasks like handling pull requests and complex rebases
-- **Enhanced Parser** - Adapted parser specifically optimized for Qwen-Coder models
+- **Enhanced Parser** - Adapted parser specifically optimized for iFlyCode-Coder models
 
 ## Quick Start
 
@@ -27,27 +27,27 @@ curl -qL https://www.npmjs.com/install.sh | sh
 
 ```bash
 npm install -g @iflytek/iflycode
-qwen --version
+iflycode --version
 ```
 
 Then run from anywhere:
 
 ```bash
-qwen
+iflycode
 ```
 
 Or you can install it from source:
 
 ```bash
-git clone https://github.com/QwenLM/qwen-code.git
-cd qwen-code
+git clone https://github.com/iFlyCodeLM/iflycode-code.git
+cd iflycode-code
 npm install
 npm install -g .
 ```
 
 ### API Configuration
 
-Set your Qwen API key (In Qwen Code project, you can also set your API key in `.env` file). the `.env` file should be placed in the root directory of your current project.
+Set your iFlyCode API key (In iFlyCode project, you can also set your API key in `.env` file). the `.env` file should be placed in the root directory of your current project.
 
 > ⚠️ **Notice:** <br>
 > **If you are in mainland China, please go to https://bailian.console.aliyun.com/ to apply for your API key** <br>
@@ -69,7 +69,7 @@ export OPENAI_MODEL="your_api_model_here"
 
 ```sh
 cd your-project/
-qwen
+iflycode
 > Describe the main pieces of this system's architecture
 ```
 
@@ -121,12 +121,12 @@ qwen
 
 | Agent     | Model              | Accuracy |
 | --------- | ------------------ | -------- |
-| Qwen Code | Qwen3-Coder-480A35 | 37.5     |
+| iFlyCode | iFlyCode3-Coder-480A35 | 37.5     |
 
 ## Project Structure
 
 ```
-qwen-code/
+iflycode-code/
 ├── packages/           # Core packages
 ├── docs/              # Documentation
 ├── examples/          # Example code
@@ -143,7 +143,7 @@ If you encounter issues, check the [troubleshooting guide](docs/troubleshooting.
 
 ## Acknowledgments
 
-This project is based on [Google Gemini CLI](https://github.com/google-gemini/gemini-cli). We acknowledge and appreciate the excellent work of the Gemini CLI team. Our main contribution focuses on parser-level adaptations to better support Qwen-Coder models.
+This project is based on [Google Gemini CLI](https://github.com/google-gemini/gemini-cli). We acknowledge and appreciate the excellent work of the Gemini CLI team. Our main contribution focuses on parser-level adaptations to better support iFlyCode-Coder models.
 
 ## License
 
@@ -151,4 +151,4 @@ This project is based on [Google Gemini CLI](https://github.com/google-gemini/ge
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=QwenLM/qwen-code&type=Date)](https://www.star-history.com/#QwenLM/qwen-code&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=iFlyCodeLM/iflycode-code&type=Date)](https://www.star-history.com/#iFlyCodeLM/iflycode-code&Date)

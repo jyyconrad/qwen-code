@@ -65,7 +65,7 @@ import {
   getMCPDiscoveryState,
   getMCPServerStatus,
   GeminiClient,
-} from '@qwen-code/qwen-code-core';
+} from '@iflytek/iflycode-core';
 import { useSessionStats } from '../contexts/SessionContext.js';
 import { LoadedSettings } from '../../config/settings.js';
 import * as ShowMemoryCommandModule from './useShowMemoryCommand.js';
@@ -88,9 +88,9 @@ vi.mock('open', () => ({
   default: vi.fn(),
 }));
 
-vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
+vi.mock('@iflytek/iflycode-core', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
+    await importOriginal<typeof import('@iflytek/iflycode-core')>();
   return {
     ...actual,
     getMCPServerStatus: vi.fn(),
@@ -179,7 +179,7 @@ describe('useSlashCommandProcessor', () => {
   const getProcessorHook = (showToolDescriptions: boolean = false) => {
     const settings = {
       merged: {
-        contextFileName: 'QWEN.md',
+        contextFileName: 'IFLYCODE.md',
       },
     } as unknown as LoadedSettings;
     return renderHook(() =>

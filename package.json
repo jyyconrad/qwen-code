@@ -1,5 +1,5 @@
 {
-  "name": "@qwen-code/qwen-code",
+  "name": "@iflytek/iflycode",
   "version": "0.0.1-alpha.8",
   "engines": {
     "node": ">=20"
@@ -48,7 +48,7 @@
     "clean": "node scripts/clean.js"
   },
   "bin": {
-    "qwen": "bundle/gemini.js"
+    "iflycode": "bundle/gemini.js"
   },
   "files": [
     "bundle/",
@@ -83,6 +83,6 @@
     "yargs": "^18.0.0"
   },
   "dependencies": {
-    "@qwen-code/qwen-code": "^0.0.1-alpha.8"
+    "@iflytek/iflycode": "^0.0.1-alpha.8"
   }
 }

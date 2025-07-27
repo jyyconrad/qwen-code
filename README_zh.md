@@ -1,8 +1,8 @@
-# Qwen Code
+# iFlyCode
 
-![Qwen Code 截图](./docs/assets/qwen-screenshot.png)
+![iFlyCode 截图](./docs/assets/iflycode-screenshot.png)
 
-Qwen Code 是一款改编自 [**Gemini CLI**](https://github.com/google-gemini/gemini-cli) 的命令行 AI 工作流工具（更多细节请参阅 [此文档](./README.gemini.md)），专为 [Qwen3-Coder](https://github.com/QwenLM/Qwen3-Coder) 模型优化，增强了解析器支持和工具支持。
+iFlyCode 是一款改编自 [**Gemini CLI**](https://github.com/google-gemini/gemini-cli) 的命令行 AI 工作流工具（更多细节请参阅 [此文档](./README.gemini.md)），专为 [iFlyCode3-Coder](https://github.com/iFlyCodeLM/iFlyCode3-Coder) 模型优化，增强了解析器支持和工具支持。
 
 > [!WARNING]  
 > iFly Code 可能在每个周期内发起多个 API 调用，导致较高的 token 使用量，类似于 Claude Code。我们正在积极提升 API 效率并改善整体开发者体验。
@@ -11,7 +11,7 @@ Qwen Code 是一款改编自 [**Gemini CLI**](https://github.com/google-gemini/g
 
 - **代码理解与编辑** - 查询和编辑超出传统上下文窗口限制的大型代码库
 - **工作流自动化** - 自动执行操作任务，例如处理拉取请求和复杂的变基操作
-- **增强型解析器** - 专为 Qwen-Coder 模型优化的解析器
+- **增强型解析器** - 专为 iFlyCode-Coder 模型优化的解析器
 
 ## 快速开始
 
@@ -27,27 +27,27 @@ curl -qL https://www.npmjs.com/install.sh | sh
 
 ```bash
 npm install -g @iflytek/iflycode
-qwen --version
+iflycode --version
 ```
 
 然后可以从任何位置运行：
 
 ```bash
-qwen
+iflycode
 ```
 
 或者你可以从源码安装：
 
 ```bash
-git clone https://github.com/QwenLM/qwen-code.git
-cd qwen-code
+git clone https://github.com/iFlyCodeLM/iflycode-code.git
+cd iflycode-code
 npm install
 npm install -g .
 ```
 
 ### API 配置
 
-设置你的 Qwen API 密钥（在 Qwen Code 项目中，你也可以在 `.env` 文件中设置 API 密钥）。`.env` 文件应放置在当前项目的根目录下。
+设置你的 iFlyCode API 密钥（在 iFlyCode 项目中，你也可以在 `.env` 文件中设置 API 密钥）。`.env` 文件应放置在当前项目的根目录下。
 
 > ⚠️ **注意：** <br>
 > **如果你在中国大陆，请前往 https://bailian.console.aliyun.com/ 申请你的 API 密钥** <br>
@@ -69,7 +69,7 @@ export OPENAI_MODEL="your_api_model_here"
 
 ```sh
 cd your-project/
-qwen
+iflycode
 > 描述该系统架构的主要组成部分
 ```
 
@@ -121,12 +121,12 @@ qwen
 
 | Agent     | Model              | 准确率 |
 | --------- | ------------------ | ------ |
-| Qwen Code | Qwen3-Coder-480A35 | 37.5   |
+| iFlyCode | iFlyCode3-Coder-480A35 | 37.5   |
 
 ## 项目结构
 
 ```
-qwen-code/
+iflycode-code/
 ├── packages/           # 核心包
 ├── docs/              # 文档
 ├── examples/          # 示例代码
@@ -143,7 +143,7 @@ qwen-code/
 
 ## 致谢
 
-本项目基于 [Google Gemini CLI](https://github.com/google-gemini/gemini-cli)。我们对 Gemini CLI 团队的出色工作表示认可和赞赏。我们的主要贡献集中在解析器层面的适配，以更好地支持 Qwen-Coder 模型。
+本项目基于 [Google Gemini CLI](https://github.com/google-gemini/gemini-cli)。我们对 Gemini CLI 团队的出色工作表示认可和赞赏。我们的主要贡献集中在解析器层面的适配，以更好地支持 iFlyCode-Coder 模型。
 
 ## 许可证
 
@@ -151,4 +151,4 @@ qwen-code/
 
 ## 星标历史
 
-[![Star History Chart](https://api.star-history.com/svg?repos=QwenLM/qwen-code&type=Date)](https://www.star-history.com/#QwenLM/qwen-code&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=iFlyCodeLM/iflycode-code&type=Date)](https://www.star-history.com/#iFlyCodeLM/iflycode-code&Date)

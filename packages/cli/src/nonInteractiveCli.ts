@@ -12,7 +12,7 @@ import {
   shutdownTelemetry,
   isTelemetrySdkInitialized,
   ToolResultDisplay,
-} from '@qwen-code/qwen-code-core';
+} from '@iflytek/iflycode-core';
 import {
   Content,
   Part,

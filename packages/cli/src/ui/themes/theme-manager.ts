@@ -15,8 +15,8 @@ import { DefaultLight } from './default-light.js';
 import { DefaultDark } from './default.js';
 import { ShadesOfPurple } from './shades-of-purple.js';
 import { XCode } from './xcode.js';
-import { QwenLight } from './qwen-light.js';
-import { QwenDark } from './qwen-dark.js';
+import { iFlyCodeLight } from './iflycode-light.js';
+import { iFlyCodeDark } from './iflycode-dark.js';
 import { Theme, ThemeType } from './theme.js';
 import { ANSI } from './ansi.js';
 import { ANSILight } from './ansi-light.js';
@@ -28,7 +28,7 @@ export interface ThemeDisplay {
   type: ThemeType;
 }
 
-export const DEFAULT_THEME: Theme = QwenDark;
+export const DEFAULT_THEME: Theme = iFlyCodeDark;
 
 class ThemeManager {
   private readonly availableThemes: Theme[];
@@ -45,8 +45,8 @@ class ThemeManager {
       GitHubDark,
       GitHubLight,
       GoogleCode,
-      QwenLight,
-      QwenDark,
+      iFlyCodeLight,
+      iFlyCodeDark,
       ShadesOfPurple,
       XCode,
       ANSI,
@@ -59,12 +59,12 @@ class ThemeManager {
    * Returns a list of available theme names.
    */
   getAvailableThemes(): ThemeDisplay[] {
-    // Separate Qwen themes
-    const qwenThemes = this.availableThemes.filter(
-      (theme) => theme.name === QwenLight.name || theme.name === QwenDark.name,
+    // Separate iFlyCode themes
+    const iflycodeThemes = this.availableThemes.filter(
+      (theme) => theme.name === iFlyCodeLight.name || theme.name === iFlyCodeDark.name,
     );
     const otherThemes = this.availableThemes.filter(
-      (theme) => theme.name !== QwenLight.name && theme.name !== QwenDark.name,
+      (theme) => theme.name !== iFlyCodeLight.name && theme.name !== iFlyCodeDark.name,
     );
 
     // Sort other themes by type and then name
@@ -87,8 +87,8 @@ class ThemeManager {
       return a.name.localeCompare(b.name);
     });
 
-    // Combine Qwen themes first, then sorted others
-    const sortedThemes = [...qwenThemes, ...sortedOtherThemes];
+    // Combine iFlyCode themes first, then sorted others
+    const sortedThemes = [...iflycodeThemes, ...sortedOtherThemes];
 
     return sortedThemes.map((theme) => ({
       name: theme.name,

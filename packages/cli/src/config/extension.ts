@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { MCPServerConfig } from '@qwen-code/qwen-code-core';
+import { MCPServerConfig } from '@iflytek/iflycode-core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-export const EXTENSIONS_DIRECTORY_NAME = path.join('.qwen', 'extensions');
+export const EXTENSIONS_DIRECTORY_NAME = path.join('.iflycode', 'extensions');
 export const EXTENSIONS_CONFIG_FILENAME = 'gemini-extension.json';
 
 export interface Extension {
@@ -106,7 +106,7 @@ function loadExtension(extensionDir: string): Extension | null {
 
 function getContextFileNames(config: ExtensionConfig): string[] {
   if (!config.contextFileName) {
-    return ['QWEN.md'];
+    return ['IFLYCODE.md'];
   } else if (!Array.isArray(config.contextFileName)) {
     return [config.contextFileName];
   }

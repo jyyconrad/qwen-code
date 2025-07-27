@@ -1,7 +1,7 @@
 {
-  "name": "@qwen-code/qwen-code-core",
+  "name": "@iflytek/iflycode-core",
   "version": "0.0.1-alpha.8",
-  "description": "Qwen Code Core",
+  "description": "iFlyCore-cli",
   "repository": {
     "type": "git",
     "url": "git+http://github.com/jyyconrad/qwen-code.git"

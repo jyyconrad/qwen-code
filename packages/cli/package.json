@@ -1,5 +1,5 @@
 {
-  "name": "@qwen-code/qwen-code",
+  "name": "@iflytek/iflycode",
   "version": "0.0.1-alpha.8",
   "description": "Gemini CLI",
   "repository": {
@@ -9,7 +9,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "qwen": "dist/index.js"
+    "iflycode": "dist/index.js"
   },
   "scripts": {
     "build": "node ../../scripts/build_package.js",
@@ -28,7 +28,7 @@
     "sandboxImageUri": "iflytek/iflycodecli/sandbox:0.0.1-alpha.8"
   },
   "dependencies": {
-    "@qwen-code/qwen-code-core": "file:../core",
+    "@iflytek/iflycode-core": "file:../core",
     "@types/update-notifier": "^6.0.8",
     "command-exists": "^1.2.9",
     "diff": "^7.0.0",

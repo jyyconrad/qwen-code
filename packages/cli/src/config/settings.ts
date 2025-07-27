@@ -15,22 +15,22 @@ import {
   BugCommandSettings,
   TelemetrySettings,
   AuthType,
-} from '@qwen-code/qwen-code-core';
+} from '@iflytek/iflycode-core';
 import stripJsonComments from 'strip-json-comments';
 import { DefaultLight } from '../ui/themes/default-light.js';
 import { DefaultDark } from '../ui/themes/default.js';
 
-export const SETTINGS_DIRECTORY_NAME = '.qwen';
+export const SETTINGS_DIRECTORY_NAME = '.iflycode';
 export const USER_SETTINGS_DIR = path.join(homedir(), SETTINGS_DIRECTORY_NAME);
 export const USER_SETTINGS_PATH = path.join(USER_SETTINGS_DIR, 'settings.json');
 
 function getSystemSettingsPath(): string {
   if (platform() === 'darwin') {
-    return '/Library/Application Support/QwenCode/settings.json';
+    return '/Library/Application Support/iFlyCode/settings.json';
   } else if (platform() === 'win32') {
-    return 'C:\\ProgramData\\qwen-code\\settings.json';
+    return 'C:\\ProgramData\\iflycode\\settings.json';
   } else {
-    return '/etc/qwen-code/settings.json';
+    return '/etc/iflycode/settings.json';
   }
 }
 

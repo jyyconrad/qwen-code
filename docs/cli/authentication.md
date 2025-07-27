@@ -1,6 +1,6 @@
 # Authentication Setup
 
-The Qwen Code CLI supports multiple authentication methods. On initial startup you'll need to configure **one** of the following authentication methods:
+The iFlyCode CLI supports multiple authentication methods. On initial startup you'll need to configure **one** of the following authentication methods:
 
 1.  **Login with Google (Gemini Code Assist):**
     - Use this option to log in with your google account.
@@ -76,15 +76,15 @@ The Qwen Code CLI supports multiple authentication methods. On initial startup y
 
 ### Persisting Environment Variables with `.env` Files
 
-You can create a **`.qwen/.env`** file in your project directory or in your home directory. Creating a plain **`.env`** file also works, but `.qwen/.env` is recommended to keep Gemini variables isolated from other tools.
+You can create a **`.iflycode/.env`** file in your project directory or in your home directory. Creating a plain **`.env`** file also works, but `.iflycode/.env` is recommended to keep Gemini variables isolated from other tools.
 
 Gemini CLI automatically loads environment variables from the **first** `.env` file it finds, using the following search order:
 
 1. Starting in the **current directory** and moving upward toward `/`, for each directory it checks:
-   1. `.qwen/.env`
+   1. `.iflycode/.env`
    2. `.env`
 2. If no file is found, it falls back to your **home directory**:
-   - `~/.qwen/.env`
+   - `~/.iflycode/.env`
    - `~/.env`
 
 > **Important:** The search stops at the **first** file encountered—variables are **not merged** across multiple files.
@@ -95,14 +95,14 @@ Gemini CLI automatically loads environment variables from the **first** `.env` f
 
 ```bash
 mkdir -p .gemini
-echo 'GOOGLE_CLOUD_PROJECT="your-project-id"' >> .qwen/.env
+echo 'GOOGLE_CLOUD_PROJECT="your-project-id"' >> .iflycode/.env
 ```
 
 **User-wide settings** (available in every directory):
 
 ```bash
 mkdir -p ~/.gemini
-cat >> ~/.qwen/.env <<'EOF'
+cat >> ~/.iflycode/.env <<'EOF'
 GOOGLE_CLOUD_PROJECT="your-project-id"
 GEMINI_API_KEY="your-gemini-api-key"
 EOF

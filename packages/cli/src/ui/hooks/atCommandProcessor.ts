@@ -12,7 +12,7 @@ import {
   getErrorMessage,
   isNodeError,
   unescapePath,
-} from '@qwen-code/qwen-code-core';
+} from '@iflytek/iflycode-core';
 import {
   HistoryItem,
   IndividualToolCallDisplay,
