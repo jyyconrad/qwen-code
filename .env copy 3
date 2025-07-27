@@ -1,0 +1,4 @@
+DEBUG="true"
+OPENAI_API_KEY="sk-oulrfsemkebjfedqencsheciqptuayweoetzpvfeajljybmc"
+OPENAI_BASE_URL="https://api.siliconflow.cn"
+OPENAI_MODEL="deepseek-ai/DeepSeek-V3"

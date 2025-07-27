@@ -1,0 +1,28 @@
+{
+  // 认证设置
+  "selectedAuthType": "USE_GEMINI",
+  
+  // 开发任务处理设置
+  "developmentTaskSettings": {
+    "enabled": true
+  },
+  
+  // 遥测设置
+  "telemetry": {
+    "enabled": false
+  },
+  
+  // 检查点设置
+  "checkpointing": {
+    "enabled": true
+  },
+  
+  // 内容生成的采样参数
+  "sampling_params": {
+    "temperature": 0.7,
+    "top_p": 0.9
+  },
+  
+  // 最大会话轮数
+  "maxSessionTurns": 50
+}
