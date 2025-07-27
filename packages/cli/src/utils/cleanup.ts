@@ -6,7 +6,7 @@
 
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { getProjectTempDir } from '@iflytek/iflycode-core';
+import { getProjectTempDir } from '@qwen-code/qwen-code-core';
 
 const cleanupFunctions: Array<() => void> = [];
 

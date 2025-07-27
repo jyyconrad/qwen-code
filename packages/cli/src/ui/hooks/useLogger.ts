@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { sessionId, Logger } from '@iflytek/iflycode-core';
+import { sessionId, Logger } from '@qwen-code/qwen-code-core';
 
 /**
  * Hook to manage the logger instance.

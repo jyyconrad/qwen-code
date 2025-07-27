@@ -7,7 +7,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import { Colors } from '../colors.js';
-import { ApprovalMode } from '@iflytek/iflycode-core';
+import { ApprovalMode } from '@qwen-code/qwen-code-core';
 
 interface AutoAcceptIndicatorProps {
   approvalMode: ApprovalMode;

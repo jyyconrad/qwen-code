@@ -21,7 +21,7 @@ import {
   ToolCall,
   Status as CoreStatus,
   EditorType,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 import { useCallback, useState, useMemo } from 'react';
 import {
   HistoryItemToolGroup,

@@ -10,7 +10,7 @@ import {
   Config,
   CodeAssistServer,
   UserTierId,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 
 export interface PrivacyState {
   isLoading: boolean;

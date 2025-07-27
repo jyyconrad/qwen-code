@@ -20,14 +20,14 @@ import {
   Config,
   Config as ActualConfigType,
   ApprovalMode,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 import { useInput, type Key as InkKey } from 'ink';
 
 vi.mock('ink');
 
-vi.mock('@iflytek/iflycode-core', async () => {
+vi.mock('@qwen-code/qwen-code-core', async () => {
   const actualServerModule = (await vi.importActual(
-    '@iflytek/iflycode-core',
+    '@qwen-code/qwen-code-core',
   )) as Record<string, unknown>;
   return {
     ...actualServerModule,

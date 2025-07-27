@@ -5,7 +5,7 @@
  */
 
 import { Message, MessageType } from '../types.js';
-import { Config } from '@iflytek/iflycode-core';
+import { Config } from '@qwen-code/qwen-code-core';
 import { LoadedSettings } from '../../config/settings.js';
 
 export function createShowMemoryAction(

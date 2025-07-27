@@ -6,7 +6,7 @@ help:
 	@echo "Makefile for gemini-cli"
 	@echo ""
 	@echo "Usage:"
-	@echo "  make install          - Install pnpm dependencies"
+	@echo "  make install          - Install npm dependencies"
 	@echo "  make build            - Build the main project"
 	@echo "  make build-all        - Build the main project and sandbox"
 	@echo "  make test             - Run the test suite"
@@ -21,35 +21,35 @@ help:
 	@echo "  make create-alias     - Create a 'gemini' alias for your shell"
 
 install:
-	pnpm install
+	npm install
 
 build:
-	pnpm run build
+	npm run build
 
 
 build-all:
-	pnpm run build:all
+	npm run build:all
 
 test:
-	pnpm run test
+	npm run test
 
 lint:
-	pnpm run lint
+	npm run lint
 
 format:
-	pnpm run format
+	npm run format
 
 preflight:
-	pnpm run preflight
+	npm run preflight
 
 clean:
-	pnpm run clean
+	npm run clean
 
 start:
-	pnpm run start
+	npm run start
 
 debug:
-	pnpm run debug
+	npm run debug
 
 
 run-npx:

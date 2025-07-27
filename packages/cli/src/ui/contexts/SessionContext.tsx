@@ -17,7 +17,7 @@ import {
   uiTelemetryService,
   SessionMetrics,
   ModelMetrics,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 
 // --- Interface Definitions ---
 

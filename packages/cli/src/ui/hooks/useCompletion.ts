@@ -15,7 +15,7 @@ import {
   getErrorMessage,
   Config,
   FileDiscoveryService,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 import {
   MAX_SUGGESTIONS_TO_SHOW,
   Suggestion,

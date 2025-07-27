@@ -18,7 +18,7 @@ import {
   MCPServerStatus,
   getMCPDiscoveryState,
   getMCPServerStatus,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 import { useSessionStats } from '../contexts/SessionContext.js';
 import {
   Message,

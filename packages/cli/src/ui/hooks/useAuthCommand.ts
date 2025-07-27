@@ -11,7 +11,7 @@ import {
   Config,
   clearCachedCredentialFile,
   getErrorMessage,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 import { runExitCleanup } from '../../utils/cleanup.js';
 
 export const useAuthCommand = (

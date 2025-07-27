@@ -9,7 +9,7 @@ import { Box, Text, useInput } from 'ink';
 import { Colors } from '../colors.js';
 import { RadioButtonSelect } from './shared/RadioButtonSelect.js';
 import { LoadedSettings, SettingScope } from '../../config/settings.js';
-import { AuthType } from '@iflytek/iflycode-core';
+import { AuthType } from '@qwen-code/qwen-code-core';
 import {
   validateAuthMethod,
   setOpenAIApiKey,

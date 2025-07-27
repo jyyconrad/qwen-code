@@ -37,7 +37,7 @@ import {
   logUserPrompt,
   AuthType,
   getOauthClient,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 import { validateAuthMethod } from './config/auth.js';
 import { setMaxSizedBoxDebugging } from './ui/components/shared/MaxSizedBox.js';
 

@@ -11,7 +11,7 @@ import {
   shortenPath,
   tildeifyPath,
   tokenLimit,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 import { ConsoleSummaryDisplay } from './ConsoleSummaryDisplay.js';
 import process from 'node:process';
 import Gradient from 'ink-gradient';

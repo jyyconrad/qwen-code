@@ -9,11 +9,11 @@ import { memoryCommand } from './memoryCommand.js';
 import { type CommandContext, SlashCommand } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 import { MessageType } from '../types.js';
-import { getErrorMessage } from '@iflytek/iflycode-core';
+import { getErrorMessage } from '@qwen-code/qwen-code-core';
 
-vi.mock('@iflytek/iflycode-core', async (importOriginal) => {
+vi.mock('@qwen-code/qwen-code-core', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@iflytek/iflycode-core')>();
+    await importOriginal<typeof import('@qwen-code/qwen-code-core')>();
   return {
     ...original,
     getErrorMessage: vi.fn((error: unknown) => {

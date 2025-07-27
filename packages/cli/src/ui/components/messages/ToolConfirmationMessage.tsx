@@ -14,7 +14,7 @@ import {
   ToolExecuteConfirmationDetails,
   ToolMcpConfirmationDetails,
   Config,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 import {
   RadioButtonSelect,
   RadioSelectItem,

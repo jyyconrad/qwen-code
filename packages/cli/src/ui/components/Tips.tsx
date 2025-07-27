@@ -7,7 +7,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import { Colors } from '../colors.js';
-import { type Config } from '@iflytek/iflycode-core';
+import { type Config } from '@qwen-code/qwen-code-core';
 
 interface TipsProps {
   config: Config;

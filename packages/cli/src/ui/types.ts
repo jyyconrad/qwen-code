@@ -7,7 +7,7 @@
 import {
   ToolCallConfirmationDetails,
   ToolResultDisplay,
-} from '@iflytek/iflycode-core';
+} from '@qwen-code/qwen-code-core';
 
 // Only defining the state enum needed by the UI
 export enum StreamingState {
