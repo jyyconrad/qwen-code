@@ -10,10 +10,10 @@ const ENABLE_BRACKETED_PASTE = '\x1b[?2004h';
 const DISABLE_BRACKETED_PASTE = '\x1b[?2004l';
 
 /**
- * Enables and disables bracketed paste mode in the terminal.
+ * 在终端中启用和禁用括号粘贴模式。
  *
- * This hook ensures that bracketed paste mode is enabled when the component
- * mounts and disabled when it unmounts or when the process exits.
+ * 此钩子确保在组件挂载时启用括号粘贴模式，
+ * 在组件卸载或进程退出时禁用该模式。
  */
 export const useBracketedPaste = () => {
   const cleanup = () => {

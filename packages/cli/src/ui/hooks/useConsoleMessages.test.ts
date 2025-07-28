@@ -8,16 +8,16 @@ import { act, renderHook } from '@testing-library/react';
 import { useConsoleMessages } from './useConsoleMessages.js';
 import { ConsoleMessageItem } from '../types.js';
 
-// Mock setTimeout and clearTimeout
+// 模拟 setTimeout 和 clearTimeout
 vi.useFakeTimers();
 
 describe('useConsoleMessages', () => {
-  it('should initialize with an empty array of console messages', () => {
+  it('应初始化为空的控制台消息数组', () => {
     const { result } = renderHook(() => useConsoleMessages());
     expect(result.current.consoleMessages).toEqual([]);
   });
 
-  it('should add a new message', () => {
+  it('应添加新消息', () => {
     const { result } = renderHook(() => useConsoleMessages());
     const message: ConsoleMessageItem = {
       type: 'log',
@@ -30,13 +30,13 @@ describe('useConsoleMessages', () => {
     });
 
     act(() => {
-      vi.runAllTimers(); // Process the queue
+      vi.runAllTimers(); // 处理队列
     });
 
     expect(result.current.consoleMessages).toEqual([{ ...message, count: 1 }]);
   });
 
-  it('should consolidate identical consecutive messages', () => {
+  it('应合并相同的连续消息', () => {
     const { result } = renderHook(() => useConsoleMessages());
     const message: ConsoleMessageItem = {
       type: 'log',
@@ -56,7 +56,7 @@ describe('useConsoleMessages', () => {
     expect(result.current.consoleMessages).toEqual([{ ...message, count: 2 }]);
   });
 
-  it('should not consolidate different messages', () => {
+  it('不应合并不同的消息', () => {
     const { result } = renderHook(() => useConsoleMessages());
     const message1: ConsoleMessageItem = {
       type: 'log',
@@ -84,7 +84,7 @@ describe('useConsoleMessages', () => {
     ]);
   });
 
-  it('should not consolidate messages if type is different', () => {
+  it('如果类型不同，不应合并消息', () => {
     const { result } = renderHook(() => useConsoleMessages());
     const message1: ConsoleMessageItem = {
       type: 'log',
@@ -112,7 +112,7 @@ describe('useConsoleMessages', () => {
     ]);
   });
 
-  it('should clear console messages', () => {
+  it('应清除控制台消息', () => {
     const { result } = renderHook(() => useConsoleMessages());
     const message: ConsoleMessageItem = {
       type: 'log',
@@ -137,7 +137,7 @@ describe('useConsoleMessages', () => {
     expect(result.current.consoleMessages).toEqual([]);
   });
 
-  it('should clear pending timeout on clearConsoleMessages', () => {
+  it('应在 clearConsoleMessages 时清除待处理的超时', () => {
     const { result } = renderHook(() => useConsoleMessages());
     const message: ConsoleMessageItem = {
       type: 'log',
@@ -146,22 +146,22 @@ describe('useConsoleMessages', () => {
     };
 
     act(() => {
-      result.current.handleNewMessage(message); // This schedules a timeout
+      result.current.handleNewMessage(message); // 这会安排一个超时
     });
 
     act(() => {
       result.current.clearConsoleMessages();
     });
 
-    // Ensure the queue is empty and no more messages are processed
+    // 确保队列为空且没有更多消息被处理
     act(() => {
-      vi.runAllTimers(); // If timeout wasn't cleared, this would process the queue
+      vi.runAllTimers(); // 如果超时未被清除，这会处理队列
     });
 
     expect(result.current.consoleMessages).toEqual([]);
   });
 
-  it('should clear message queue on clearConsoleMessages', () => {
+  it('应在 clearConsoleMessages 时清除消息队列', () => {
     const { result } = renderHook(() => useConsoleMessages());
     const message: ConsoleMessageItem = {
       type: 'log',
@@ -170,7 +170,7 @@ describe('useConsoleMessages', () => {
     };
 
     act(() => {
-      // Add a message but don't process the queue yet
+      // 添加消息但不处理队列
       result.current.handleNewMessage(message);
     });
 
@@ -178,16 +178,16 @@ describe('useConsoleMessages', () => {
       result.current.clearConsoleMessages();
     });
 
-    // Process any pending timeouts (should be none related to message queue)
+    // 处理任何待处理的超时（应该没有与消息队列相关的）
     act(() => {
       vi.runAllTimers();
     });
 
-    // The consoleMessages should be empty because the queue was cleared before processing
+    // 控制台消息应为空，因为队列在处理前被清除了
     expect(result.current.consoleMessages).toEqual([]);
   });
 
-  it('should cleanup timeout on unmount', () => {
+  it('应在卸载时清理超时', () => {
     const { result, unmount } = renderHook(() => useConsoleMessages());
     const message: ConsoleMessageItem = {
       type: 'log',
@@ -201,12 +201,12 @@ describe('useConsoleMessages', () => {
 
     unmount();
 
-    // This is a bit indirect. We check that clearTimeout was called.
-    // If clearTimeout was not called, and we run timers, an error might occur
-    // or the state might change, which it shouldn't after unmount.
-    // Vitest's vi.clearAllTimers() or specific checks for clearTimeout calls
-    // would be more direct if available and easy to set up here.
-    // For now, we rely on the useEffect cleanup pattern.
-    expect(vi.getTimerCount()).toBe(0); // Check if all timers are cleared
+    // 这有点间接。我们检查 clearTimeout 是否被调用。
+    // 如果 clearTimeout 未被调用，且我们运行计时器，可能会发生错误
+    // 或状态可能改变，这在卸载后不应该发生。
+    // 如果可用且易于设置，Vitest 的 vi.clearAllTimers() 或对 clearTimeout 调用的特定检查
+    // 会更直接。
+    // 现在，我们依赖 useEffect 清理模式。
+    expect(vi.getTimerCount()).toBe(0); // 检查是否所有计时器都被清除
   });
 });

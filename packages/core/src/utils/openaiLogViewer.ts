@@ -8,36 +8,36 @@ import path from 'node:path';
 import { openaiLogger } from './openaiLogger.js';
 
 /**
- * CLI utility for viewing and managing OpenAI logs
+ * 用于查看和管理 OpenAI 日志的 CLI 工具
  */
 export class OpenAILogViewer {
   /**
-   * List all available OpenAI logs
-   * @param limit Optional limit on the number of logs to display
+   * 列出所有可用的 OpenAI 日志
+   * @param limit 可选参数，限制显示的日志数量
    */
   static async listLogs(limit?: number): Promise<void> {
     try {
       const logs = await openaiLogger.getLogFiles(limit);
 
       if (logs.length === 0) {
-        console.log('No OpenAI logs found');
+        console.log('未找到 OpenAI 日志');
         return;
       }
 
-      console.log(`Found ${logs.length} OpenAI logs:`);
+      console.log(`找到 ${logs.length} 个 OpenAI 日志：`);
       for (let i = 0; i < logs.length; i++) {
         const filePath = logs[i];
         const filename = path.basename(filePath);
         const logData = await openaiLogger.readLogFile(filePath);
 
-        // Type guard for logData
+        // 类型守卫，确保 logData 是对象
         if (typeof logData !== 'object' || logData === null) {
-          console.log(`${i + 1}. ${filename} - Invalid log data`);
+          console.log(`${i + 1}. ${filename} - 日志数据无效`);
           continue;
         }
         const data = logData as Record<string, unknown>;
 
-        // Format the log entry summary
+        // 格式化日志条目摘要
         const requestType = getRequestType(data.request);
         const status = data.error ? 'ERROR' : 'OK';
 
@@ -46,13 +46,13 @@ export class OpenAILogViewer {
         );
       }
     } catch (error) {
-      console.error('Error listing logs:', error);
+      console.error('列出日志时出错：', error);
     }
   }
 
   /**
-   * View details of a specific log file
-   * @param identifier Either a log index (1-based) or a filename
+   * 查看特定日志文件的详细信息
+   * @param identifier 日志索引（从 1 开始）或文件名
    */
   static async viewLog(identifier: number | string): Promise<void> {
     try {
@@ -60,24 +60,24 @@ export class OpenAILogViewer {
       const logs = await openaiLogger.getLogFiles();
 
       if (logs.length === 0) {
-        console.log('No OpenAI logs found');
+        console.log('未找到 OpenAI 日志');
         return;
       }
 
       if (typeof identifier === 'number') {
-        // Adjust for 1-based indexing
+        // 调整为从 1 开始的索引
         if (identifier < 1 || identifier > logs.length) {
           console.error(
-            `Invalid log index. Please provide a number between 1 and ${logs.length}`,
+            `无效的日志索引。请提供一个介于 1 和 ${logs.length} 之间的数字`,
           );
           return;
         }
         logFile = logs[identifier - 1];
       } else {
-        // Find by filename
+        // 按文件名查找
         logFile = logs.find((log) => path.basename(log) === identifier);
         if (!logFile) {
-          console.error(`Log file '${identifier}' not found`);
+          console.error(`未找到日志文件 '${identifier}'`);
           return;
         }
       }
@@ -85,25 +85,25 @@ export class OpenAILogViewer {
       const logData = await openaiLogger.readLogFile(logFile);
       console.log(JSON.stringify(logData, null, 2));
     } catch (error) {
-      console.error('Error viewing log:', error);
+      console.error('查看日志时出错：', error);
     }
   }
 
   /**
-   * Clean up old logs, keeping only the most recent ones
-   * @param keepCount Number of recent logs to keep
+   * 清理旧日志，仅保留最近的日志
+   * @param keepCount 要保留的最近日志数量
    */
   static async cleanupLogs(keepCount: number = 50): Promise<void> {
     try {
       const allLogs = await openaiLogger.getLogFiles();
 
       if (allLogs.length === 0) {
-        console.log('No OpenAI logs found');
+        console.log('未找到 OpenAI 日志');
         return;
       }
 
       if (allLogs.length <= keepCount) {
-        console.log(`Only ${allLogs.length} logs exist, no cleanup needed`);
+        console.log(`仅有 ${allLogs.length} 个日志，无需清理`);
         return;
       }
 
@@ -115,16 +115,16 @@ export class OpenAILogViewer {
       }
 
       console.log(
-        `Deleted ${logsToDelete.length} old log files. Kept ${keepCount} most recent logs.`,
+        `已删除 ${logsToDelete.length} 个旧日志文件。保留了 ${keepCount} 个最近的日志。`,
       );
     } catch (error) {
-      console.error('Error cleaning up logs:', error);
+      console.error('清理日志时出错：', error);
     }
   }
 }
 
 /**
- * Helper function to determine the type of request in a log
+ * 辅助函数，用于确定日志中的请求类型
  */
 function getRequestType(request: unknown): string {
   if (!request) return 'unknown';
@@ -145,7 +145,7 @@ function getRequestType(request: unknown): string {
   return 'api_call';
 }
 
-// CLI interface when script is run directly
+// 当脚本直接运行时的 CLI 接口
 if (import.meta.url === `file://${process.argv[1]}`) {
   async function main() {
     const args = process.argv.slice(2);
@@ -161,7 +161,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       case 'view': {
         const identifier = args[1];
         if (!identifier) {
-          console.error('Please provide a log index or filename to view');
+          console.error('请提供要查看的日志索引或文件名');
           process.exit(1);
         }
         await OpenAILogViewer.viewLog(
@@ -177,17 +177,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       }
 
       default:
-        console.log('OpenAI Log Viewer');
+        console.log('OpenAI 日志查看器');
         console.log('----------------');
-        console.log('Commands:');
+        console.log('命令：');
         console.log(
-          '  list [limit]        - List all logs, optionally limiting to the specified number',
+          '  list [limit]        - 列出所有日志，可选择限制显示数量',
         );
         console.log(
-          '  view <index|file>   - View a specific log by index number or filename',
+          '  view <index|file>   - 通过索引号或文件名查看特定日志',
         );
         console.log(
-          '  cleanup [keepCount] - Remove old logs, keeping only the specified number (default: 50)',
+          '  cleanup [keepCount] - 删除旧日志，仅保留指定数量（默认：50）',
         );
         break;
     }

@@ -16,21 +16,21 @@ describe('WebFetchTool', () => {
   } as unknown as Config;
 
   describe('shouldConfirmExecute', () => {
-    it('should return confirmation details with the correct prompt and urls', async () => {
+    it('应返回包含正确提示和URL的确认详情', async () => {
       const tool = new WebFetchTool(mockConfig);
       const params = { prompt: 'fetch https://example.com' };
       const confirmationDetails = await tool.shouldConfirmExecute(params);
 
       expect(confirmationDetails).toEqual({
         type: 'info',
-        title: 'Confirm Web Fetch',
+        title: '确认网络获取',
         prompt: 'fetch https://example.com',
         urls: ['https://example.com'],
         onConfirm: expect.any(Function),
       });
     });
 
-    it('should convert github urls to raw format', async () => {
+    it('应将github URL转换为原始格式', async () => {
       const tool = new WebFetchTool(mockConfig);
       const params = {
         prompt:
@@ -40,7 +40,7 @@ describe('WebFetchTool', () => {
 
       expect(confirmationDetails).toEqual({
         type: 'info',
-        title: 'Confirm Web Fetch',
+        title: '确认网络获取',
         prompt:
           'fetch https://github.com/google/gemini-react/blob/main/README.md',
         urls: [
@@ -50,7 +50,7 @@ describe('WebFetchTool', () => {
       });
     });
 
-    it('should return false if approval mode is AUTO_EDIT', async () => {
+    it('如果审批模式为AUTO_EDIT则应返回false', async () => {
       const tool = new WebFetchTool({
         ...mockConfig,
         getApprovalMode: () => ApprovalMode.AUTO_EDIT,
@@ -61,7 +61,7 @@ describe('WebFetchTool', () => {
       expect(confirmationDetails).toBe(false);
     });
 
-    it('should call setApprovalMode when onConfirm is called with ProceedAlways', async () => {
+    it('当使用ProceedAlways调用onConfirm时应调用setApprovalMode', async () => {
       const setApprovalMode = vi.fn();
       const tool = new WebFetchTool({
         ...mockConfig,

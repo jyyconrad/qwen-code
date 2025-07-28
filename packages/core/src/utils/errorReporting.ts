@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,11 +16,11 @@ interface ErrorReportData {
 }
 
 /**
- * Generates an error report, writes it to a temporary file, and logs information to console.error.
- * @param error The error object.
- * @param context The relevant context (e.g., chat history, request contents).
- * @param type A string to identify the type of error (e.g., 'startChat', 'generateJson-api').
- * @param baseMessage The initial message to log to console.error before the report path.
+ * 生成错误报告，将其写入临时文件，并将信息记录到 console.error。
+ * @param error 错误对象。
+ * @param context 相关上下文（例如，聊天历史、请求内容）。
+ * @param type 用于标识错误类型的字符串（例如，'startChat'，'generateJson-api'）。
+ * @param baseMessage 在报告路径之前记录到 console.error 的初始消息。
  */
 export async function reportError(
   error: Error | unknown,
@@ -57,29 +57,29 @@ export async function reportError(
   try {
     stringifiedReportContent = JSON.stringify(reportContent, null, 2);
   } catch (stringifyError) {
-    // This can happen if context contains something like BigInt
+    // 如果上下文包含类似 BigInt 的内容，可能会发生这种情况
     console.error(
-      `${baseMessage} Could not stringify report content (likely due to context):`,
+      `${baseMessage} 无法字符串化报告内容（可能由于上下文）：`,
       stringifyError,
     );
-    console.error('Original error that triggered report generation:', error);
+    console.error('触发报告生成的原始错误：', error);
     if (context) {
       console.error(
-        'Original context could not be stringified or included in report.',
+        '原始上下文无法字符串化或包含在报告中。',
       );
     }
-    // Fallback: try to report only the error if context was the issue
+    // 降级方案：如果上下文是问题所在，尝试只报告错误
     try {
       const minimalReportContent = { error: errorToReport };
       stringifiedReportContent = JSON.stringify(minimalReportContent, null, 2);
-      // Still try to write the minimal report
+      // 仍然尝试写入最小报告
       await fs.writeFile(reportPath, stringifiedReportContent);
       console.error(
-        `${baseMessage} Partial report (excluding context) available at: ${reportPath}`,
+        `${baseMessage} 部分报告（不包括上下文）位于：${reportPath}`,
       );
     } catch (minimalWriteError) {
       console.error(
-        `${baseMessage} Failed to write even a minimal error report:`,
+        `${baseMessage} 甚至无法写入最小错误报告：`,
         minimalWriteError,
       );
     }
@@ -88,28 +88,28 @@ export async function reportError(
 
   try {
     await fs.writeFile(reportPath, stringifiedReportContent);
-    console.error(`${baseMessage} Full report available at: ${reportPath}`);
+    console.error(`${baseMessage} 完整报告位于：${reportPath}`);
   } catch (writeError) {
     console.error(
-      `${baseMessage} Additionally, failed to write detailed error report:`,
+      `${baseMessage} 此外，写入详细错误报告失败：`,
       writeError,
     );
-    // Log the original error as a fallback if report writing fails
-    console.error('Original error that triggered report generation:', error);
+    // 如果报告写入失败，则记录原始错误作为降级方案
+    console.error('触发报告生成的原始错误：', error);
     if (context) {
-      // Context was stringifiable, but writing the file failed.
-      // We already have stringifiedReportContent, but it might be too large for console.
-      // So, we try to log the original context object, and if that fails, its stringified version (truncated).
+      // 上下文可以被字符串化，但写入文件失败。
+      // 我们已经有 stringifiedReportContent，但它可能对于控制台来说太大了。
+      // 因此，我们尝试记录原始上下文对象，如果失败，则记录其字符串化版本（截断）。
       try {
-        console.error('Original context:', context);
+        console.error('原始上下文：', context);
       } catch {
         try {
           console.error(
-            'Original context (stringified, truncated):',
+            '原始上下文（字符串化，截断）：',
             JSON.stringify(context).substring(0, 1000),
           );
         } catch {
-          console.error('Original context could not be logged or stringified.');
+          console.error('原始上下文无法记录或字符串化。');
         }
       }
     }

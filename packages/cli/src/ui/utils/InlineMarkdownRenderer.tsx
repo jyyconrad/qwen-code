@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,13 +9,13 @@ import { Text } from 'ink';
 import { Colors } from '../colors.js';
 import stringWidth from 'string-width';
 
-// Constants for Markdown parsing
-const BOLD_MARKER_LENGTH = 2; // For "**"
-const ITALIC_MARKER_LENGTH = 1; // For "*" or "_"
-const STRIKETHROUGH_MARKER_LENGTH = 2; // For "~~"
-const INLINE_CODE_MARKER_LENGTH = 1; // For "`"
-const UNDERLINE_TAG_START_LENGTH = 3; // For "<u>"
-const UNDERLINE_TAG_END_LENGTH = 4; // For "</u>"
+// Markdown 解析的常量
+const BOLD_MARKER_LENGTH = 2; // 对于 "**"
+const ITALIC_MARKER_LENGTH = 1; // 对于 "*" 或 "_"
+const STRIKETHROUGH_MARKER_LENGTH = 2; // 对于 "~~"
+const INLINE_CODE_MARKER_LENGTH = 1; // 对于 "`"
+const UNDERLINE_TAG_START_LENGTH = 3; // 对于 "<u>"
+const UNDERLINE_TAG_END_LENGTH = 4; // 对于 "</u>"
 
 interface RenderInlineProps {
   text: string;
@@ -116,7 +116,7 @@ const RenderInlineInternal: React.FC<RenderInlineProps> = ({ text }) => {
         fullMatch.startsWith('<u>') &&
         fullMatch.endsWith('</u>') &&
         fullMatch.length >
-          UNDERLINE_TAG_START_LENGTH + UNDERLINE_TAG_END_LENGTH - 1 // -1 because length is compared to combined length of start and end tags
+          UNDERLINE_TAG_START_LENGTH + UNDERLINE_TAG_END_LENGTH - 1 // -1 因为长度与开始和结束标签的组合长度进行比较
       ) {
         renderedNode = (
           <Text key={key} underline>
@@ -128,7 +128,7 @@ const RenderInlineInternal: React.FC<RenderInlineProps> = ({ text }) => {
         );
       }
     } catch (e) {
-      console.error('Error parsing inline markdown part:', fullMatch, e);
+      console.error('解析内联 markdown 部分时出错:', fullMatch, e);
       renderedNode = null;
     }
 
@@ -146,8 +146,8 @@ const RenderInlineInternal: React.FC<RenderInlineProps> = ({ text }) => {
 export const RenderInline = React.memo(RenderInlineInternal);
 
 /**
- * Utility function to get the plain text length of a string with markdown formatting
- * This is useful for calculating column widths in tables
+ * 获取带 markdown 格式的字符串的纯文本长度的工具函数
+ * 这对于计算表格中的列宽很有用
  */
 export const getPlainTextLength = (text: string): number => {
   const cleanText = text

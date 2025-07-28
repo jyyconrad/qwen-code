@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -33,9 +33,9 @@ function writeInstallationIdToFile(installationId: string) {
 }
 
 /**
- * Retrieves the installation ID from a file, creating it if it doesn't exist.
- * This ID is used for unique user installation tracking.
- * @returns A UUID string for the user.
+ * 从文件中检索安装 ID，如果不存在则创建它。
+ * 此 ID 用于唯一用户安装跟踪。
+ * @returns 用户的 UUID 字符串。
  */
 export function getInstallationId(): string {
   try {
@@ -50,7 +50,7 @@ export function getInstallationId(): string {
     return installationId;
   } catch (error) {
     console.error(
-      'Error accessing installation ID file, generating ephemeral ID:',
+      '访问安装 ID 文件时出错，生成临时 ID:',
       error,
     );
     return '123456789';

@@ -19,15 +19,15 @@ import {
 } from '../utils/displayUtils.js';
 import { computeSessionStats } from '../utils/computeStats.js';
 
-// A more flexible and powerful StatRow component
+// 更灵活且功能强大的 StatRow 组件
 interface StatRowProps {
   title: string;
-  children: React.ReactNode; // Use children to allow for complex, colored values
+  children: React.ReactNode; // 使用 children 来允许复杂的、带颜色的值
 }
 
 const StatRow: React.FC<StatRowProps> = ({ title, children }) => (
   <Box>
-    {/* Fixed width for the label creates a clean "gutter" for alignment */}
+    {/* 固定标签宽度，为对齐创建清晰的“装订线” */}
     <Box width={28}>
       <Text color={Colors.LightBlue}>{title}</Text>
     </Box>
@@ -35,7 +35,7 @@ const StatRow: React.FC<StatRowProps> = ({ title, children }) => (
   </Box>
 );
 
-// A SubStatRow for indented, secondary information
+// 用于缩进的次级信息 SubStatRow
 interface SubStatRowProps {
   title: string;
   children: React.ReactNode;
@@ -43,7 +43,7 @@ interface SubStatRowProps {
 
 const SubStatRow: React.FC<SubStatRowProps> = ({ title, children }) => (
   <Box paddingLeft={2}>
-    {/* Adjust width for the "» " prefix */}
+    {/* 为 "» " 前缀调整宽度 */}
     <Box width={26}>
       <Text>» {title}</Text>
     </Box>
@@ -51,7 +51,7 @@ const SubStatRow: React.FC<SubStatRowProps> = ({ title, children }) => (
   </Box>
 );
 
-// A Section component to group related stats
+// 用于分组相关统计信息的 Section 组件
 interface SectionProps {
   title: string;
   children: React.ReactNode;
@@ -76,22 +76,22 @@ const ModelUsageTable: React.FC<{
 
   return (
     <Box flexDirection="column" marginTop={1}>
-      {/* Header */}
+      {/* 表头 */}
       <Box>
         <Box width={nameWidth}>
-          <Text bold>Model Usage</Text>
+          <Text bold>模型使用情况</Text>
         </Box>
         <Box width={requestsWidth} justifyContent="flex-end">
-          <Text bold>Reqs</Text>
+          <Text bold>请求数</Text>
         </Box>
         <Box width={inputTokensWidth} justifyContent="flex-end">
-          <Text bold>Input Tokens</Text>
+          <Text bold>输入 Token</Text>
         </Box>
         <Box width={outputTokensWidth} justifyContent="flex-end">
-          <Text bold>Output Tokens</Text>
+          <Text bold>输出 Token</Text>
         </Box>
       </Box>
-      {/* Divider */}
+      {/* 分隔线 */}
       <Box
         borderStyle="round"
         borderBottom={true}
@@ -101,7 +101,7 @@ const ModelUsageTable: React.FC<{
         width={nameWidth + requestsWidth + inputTokensWidth + outputTokensWidth}
       ></Box>
 
-      {/* Rows */}
+      {/* 数据行 */}
       {Object.entries(models).map(([name, modelMetrics]) => (
         <Box key={name}>
           <Box width={nameWidth}>
@@ -125,13 +125,13 @@ const ModelUsageTable: React.FC<{
       {cacheEfficiency > 0 && (
         <Box flexDirection="column" marginTop={1}>
           <Text>
-            <Text color={Colors.AccentGreen}>Savings Highlight:</Text>{' '}
+            <Text color={Colors.AccentGreen}>节省亮点：</Text>{' '}
             {totalCachedTokens.toLocaleString()} ({cacheEfficiency.toFixed(1)}
-            %) of input tokens were served from the cache, reducing costs.
+            %) 的输入 token 来自缓存，降低了成本。
           </Text>
           <Box height={1} />
           <Text color={Colors.Gray}>
-            » Tip: For a full token breakdown, run `/stats model`.
+            » 提示：要查看完整的 token 明细，请运行 `/stats model`。
           </Text>
         </Box>
       )}
@@ -181,7 +181,7 @@ export const StatsDisplay: React.FC<StatsDisplayProps> = ({
     }
     return (
       <Text bold color={Colors.AccentPurple}>
-        Session Stats
+        会话统计
       </Text>
     );
   };
@@ -198,23 +198,23 @@ export const StatsDisplay: React.FC<StatsDisplayProps> = ({
       <Box height={1} />
 
       {tools.totalCalls > 0 && (
-        <Section title="Interaction Summary">
-          <StatRow title="Tool Calls:">
+        <Section title="交互摘要">
+          <StatRow title="工具调用：">
             <Text>
               {tools.totalCalls} ({' '}
               <Text color={Colors.AccentGreen}>✔ {tools.totalSuccess}</Text>{' '}
               <Text color={Colors.AccentRed}>✖ {tools.totalFail}</Text> )
             </Text>
           </StatRow>
-          <StatRow title="Success Rate:">
+          <StatRow title="成功率：">
             <Text color={successColor}>{computed.successRate.toFixed(1)}%</Text>
           </StatRow>
           {computed.totalDecisions > 0 && (
-            <StatRow title="User Agreement:">
+            <StatRow title="用户同意率：">
               <Text color={agreementColor}>
                 {computed.agreementRate.toFixed(1)}%{' '}
                 <Text color={Colors.Gray}>
-                  ({computed.totalDecisions} reviewed)
+                  ({computed.totalDecisions} 已审核)
                 </Text>
               </Text>
             </StatRow>
@@ -222,14 +222,14 @@ export const StatsDisplay: React.FC<StatsDisplayProps> = ({
         </Section>
       )}
 
-      <Section title="Performance">
-        <StatRow title="Wall Time:">
+      <Section title="性能">
+        <StatRow title="总耗时：">
           <Text>{duration}</Text>
         </StatRow>
-        <StatRow title="Agent Active:">
+        <StatRow title="代理活跃时间：">
           <Text>{formatDuration(computed.agentActiveTime)}</Text>
         </StatRow>
-        <SubStatRow title="API Time:">
+        <SubStatRow title="API 时间：">
           <Text>
             {formatDuration(computed.totalApiTime)}{' '}
             <Text color={Colors.Gray}>
@@ -237,7 +237,7 @@ export const StatsDisplay: React.FC<StatsDisplayProps> = ({
             </Text>
           </Text>
         </SubStatRow>
-        <SubStatRow title="Tool Time:">
+        <SubStatRow title="工具时间：">
           <Text>
             {formatDuration(computed.totalToolTime)}{' '}
             <Text color={Colors.Gray}>

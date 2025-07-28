@@ -9,11 +9,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { processImports, validateImportPath } from './memoryImportProcessor.js';
 
-// Mock fs/promises
+// 模拟 fs/promises
 vi.mock('fs/promises');
 const mockedFs = vi.mocked(fs);
 
-// Mock console methods to capture warnings
+// 模拟 console 方法以捕获警告
 const originalConsoleWarn = console.warn;
 const originalConsoleError = console.error;
 const originalConsoleDebug = console.debug;
@@ -21,21 +21,21 @@ const originalConsoleDebug = console.debug;
 describe('memoryImportProcessor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock console methods
+    // 模拟 console 方法
     console.warn = vi.fn();
     console.error = vi.fn();
     console.debug = vi.fn();
   });
 
   afterEach(() => {
-    // Restore console methods
+    // 恢复 console 方法
     console.warn = originalConsoleWarn;
     console.error = originalConsoleError;
     console.debug = originalConsoleDebug;
   });
 
   describe('processImports', () => {
-    it('should process basic md file imports', async () => {
+    it('应处理基本的 md 文件导入', async () => {
       const content = 'Some content @./test.md more content';
       const basePath = '/test/path';
       const importedContent = '# Imported Content\nThis is imported.';
@@ -54,7 +54,7 @@ describe('memoryImportProcessor', () => {
       );
     });
 
-    it('should warn and fail for non-md file imports', async () => {
+    it('应警告并失败于非 md 文件导入', async () => {
       const content = 'Some content @./instructions.txt more content';
       const basePath = '/test/path';
 
@@ -62,7 +62,7 @@ describe('memoryImportProcessor', () => {
 
       expect(console.warn).toHaveBeenCalledWith(
         '[WARN] [ImportProcessor]',
-        'Import processor only supports .md files. Attempting to import non-md file: ./instructions.txt. This will fail.',
+        '导入处理器仅支持 .md 文件。尝试导入非 md 文件: ./instructions.txt。这将失败。',
       );
       expect(result).toContain(
         '<!-- Import failed: ./instructions.txt - Only .md files are supported -->',
@@ -70,7 +70,7 @@ describe('memoryImportProcessor', () => {
       expect(mockedFs.readFile).not.toHaveBeenCalled();
     });
 
-    it('should handle circular imports', async () => {
+    it('应处理循环导入', async () => {
       const content = 'Content @./circular.md more content';
       const basePath = '/test/path';
       const circularContent = 'Circular @./main.md content';
@@ -78,21 +78,21 @@ describe('memoryImportProcessor', () => {
       mockedFs.access.mockResolvedValue(undefined);
       mockedFs.readFile.mockResolvedValue(circularContent);
 
-      // Set up the import state to simulate we're already processing main.md
+      // 设置导入状态以模拟我们已经在处理 main.md
       const importState = {
         processedFiles: new Set<string>(),
         maxDepth: 10,
         currentDepth: 0,
-        currentFile: '/test/path/main.md', // Simulate we're processing main.md
+        currentFile: '/test/path/main.md', // 模拟我们正在处理 main.md
       };
 
       const result = await processImports(content, basePath, true, importState);
 
-      // The circular import should be detected when processing the nested import
+      // 在处理嵌套导入时应检测到循环导入
       expect(result).toContain('<!-- Circular import detected: ./main.md -->');
     });
 
-    it('should handle file not found errors', async () => {
+    it('应处理文件未找到错误', async () => {
       const content = 'Content @./nonexistent.md more content';
       const basePath = '/test/path';
 
@@ -105,11 +105,11 @@ describe('memoryImportProcessor', () => {
       );
       expect(console.error).toHaveBeenCalledWith(
         '[ERROR] [ImportProcessor]',
-        'Failed to import ./nonexistent.md: File not found',
+        '无法导入 ./nonexistent.md: File not found',
       );
     });
 
-    it('should respect max depth limit', async () => {
+    it('应遵守最大深度限制', async () => {
       const content = 'Content @./deep.md more content';
       const basePath = '/test/path';
       const deepContent = 'Deep @./deeper.md content';
@@ -127,12 +127,12 @@ describe('memoryImportProcessor', () => {
 
       expect(console.warn).toHaveBeenCalledWith(
         '[WARN] [ImportProcessor]',
-        'Maximum import depth (1) reached. Stopping import processing.',
+        '已达到最大导入深度 (1)。停止导入处理。',
       );
       expect(result).toBe(content);
     });
 
-    it('should handle nested imports recursively', async () => {
+    it('应递归处理嵌套导入', async () => {
       const content = 'Main @./nested.md content';
       const basePath = '/test/path';
       const nestedContent = 'Nested @./inner.md content';
@@ -150,7 +150,7 @@ describe('memoryImportProcessor', () => {
       expect(result).toContain(innerContent);
     });
 
-    it('should handle absolute paths in imports', async () => {
+    it('应处理导入中的绝对路径', async () => {
       const content = 'Content @/absolute/path/file.md more content';
       const basePath = '/test/path';
       const importedContent = 'Absolute path content';
@@ -165,7 +165,7 @@ describe('memoryImportProcessor', () => {
       );
     });
 
-    it('should handle multiple imports in same content', async () => {
+    it('应处理同一内容中的多个导入', async () => {
       const content = 'Start @./first.md middle @./second.md end';
       const basePath = '/test/path';
       const firstContent = 'First content';
@@ -186,7 +186,7 @@ describe('memoryImportProcessor', () => {
   });
 
   describe('validateImportPath', () => {
-    it('should reject URLs', () => {
+    it('应拒绝 URL', () => {
       expect(
         validateImportPath('https://example.com/file.md', '/base', [
           '/allowed',
@@ -200,7 +200,7 @@ describe('memoryImportProcessor', () => {
       ).toBe(false);
     });
 
-    it('should allow paths within allowed directories', () => {
+    it('应允许允许目录内的路径', () => {
       expect(validateImportPath('./file.md', '/base', ['/base'])).toBe(true);
       expect(validateImportPath('../file.md', '/base', ['/allowed'])).toBe(
         false,
@@ -210,7 +210,7 @@ describe('memoryImportProcessor', () => {
       ).toBe(true);
     });
 
-    it('should reject paths outside allowed directories', () => {
+    it('应拒绝允许目录外的路径', () => {
       expect(
         validateImportPath('/forbidden/file.md', '/base', ['/allowed']),
       ).toBe(false);
@@ -219,7 +219,7 @@ describe('memoryImportProcessor', () => {
       );
     });
 
-    it('should handle multiple allowed directories', () => {
+    it('应处理多个允许的目录', () => {
       expect(
         validateImportPath('./file.md', '/base', ['/allowed1', '/allowed2']),
       ).toBe(false);
@@ -237,7 +237,7 @@ describe('memoryImportProcessor', () => {
       ).toBe(true);
     });
 
-    it('should handle relative paths correctly', () => {
+    it('应正确处理相对路径', () => {
       expect(validateImportPath('file.md', '/base', ['/base'])).toBe(true);
       expect(validateImportPath('./file.md', '/base', ['/base'])).toBe(true);
       expect(validateImportPath('../file.md', '/base', ['/parent'])).toBe(
@@ -245,7 +245,7 @@ describe('memoryImportProcessor', () => {
       );
     });
 
-    it('should handle absolute paths correctly', () => {
+    it('应正确处理绝对路径', () => {
       expect(
         validateImportPath('/allowed/file.md', '/base', ['/allowed']),
       ).toBe(true);

@@ -2,7 +2,7 @@
 
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -36,7 +36,7 @@ function loadSettingsValue(filePath) {
     }
   } catch (e) {
     console.warn(
-      `⚠️ Warning: Could not parse settings file at ${filePath}: ${e.message}`,
+      `⚠️ 警告: 无法解析设置文件 ${filePath}: ${e.message}`,
     );
   }
   return undefined;
@@ -56,16 +56,16 @@ if (targetArg) {
   const potentialTarget = targetArg.split('=')[1];
   if (allowedTargets.includes(potentialTarget)) {
     target = potentialTarget;
-    console.log(`⚙️  Using command-line target: ${target}`);
+    console.log(`⚙️  使用命令行目标: ${target}`);
   } else {
     console.error(
-      `🛑 Error: Invalid target '${potentialTarget}'. Allowed targets are: ${allowedTargets.join(', ')}.`,
+      `🛑 错误: 无效的目标 '${potentialTarget}'。允许的目标为: ${allowedTargets.join(', ')}。`,
     );
     process.exit(1);
   }
 } else if (settingsTarget) {
   console.log(
-    `⚙️ Using telemetry target from settings.json: ${settingsTarget}`,
+    `⚙️ 使用来自 settings.json 的遥测目标: ${settingsTarget}`,
   );
 }
 
@@ -76,10 +76,10 @@ const scriptPath = join(
 );
 
 try {
-  console.log(`🚀 Running telemetry script for target: ${target}.`);
+  console.log(`🚀 正在运行目标的遥测脚本: ${target}。`);
   execSync(`node ${scriptPath}`, { stdio: 'inherit', cwd: projectRoot });
 } catch (error) {
-  console.error(`🛑 Failed to run telemetry script for target: ${target}`);
+  console.error(`🛑 无法运行目标的遥测脚本: ${target}`);
   console.error(error);
   process.exit(1);
 }

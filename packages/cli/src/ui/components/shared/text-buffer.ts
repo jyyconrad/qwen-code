@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,7 +24,7 @@ export type Direction =
   | 'home'
   | 'end';
 
-// Simple helper for word‑wise ops.
+// 简单的辅助函数用于词级操作。
 function isWordChar(ch: string | undefined): boolean {
   if (ch === undefined) {
     return false;
@@ -33,10 +33,10 @@ function isWordChar(ch: string | undefined): boolean {
 }
 
 /**
- * Strip characters that can break terminal rendering.
+ * 去除可能破坏终端渲染的字符。
  *
- * Strip ANSI escape codes and control characters except for line breaks.
- * Control characters such as delete break terminal UI rendering.
+ * 去除 ANSI 转义码和控制字符，但保留换行符。
+ * 控制字符如删除符会破坏终端 UI 渲染。
  */
 function stripUnsafeCharacters(str: string): string {
   const stripped = stripAnsi(str);
@@ -63,17 +63,16 @@ function clamp(v: number, min: number, max: number): number {
   return v < min ? min : v > max ? max : v;
 }
 
-/* ────────────────────────────────────────────────────────────────────────── */
 
 interface UseTextBufferProps {
   initialText?: string;
   initialCursorOffset?: number;
-  viewport: Viewport; // Viewport dimensions needed for scrolling
-  stdin?: NodeJS.ReadStream | null; // For external editor
-  setRawMode?: (mode: boolean) => void; // For external editor
-  onChange?: (text: string) => void; // Callback for when text changes
+  viewport: Viewport; // 视口尺寸，用于滚动
+  stdin?: NodeJS.ReadStream | null; // 外部编辑器使用
+  setRawMode?: (mode: boolean) => void; // 外部编辑器使用
+  onChange?: (text: string) => void; // 文本变化时的回调
   isValidPath: (path: string) => boolean;
-  shellModeActive?: boolean; // Whether the text buffer is in shell mode
+  shellModeActive?: boolean; // 文本缓冲区是否处于 shell 模式
 }
 
 interface UndoHistoryEntry {
@@ -90,23 +89,23 @@ function calculateInitialCursorPosition(
   let row = 0;
   while (row < initialLines.length) {
     const lineLength = cpLen(initialLines[row]);
-    // Add 1 for the newline character (except for the last line)
+    // 为换行符加 1（最后一行除外）
     const totalCharsInLineAndNewline =
       lineLength + (row < initialLines.length - 1 ? 1 : 0);
 
     if (remainingChars <= lineLength) {
-      // Cursor is on this line
+      // 光标在此行上
       return [row, remainingChars];
     }
     remainingChars -= totalCharsInLineAndNewline;
     row++;
   }
-  // Offset is beyond the text, place cursor at the end of the last line
+  // 偏移量超出文本范围，将光标放置在最后一行的末尾
   if (initialLines.length > 0) {
     const lastRow = initialLines.length - 1;
     return [lastRow, cpLen(initialLines[lastRow])];
   }
-  return [0, 0]; // Default for empty text
+  return [0, 0]; // 空文本的默认值
 }
 
 export function offsetToLogicalPos(
@@ -126,28 +125,28 @@ export function offsetToLogicalPos(
     const lineLengthWithNewline = lineLength + (i < lines.length - 1 ? 1 : 0);
 
     if (offset <= currentOffset + lineLength) {
-      // Check against lineLength first
+      // 首先检查是否在行长度内
       row = i;
       col = offset - currentOffset;
       return [row, col];
     } else if (offset <= currentOffset + lineLengthWithNewline) {
-      // Check if offset is the newline itself
+      // 检查偏移量是否是换行符本身
       row = i;
-      col = lineLength; // Position cursor at the end of the current line content
-      // If the offset IS the newline, and it's not the last line, advance to next line, col 0
+      col = lineLength; // 将光标放置在当前行内容的末尾
+      // 如果偏移量就是换行符，并且不是最后一行，则前进到下一行，列号为 0
       if (
         offset === currentOffset + lineLengthWithNewline &&
         i < lines.length - 1
       ) {
         return [i + 1, 0];
       }
-      return [row, col]; // Otherwise, it's at the end of the current line content
+      return [row, col]; // 否则，它在当前行内容的末尾
     }
     currentOffset += lineLengthWithNewline;
   }
 
-  // If offset is beyond the text length, place cursor at the end of the last line
-  // or [0,0] if text is empty
+  // 如果偏移量超出文本长度，将光标放置在最后一行的末尾
+  // 或者如果文本为空，则为 [0,0]
   if (lines.length > 0) {
     row = lines.length - 1;
     col = cpLen(lines[row]);
@@ -158,7 +157,7 @@ export function offsetToLogicalPos(
   return [row, col];
 }
 
-// Helper to calculate visual lines and map cursor positions
+// 辅助函数计算视觉行并映射光标位置
 function calculateVisualLayout(
   logicalLines: string[],
   logicalCursor: [number, number],
@@ -166,8 +165,8 @@ function calculateVisualLayout(
 ): {
   visualLines: string[];
   visualCursor: [number, number];
-  logicalToVisualMap: Array<Array<[number, number]>>; // For each logical line, an array of [visualLineIndex, startColInLogical]
-  visualToLogicalMap: Array<[number, number]>; // For each visual line, its [logicalLineIndex, startColInLogical]
+  logicalToVisualMap: Array<Array<[number, number]>>; // 对于每个逻辑行，一个 [visualLineIndex, startColInLogical] 数组
+  visualToLogicalMap: Array<[number, number]>; // 对于每个视觉行，其 [logicalLineIndex, startColInLogical]
 } {
   const visualLines: string[] = [];
   const logicalToVisualMap: Array<Array<[number, number]>> = [];
@@ -177,7 +176,7 @@ function calculateVisualLayout(
   logicalLines.forEach((logLine, logIndex) => {
     logicalToVisualMap[logIndex] = [];
     if (logLine.length === 0) {
-      // Handle empty logical line
+      // 处理空逻辑行
       logicalToVisualMap[logIndex].push([visualLines.length, 0]);
       visualToLogicalMap.push([logIndex, 0]);
       visualLines.push('');
@@ -185,30 +184,30 @@ function calculateVisualLayout(
         currentVisualCursor = [visualLines.length - 1, 0];
       }
     } else {
-      // Non-empty logical line
-      let currentPosInLogLine = 0; // Tracks position within the current logical line (code point index)
+      // 非空逻辑行
+      let currentPosInLogLine = 0; // 跟踪当前逻辑行内的位置（代码点索引）
       const codePointsInLogLine = toCodePoints(logLine);
 
       while (currentPosInLogLine < codePointsInLogLine.length) {
         let currentChunk = '';
         let currentChunkVisualWidth = 0;
         let numCodePointsInChunk = 0;
-        let lastWordBreakPoint = -1; // Index in codePointsInLogLine for word break
+        let lastWordBreakPoint = -1; // 代码点索引中的单词断点
         let numCodePointsAtLastWordBreak = 0;
 
-        // Iterate through code points to build the current visual line (chunk)
+        // 遍历代码点以构建当前视觉行（块）
         for (let i = currentPosInLogLine; i < codePointsInLogLine.length; i++) {
           const char = codePointsInLogLine[i];
           const charVisualWidth = stringWidth(char);
 
           if (currentChunkVisualWidth + charVisualWidth > viewportWidth) {
-            // Character would exceed viewport width
+            // 字符将超出视口宽度
             if (
               lastWordBreakPoint !== -1 &&
               numCodePointsAtLastWordBreak > 0 &&
               currentPosInLogLine + numCodePointsAtLastWordBreak < i
             ) {
-              // We have a valid word break point to use, and it's not the start of the current segment
+              // 我们有一个有效的单词断点可以使用，并且它不是当前段的开始
               currentChunk = codePointsInLogLine
                 .slice(
                   currentPosInLogLine,
@@ -217,61 +216,61 @@ function calculateVisualLayout(
                 .join('');
               numCodePointsInChunk = numCodePointsAtLastWordBreak;
             } else {
-              // No word break, or word break is at the start of this potential chunk, or word break leads to empty chunk.
-              // Hard break: take characters up to viewportWidth, or just the current char if it alone is too wide.
+              // 没有单词断点，或者单词断点在当前潜在块的开始，或者单词断点导致空块。
+              // 强制断行：取达到视口宽度的字符，或者如果单个字符太宽则取该字符。
               if (
                 numCodePointsInChunk === 0 &&
                 charVisualWidth > viewportWidth
               ) {
-                // Single character is wider than viewport, take it anyway
+                // 单个字符比视口宽，无论如何都要取它
                 currentChunk = char;
                 numCodePointsInChunk = 1;
               } else if (
                 numCodePointsInChunk === 0 &&
                 charVisualWidth <= viewportWidth
               ) {
-                // This case should ideally be caught by the next iteration if the char fits.
-                // If it doesn't fit (because currentChunkVisualWidth was already > 0 from a previous char that filled the line),
-                // then numCodePointsInChunk would not be 0.
-                // This branch means the current char *itself* doesn't fit an empty line, which is handled by the above.
-                // If we are here, it means the loop should break and the current chunk (which is empty) is finalized.
+                // 这种情况理想情况下应该由下一次迭代捕获（如果字符合适）。
+                // 如果不合适（因为 currentChunkVisualWidth 已经大于 0，来自一个填满行的前一个字符），
+                // 那么 numCodePointsInChunk 不会是 0。
+                // 这个分支意味着当前字符本身不适合空行，这由上面处理。
+                // 如果我们在这里，意味着循环应该中断，当前块（它是空的）被最终确定。
               }
             }
-            break; // Break from inner loop to finalize this chunk
+            break; // 从中断循环以最终确定此块
           }
 
           currentChunk += char;
           currentChunkVisualWidth += charVisualWidth;
           numCodePointsInChunk++;
 
-          // Check for word break opportunity (space)
+          // 检查单词断点机会（空格）
           if (char === ' ') {
-            lastWordBreakPoint = i; // Store code point index of the space
-            // Store the state *before* adding the space, if we decide to break here.
-            numCodePointsAtLastWordBreak = numCodePointsInChunk - 1; // Chars *before* the space
+            lastWordBreakPoint = i; // 存储空格的代码点索引
+            // 存储添加空格之前的状态，如果我们决定在这里断行。
+            numCodePointsAtLastWordBreak = numCodePointsInChunk - 1; // 空格之前的字符
           }
         }
 
-        // If the inner loop completed without breaking (i.e., remaining text fits)
-        // or if the loop broke but numCodePointsInChunk is still 0 (e.g. first char too wide for empty line)
+        // 如果内部循环完成而没有中断（即剩余文本适合）
+        // 或者如果循环中断但 numCodePointsInChunk 仍然是 0（例如第一个字符对于空行来说太宽）
         if (
           numCodePointsInChunk === 0 &&
           currentPosInLogLine < codePointsInLogLine.length
         ) {
-          // This can happen if the very first character considered for a new visual line is wider than the viewport.
-          // In this case, we take that single character.
+          // 当新视觉行的第一个字符比视口更宽时可能发生这种情况。
+          // 在这种情况下，我们取那个单个字符。
           const firstChar = codePointsInLogLine[currentPosInLogLine];
           currentChunk = firstChar;
-          numCodePointsInChunk = 1; // Ensure we advance
+          numCodePointsInChunk = 1; // 确保我们前进
         }
 
-        // If after everything, numCodePointsInChunk is still 0 but we haven't processed the whole logical line,
-        // it implies an issue, like viewportWidth being 0 or less. Avoid infinite loop.
+        // 如果在一切之后，numCodePointsInChunk 仍然是 0 但我们还没有处理完整个逻辑行，
+        // 这意味着有问题，比如 viewportWidth 为 0 或更小。避免无限循环。
         if (
           numCodePointsInChunk === 0 &&
           currentPosInLogLine < codePointsInLogLine.length
         ) {
-          // Force advance by one character to prevent infinite loop if something went wrong
+          // 强制前进一个字符以防止出错时的无限循环
           currentChunk = codePointsInLogLine[currentPosInLogLine];
           numCodePointsInChunk = 1;
         }
@@ -283,23 +282,23 @@ function calculateVisualLayout(
         visualToLogicalMap.push([logIndex, currentPosInLogLine]);
         visualLines.push(currentChunk);
 
-        // Cursor mapping logic
-        // Note: currentPosInLogLine here is the start of the currentChunk within the logical line.
+        // 光标映射逻辑
+        // 注意：这里的 currentPosInLogLine 是当前块在逻辑行中的开始。
         if (logIndex === logicalCursor[0]) {
-          const cursorLogCol = logicalCursor[1]; // This is a code point index
+          const cursorLogCol = logicalCursor[1]; // 这是一个代码点索引
           if (
             cursorLogCol >= currentPosInLogLine &&
-            cursorLogCol < currentPosInLogLine + numCodePointsInChunk // Cursor is within this chunk
+            cursorLogCol < currentPosInLogLine + numCodePointsInChunk // 光标在此块内
           ) {
             currentVisualCursor = [
               visualLines.length - 1,
-              cursorLogCol - currentPosInLogLine, // Visual col is also code point index within visual line
+              cursorLogCol - currentPosInLogLine, // 视觉列也是视觉行内的代码点索引
             ];
           } else if (
             cursorLogCol === currentPosInLogLine + numCodePointsInChunk &&
             numCodePointsInChunk > 0
           ) {
-            // Cursor is exactly at the end of this non-empty chunk
+            // 光标正好在此非空块的末尾
             currentVisualCursor = [
               visualLines.length - 1,
               numCodePointsInChunk,
@@ -310,23 +309,23 @@ function calculateVisualLayout(
         const logicalStartOfThisChunk = currentPosInLogLine;
         currentPosInLogLine += numCodePointsInChunk;
 
-        // If the chunk processed did not consume the entire logical line,
-        // and the character immediately following the chunk is a space,
-        // advance past this space as it acted as a delimiter for word wrapping.
+        // 如果处理的块没有消耗整个逻辑行，
+        // 并且紧跟在块后面的字符是空格，
+        // 则跳过此空格，因为它作为单词换行的分隔符。
         if (
           logicalStartOfThisChunk + numCodePointsInChunk <
             codePointsInLogLine.length &&
-          currentPosInLogLine < codePointsInLogLine.length && // Redundant if previous is true, but safe
+          currentPosInLogLine < codePointsInLogLine.length && // 如果前面为真则冗余，但安全
           codePointsInLogLine[currentPosInLogLine] === ' '
         ) {
           currentPosInLogLine++;
         }
       }
-      // After all chunks of a non-empty logical line are processed,
-      // if the cursor is at the very end of this logical line, update visual cursor.
+      // 在处理完非空逻辑行的所有块后，
+      // 如果光标正好在此逻辑行的末尾，则更新视觉光标。
       if (
         logIndex === logicalCursor[0] &&
-        logicalCursor[1] === codePointsInLogLine.length // Cursor at end of logical line
+        logicalCursor[1] === codePointsInLogLine.length // 光标在逻辑行末尾
       ) {
         const lastVisualLineIdx = visualLines.length - 1;
         if (
@@ -335,14 +334,14 @@ function calculateVisualLayout(
         ) {
           currentVisualCursor = [
             lastVisualLineIdx,
-            cpLen(visualLines[lastVisualLineIdx]), // Cursor at end of last visual line for this logical line
+            cpLen(visualLines[lastVisualLineIdx]), // 光标在此逻辑行的最后一个视觉行末尾
           ];
         }
       }
     }
   });
 
-  // If the entire logical text was empty, ensure there's one empty visual line.
+  // 如果整个逻辑文本为空，确保有一个空的视觉行。
   if (
     logicalLines.length === 0 ||
     (logicalLines.length === 1 && logicalLines[0] === '')
@@ -355,8 +354,8 @@ function calculateVisualLayout(
     }
     currentVisualCursor = [0, 0];
   }
-  // Handle cursor at the very end of the text (after all processing)
-  // This case might be covered by the loop end condition now, but kept for safety.
+  // 处理光标在文本末尾的情况（在所有处理之后）
+  // 这种情况现在可能已被循环结束条件覆盖，但为了安全起见保留。
   else if (
     logicalCursor[0] === logicalLines.length - 1 &&
     logicalCursor[1] === cpLen(logicalLines[logicalLines.length - 1]) &&
@@ -374,13 +373,13 @@ function calculateVisualLayout(
   };
 }
 
-// --- Start of reducer logic ---
+// --- 开始 reducer 逻辑 ---
 
 interface TextBufferState {
   lines: string[];
   cursorRow: number;
   cursorCol: number;
-  preferredCol: number | null; // This is visual preferred col
+  preferredCol: number | null; // 这是视觉首选列
   undoStack: UndoHistoryEntry[];
   redoStack: UndoHistoryEntry[];
   clipboard: string | null;
@@ -721,7 +720,7 @@ export function textBufferReducer(
       const { cursorRow, cursorCol } = state;
       if (cursorCol === 0 && cursorRow === 0) return state;
       if (cursorCol === 0) {
-        // Act as a backspace
+        // 作为退格键操作
         const nextState = pushUndo(state);
         const prevLineContent = currentLine(cursorRow - 1);
         const currentLineContentVal = currentLine(cursorRow);
@@ -772,7 +771,7 @@ export function textBufferReducer(
       if (cursorCol >= arr.length && cursorRow === lines.length - 1)
         return state;
       if (cursorCol >= arr.length) {
-        // Act as a delete
+        // 作为删除键操作
         const nextState = pushUndo(state);
         const nextLineContent = currentLine(cursorRow + 1);
         const newLines = [...nextState.lines];
@@ -799,7 +798,7 @@ export function textBufferReducer(
         newLines[cursorRow] = cpSlice(lineContent, 0, cursorCol);
         return { ...nextState, lines: newLines };
       } else if (cursorRow < lines.length - 1) {
-        // Act as a delete
+        // 作为删除键操作
         const nextState = pushUndo(state);
         const nextLineContent = currentLine(cursorRow + 1);
         const newLines = [...nextState.lines];
@@ -871,7 +870,7 @@ export function textBufferReducer(
         endRow >= state.lines.length ||
         (endRow < state.lines.length && endCol > currentLineLen(endRow))
       ) {
-        return state; // Invalid range
+        return state; // 无效范围
       }
 
       const nextState = pushUndo(state);
@@ -888,16 +887,16 @@ export function textBufferReducer(
         .replace(/\r/g, '\n');
       const replacementParts = normalisedReplacement.split('\n');
 
-      // Replace the content
+      // 替换内容
       if (startRow === endRow) {
         newLines[startRow] = prefix + normalisedReplacement + suffix;
       } else {
         const firstLine = prefix + replacementParts[0];
         if (replacementParts.length === 1) {
-          // Single line of replacement text, but spanning multiple original lines
+          // 单行替换文本，但跨越多个原始行
           newLines.splice(startRow, endRow - startRow + 1, firstLine + suffix);
         } else {
-          // Multi-line replacement text
+          // 多行替换文本
           const lastLine =
             replacementParts[replacementParts.length - 1] + suffix;
           const middleLines = replacementParts.slice(1, -1);
@@ -945,13 +944,13 @@ export function textBufferReducer(
 
     default: {
       const exhaustiveCheck: never = action;
-      console.error(`Unknown action encountered: ${exhaustiveCheck}`);
+      console.error(`遇到未知操作: ${exhaustiveCheck}`);
       return state;
     }
   }
 }
 
-// --- End of reducer logic ---
+// --- 结束 reducer 逻辑 ---
 
 export function useTextBuffer({
   initialText = '',
@@ -1007,7 +1006,7 @@ export function useTextBuffer({
     dispatch({ type: 'set_viewport_width', payload: viewport.width });
   }, [viewport.width]);
 
-  // Update visual scroll (vertical)
+  // 更新视觉滚动（垂直）
   useEffect(() => {
     const { height } = viewport;
     let newVisualScrollRow = visualScrollRow;
@@ -1130,24 +1129,24 @@ export function useTextBuffer({
         });
         if (error) throw error;
         if (typeof status === 'number' && status !== 0)
-          throw new Error(`External editor exited with status ${status}`);
+          throw new Error(`外部编辑器退出状态为 ${status}`);
 
         let newText = fs.readFileSync(filePath, 'utf8');
         newText = newText.replace(/\r\n?/g, '\n');
         dispatch({ type: 'set_text', payload: newText, pushToUndo: false });
       } catch (err) {
-        console.error('[useTextBuffer] external editor error', err);
+        console.error('[useTextBuffer] 外部编辑器错误', err);
       } finally {
         if (wasRaw) setRawMode?.(true);
         try {
           fs.unlinkSync(filePath);
         } catch {
-          /* ignore */
+          /* 忽略 */
         }
         try {
           fs.rmdirSync(tmpDir);
         } catch {
-          /* ignore */
+          /* 忽略 */
         }
       }
     },
@@ -1169,7 +1168,7 @@ export function useTextBuffer({
         key.name === 'return' ||
         input === '\r' ||
         input === '\n' ||
-        input === '\\\r' // VSCode terminal represents shift + enter this way
+        input === '\\\r' // VSCode 终端以这种方式表示 shift + enter
       )
         newline();
       else if (key.name === 'left' && !key.meta && !key.ctrl) move('left');
@@ -1277,34 +1276,33 @@ export function useTextBuffer({
 }
 
 export interface TextBuffer {
-  // State
-  lines: string[]; // Logical lines
+  // 状态
+  lines: string[]; // 逻辑行
   text: string;
-  cursor: [number, number]; // Logical cursor [row, col]
+  cursor: [number, number]; // 逻辑光标 [行, 列]
   /**
-   * When the user moves the caret vertically we try to keep their original
-   * horizontal column even when passing through shorter lines.  We remember
-   * that *preferred* column in this field while the user is still travelling
-   * vertically.  Any explicit horizontal movement resets the preference.
+   * 当用户垂直移动光标时，我们尝试保持他们的原始
+   * 水平列，即使通过较短的行。我们在用户仍在垂直移动时
+   * 记住该*首选*列。任何显式的水平移动都会重置首选项。
    */
-  preferredCol: number | null; // Preferred visual column
-  selectionAnchor: [number, number] | null; // Logical selection anchor
+  preferredCol: number | null; // 首选视觉列
+  selectionAnchor: [number, number] | null; // 逻辑选择锚点
 
-  // Visual state (handles wrapping)
-  allVisualLines: string[]; // All visual lines for the current text and viewport width.
-  viewportVisualLines: string[]; // The subset of visual lines to be rendered based on visualScrollRow and viewport.height
-  visualCursor: [number, number]; // Visual cursor [row, col] relative to the start of all visualLines
-  visualScrollRow: number; // Scroll position for visual lines (index of the first visible visual line)
+  // 视觉状态（处理换行）
+  allVisualLines: string[]; // 当前文本和视口宽度的所有视觉行。
+  viewportVisualLines: string[]; // 基于 visualScrollRow 和 viewport.height 要渲染的视觉行子集
+  visualCursor: [number, number]; // 相对于所有视觉行开始的视觉光标 [行, 列]
+  visualScrollRow: number; // 视觉行的滚动位置（第一个可见视觉行的索引）
 
-  // Actions
+  // 操作
 
   /**
-   * Replaces the entire buffer content with the provided text.
-   * The operation is undoable.
+   * 用提供的文本替换整个缓冲区内容。
+   * 该操作可撤销。
    */
   setText: (text: string) => void;
   /**
-   * Insert a single character or string without newlines.
+   * 插入单个字符或不包含换行符的字符串。
    */
   insert: (ch: string) => void;
   newline: () => void;
@@ -1314,15 +1312,15 @@ export interface TextBuffer {
   undo: () => void;
   redo: () => void;
   /**
-   * Replaces the text within the specified range with new text.
-   * Handles both single-line and multi-line ranges.
+   * 用新文本替换指定范围内的文本。
+   * 处理单行和多行范围。
    *
-   * @param startRow The starting row index (inclusive).
-   * @param startCol The starting column index (inclusive, code-point based).
-   * @param endRow The ending row index (inclusive).
-   * @param endCol The ending column index (exclusive, code-point based).
-   * @param text The new text to insert.
-   * @returns True if the buffer was modified, false otherwise.
+   * @param startRow 起始行索引（包含）。
+   * @param startCol 起始列索引（包含，基于代码点）。
+   * @param endRow 结束行索引（包含）。
+   * @param endCol 结束列索引（排除，基于代码点）。
+   * @param text 要插入的新文本。
+   * @returns 如果缓冲区被修改则返回 true，否则返回 false。
    */
   replaceRange: (
     startRow: number,
@@ -1332,28 +1330,27 @@ export interface TextBuffer {
     text: string,
   ) => void;
   /**
-   * Delete the word to the *left* of the caret, mirroring common
-   * Ctrl/Alt+Backspace behaviour in editors & terminals. Both the adjacent
-   * whitespace *and* the word characters immediately preceding the caret are
-   * removed.  If the caret is already at column‑0 this becomes a no-op.
+   * 删除光标*左侧*的单词，模拟编辑器和终端中常见的
+   * Ctrl/Alt+Backspace 行为。删除紧邻光标前的空白字符
+   * 和单词字符。如果光标已经在第 0 列，则此操作无效。
    */
   deleteWordLeft: () => void;
   /**
-   * Delete the word to the *right* of the caret, akin to many editors'
-   * Ctrl/Alt+Delete shortcut.  Removes any whitespace/punctuation that
-   * follows the caret and the next contiguous run of word characters.
+   * 删除光标*右侧*的单词，类似于许多编辑器的
+   * Ctrl/Alt+Delete 快捷方式。删除光标后跟随的任何空白/标点符号
+   * 和下一个连续的单词字符。
    */
   deleteWordRight: () => void;
   /**
-   * Deletes text from the cursor to the end of the current line.
+   * 删除从光标到当前行末尾的文本。
    */
   killLineRight: () => void;
   /**
-   * Deletes text from the start of the current line to the cursor.
+   * 删除从当前行开始到光标的文本。
    */
   killLineLeft: () => void;
   /**
-   * High level "handleInput" – receives what Ink gives us.
+   * 高级 "handleInput" – 接收 Ink 提供给我们的内容。
    */
   handleInput: (key: {
     name: string;
@@ -1364,19 +1361,19 @@ export interface TextBuffer {
     sequence: string;
   }) => void;
   /**
-   * Opens the current buffer contents in the user's preferred terminal text
-   * editor ($VISUAL or $EDITOR, falling back to "vi").  The method blocks
-   * until the editor exits, then reloads the file and replaces the in‑memory
-   * buffer with whatever the user saved.
+   * 在用户的首选终端文本编辑器中打开当前缓冲区内容
+   * （$VISUAL 或 $EDITOR，回退到 "vi"）。该方法阻塞
+   * 直到编辑器退出，然后重新加载文件并用用户保存的内容
+   * 替换内存中的缓冲区。
    *
-   * The operation is treated as a single undoable edit – we snapshot the
-   * previous state *once* before launching the editor so one `undo()` will
-   * revert the entire change set.
+   * 该操作被视为单个可撤销编辑 – 我们在启动编辑器之前
+   * *一次*快照前一个状态，因此一次 `undo()` 将
+   * 撤销整个变更集。
    *
-   * Note: We purposefully rely on the *synchronous* spawn API so that the
-   * calling process genuinely waits for the editor to close before
-   * continuing.  This mirrors Git's behaviour and simplifies downstream
-   * control‑flow (callers can simply `await` the Promise).
+   * 注意：我们故意依赖*同步* spawn API，以便
+   * 调用进程在继续之前真正等待编辑器关闭。
+   * 这模仿了 Git 的行为并简化了下游
+   * 控制流（调用者可以简单地 `await` Promise）。
    */
   openInExternalEditor: (opts?: { editor?: string }) => Promise<void>;
 

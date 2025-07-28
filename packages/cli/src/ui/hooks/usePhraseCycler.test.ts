@@ -21,12 +21,12 @@ describe('usePhraseCycler', () => {
     vi.restoreAllMocks();
   });
 
-  it('should initialize with the first witty phrase when not active and not waiting', () => {
+  it('当未激活且未等待时，应使用第一个诙谐短语初始化', () => {
     const { result } = renderHook(() => usePhraseCycler(false, false));
     expect(result.current).toBe(WITTY_LOADING_PHRASES[0]);
   });
 
-  it('should show "Waiting for user confirmation..." when isWaiting is true', () => {
+  it('当 isWaiting 为 true 时，应显示 "Waiting for user confirmation..."', () => {
     const { result, rerender } = renderHook(
       ({ isActive, isWaiting }) => usePhraseCycler(isActive, isWaiting),
       { initialProps: { isActive: true, isWaiting: false } },
@@ -35,7 +35,7 @@ describe('usePhraseCycler', () => {
     expect(result.current).toBe('Waiting for user confirmation...');
   });
 
-  it('should not cycle phrases if isActive is false and not waiting', () => {
+  it('如果 isActive 为 false 且未等待，则不应循环短语', () => {
     const { result } = renderHook(() => usePhraseCycler(false, false));
     act(() => {
       vi.advanceTimersByTime(PHRASE_CHANGE_INTERVAL_MS * 2);
@@ -43,16 +43,16 @@ describe('usePhraseCycler', () => {
     expect(result.current).toBe(WITTY_LOADING_PHRASES[0]);
   });
 
-  it('should cycle through witty phrases when isActive is true and not waiting', () => {
+  it('当 isActive 为 true 且未等待时，应循环显示诙谐短语', () => {
     const { result } = renderHook(() => usePhraseCycler(true, false));
-    // Initial phrase should be one of the witty phrases
+    // 初始短语应为诙谐短语之一
     expect(WITTY_LOADING_PHRASES).toContain(result.current);
     const _initialPhrase = result.current;
 
     act(() => {
       vi.advanceTimersByTime(PHRASE_CHANGE_INTERVAL_MS);
     });
-    // Phrase should change and be one of the witty phrases
+    // 短语应更改并为诙谐短语之一
     expect(WITTY_LOADING_PHRASES).toContain(result.current);
 
     const _secondPhrase = result.current;
@@ -62,16 +62,16 @@ describe('usePhraseCycler', () => {
     expect(WITTY_LOADING_PHRASES).toContain(result.current);
   });
 
-  it('should reset to a witty phrase when isActive becomes true after being false (and not waiting)', () => {
-    // Ensure there are at least two phrases for this test to be meaningful.
+  it('当 isActive 从 false 变为 true 后（且未等待），应重置为诙谐短语', () => {
+    // 确保至少有两个短语以使此测试有意义。
     if (WITTY_LOADING_PHRASES.length < 2) {
       return;
     }
 
-    // Mock Math.random to make the test deterministic.
+    // 模拟 Math.random 以使测试具有确定性。
     let callCount = 0;
     vi.spyOn(Math, 'random').mockImplementation(() => {
-      // Cycle through 0, 1, 0, 1, ...
+      // 循环 0, 1, 0, 1, ...
       const val = callCount % 2;
       callCount++;
       return val / WITTY_LOADING_PHRASES.length;
@@ -82,41 +82,41 @@ describe('usePhraseCycler', () => {
       { initialProps: { isActive: false, isWaiting: false } },
     );
 
-    // Activate
+    // 激活
     rerender({ isActive: true, isWaiting: false });
     const firstActivePhrase = result.current;
     expect(WITTY_LOADING_PHRASES).toContain(firstActivePhrase);
-    // With our mock, this should be the first phrase.
+    // 使用我们的模拟，这应为第一个短语。
     expect(firstActivePhrase).toBe(WITTY_LOADING_PHRASES[0]);
 
     act(() => {
       vi.advanceTimersByTime(PHRASE_CHANGE_INTERVAL_MS);
     });
 
-    // Phrase should change to the second phrase.
+    // 短语应更改为第二个短语。
     expect(result.current).not.toBe(firstActivePhrase);
     expect(result.current).toBe(WITTY_LOADING_PHRASES[1]);
 
-    // Set to inactive - should reset to the default initial phrase
+    // 设置为非激活 - 应重置为默认初始短语
     rerender({ isActive: false, isWaiting: false });
     expect(result.current).toBe(WITTY_LOADING_PHRASES[0]);
 
-    // Set back to active - should pick a random witty phrase (which our mock controls)
+    // 重新设置为激活 - 应随机选择一个诙谐短语（由我们的模拟控制）
     act(() => {
       rerender({ isActive: true, isWaiting: false });
     });
-    // The random mock will now return 0, so it should be the first phrase again.
+    // 随机模拟现在将返回 0，因此应再次为第一个短语。
     expect(result.current).toBe(WITTY_LOADING_PHRASES[0]);
   });
 
-  it('should clear phrase interval on unmount when active', () => {
+  it('当激活时，在卸载时应清除短语间隔', () => {
     const { unmount } = renderHook(() => usePhraseCycler(true, false));
     const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
     unmount();
     expect(clearIntervalSpy).toHaveBeenCalledOnce();
   });
 
-  it('should reset to a witty phrase when transitioning from waiting to active', () => {
+  it('当从等待状态转换到激活状态时，应重置为诙谐短语', () => {
     const { result, rerender } = renderHook(
       ({ isActive, isWaiting }) => usePhraseCycler(isActive, isWaiting),
       { initialProps: { isActive: true, isWaiting: false } },
@@ -125,20 +125,20 @@ describe('usePhraseCycler', () => {
     const _initialPhrase = result.current;
     expect(WITTY_LOADING_PHRASES).toContain(_initialPhrase);
 
-    // Cycle to a different phrase (potentially)
+    // 循环到不同短语（可能）
     act(() => {
       vi.advanceTimersByTime(PHRASE_CHANGE_INTERVAL_MS);
     });
     if (WITTY_LOADING_PHRASES.length > 1) {
-      // This check is probabilistic with random selection
+      // 此检查在随机选择时具有概率性
     }
     expect(WITTY_LOADING_PHRASES).toContain(result.current);
 
-    // Go to waiting state
+    // 进入等待状态
     rerender({ isActive: false, isWaiting: true });
     expect(result.current).toBe('Waiting for user confirmation...');
 
-    // Go back to active cycling - should pick a random witty phrase
+    // 返回到激活循环 - 应随机选择一个诙谐短语
     rerender({ isActive: true, isWaiting: false });
     expect(WITTY_LOADING_PHRASES).toContain(result.current);
   });

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -191,7 +191,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     }
   }, [settings.merged.selectedAuthType, openAuthDialog, setAuthError]);
 
-  // Sync user tier from config when authentication changes
+  // 同步用户层级配置当认证改变时
   useEffect(() => {
     const syncUserTier = async () => {
       try {
@@ -200,15 +200,15 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
           setUserTier(configUserTier);
         }
       } catch (error) {
-        // Silently fail - this is not critical functionality
-        // Only log in debug mode to avoid cluttering the console
+        // 静默失败 - 这不是关键功能
+        // 仅在调试模式下记录以避免控制台混乱
         if (config.getDebugMode()) {
-          console.debug('Failed to sync user tier:', error);
+          console.debug('同步用户层级失败:', error);
         }
       }
     };
 
-    // Only sync when not currently authenticating
+    // 仅在未认证时同步
     if (!isAuthenticating) {
       syncUserTier();
     }
@@ -229,7 +229,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     addItem(
       {
         type: MessageType.INFO,
-        text: 'Refreshing hierarchical memory (IFLYCODE.md or other context files)...',
+        text: '正在刷新分层记忆 (IFLYCODE.md 或其他上下文文件)...',
       },
       Date.now(),
     );
@@ -247,13 +247,13 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
       addItem(
         {
           type: MessageType.INFO,
-          text: `Memory refreshed successfully. ${memoryContent.length > 0 ? `Loaded ${memoryContent.length} characters from ${fileCount} file(s).` : 'No memory content found.'}`,
+          text: `记忆刷新成功。${memoryContent.length > 0 ? `从 ${fileCount} 个文件加载了 ${memoryContent.length} 个字符。` : '未找到记忆内容。'}`,
         },
         Date.now(),
       );
       if (config.getDebugMode()) {
         console.log(
-          `[DEBUG] Refreshed memory content in config: ${memoryContent.substring(0, 200)}...`,
+          `[DEBUG] 配置中刷新的记忆内容: ${memoryContent.substring(0, 200)}...`,
         );
       }
     } catch (error) {
@@ -261,15 +261,15 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
       addItem(
         {
           type: MessageType.ERROR,
-          text: `Error refreshing memory: ${errorMessage}`,
+          text: `刷新记忆时出错: ${errorMessage}`,
         },
         Date.now(),
       );
-      console.error('Error refreshing memory:', error);
+      console.error('刷新记忆时出错:', error);
     }
   }, [config, addItem]);
 
-  // Watch for model changes (e.g., from Flash fallback)
+  // 监听模型变化 (例如, 来自 Flash 回退)
   useEffect(() => {
     const checkModelChange = () => {
       const configModel = config.getModel();
@@ -278,14 +278,14 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
       }
     };
 
-    // Check immediately and then periodically
+    // 立即检查然后定期检查
     checkModelChange();
-    const interval = setInterval(checkModelChange, 1000); // Check every second
+    const interval = setInterval(checkModelChange, 1000); // 每秒检查一次
 
     return () => clearInterval(interval);
   }, [config, currentModel]);
 
-  // Set up Flash fallback handler
+  // 设置 Flash 回退处理器
   useEffect(() => {
     const flashFallbackHandler = async (
       currentModel: string,
@@ -294,52 +294,52 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     ): Promise<boolean> => {
       let message: string;
 
-      // Use actual user tier if available, otherwise default to FREE tier behavior (safe default)
+      // 如果可用则使用实际用户层级，否则默认为免费层级行为（安全默认值）
       const isPaidTier =
         userTier === UserTierId.LEGACY || userTier === UserTierId.STANDARD;
 
-      // Check if this is a Pro quota exceeded error
+      // 检查这是否是 Pro 配额超限错误
       if (error && isProQuotaExceededError(error)) {
         if (isPaidTier) {
-          message = `⚡ You have reached your daily ${currentModel} quota limit.
-⚡ Automatically switching from ${currentModel} to ${fallbackModel} for the remainder of this session.
-⚡ To continue accessing the ${currentModel} model today, consider using /auth to switch to using a paid API key from AI Studio at https://aistudio.google.com/apikey`;
+          message = `⚡ 您已达到每日 ${currentModel} 配额限制。
+⚡ 自动从 ${currentModel} 切换到 ${fallbackModel} 以完成本次会话。
+⚡ 要继续访问 ${currentModel} 模型，请考虑使用 /auth 切换到使用 AI Studio 的付费 API 密钥 https://aistudio.google.com/apikey`;
         } else {
-          message = `⚡ You have reached your daily ${currentModel} quota limit.
-⚡ Automatically switching from ${currentModel} to ${fallbackModel} for the remainder of this session.
-⚡ To increase your limits, upgrade to a Gemini Code Assist Standard or Enterprise plan with higher limits at https://goo.gle/set-up-gemini-code-assist
-⚡ Or you can utilize a Gemini API Key. See: https://goo.gle/gemini-cli-docs-auth#gemini-api-key
-⚡ You can switch authentication methods by typing /auth`;
+          message = `⚡ 您已达到每日 ${currentModel} 配额限制。
+⚡ 自动从 ${currentModel} 切换到 ${fallbackModel} 以完成本次会话。
+⚡ 要增加您的限制，请升级到具有更高限制的 Gemini Code Assist 标准版或企业版计划 https://goo.gle/set-up-gemini-code-assist
+⚡ 或者您可以使用 Gemini API 密钥。请参见: https://goo.gle/gemini-cli-docs-auth#gemini-api-key
+⚡ 您可以通过输入 /auth 切换认证方式`;
         }
       } else if (error && isGenericQuotaExceededError(error)) {
         if (isPaidTier) {
-          message = `⚡ You have reached your daily quota limit.
-⚡ Automatically switching from ${currentModel} to ${fallbackModel} for the remainder of this session.
-⚡ To continue accessing the ${currentModel} model today, consider using /auth to switch to using a paid API key from AI Studio at https://aistudio.google.com/apikey`;
+          message = `⚡ 您已达到每日配额限制。
+⚡ 自动从 ${currentModel} 切换到 ${fallbackModel} 以完成本次会话。
+⚡ 要继续访问 ${currentModel} 模型，请考虑使用 /auth 切换到使用 AI Studio 的付费 API 密钥 https://aistudio.google.com/apikey`;
         } else {
-          message = `⚡ You have reached your daily quota limit.
-⚡ Automatically switching from ${currentModel} to ${fallbackModel} for the remainder of this session.
-⚡ To increase your limits, upgrade to a Gemini Code Assist Standard or Enterprise plan with higher limits at https://goo.gle/set-up-gemini-code-assist
-⚡ Or you can utilize a Gemini API Key. See: https://goo.gle/gemini-cli-docs-auth#gemini-api-key
-⚡ You can switch authentication methods by typing /auth`;
+          message = `⚡ 您已达到每日配额限制。
+⚡ 自动从 ${currentModel} 切换到 ${fallbackModel} 以完成本次会话。
+⚡ 要增加您的限制，请升级到具有更高限制的 Gemini Code Assist 标准版或企业版计划 https://goo.gle/set-up-gemini-code-assist
+⚡ 或者您可以使用 Gemini API 密钥。请参见: https://goo.gle/gemini-cli-docs-auth#gemini-api-key
+⚡ 您可以通过输入 /auth 切换认证方式`;
         }
       } else {
         if (isPaidTier) {
-          // Default fallback message for other cases (like consecutive 429s)
-          message = `⚡ Automatically switching from ${currentModel} to ${fallbackModel} for faster responses for the remainder of this session.
-⚡ Possible reasons for this are that you have received multiple consecutive capacity errors or you have reached your daily ${currentModel} quota limit
-⚡ To continue accessing the ${currentModel} model today, consider using /auth to switch to using a paid API key from AI Studio at https://aistudio.google.com/apikey`;
+          // 其他情况的默认回退消息（如连续 429 错误）
+          message = `⚡ 自动从 ${currentModel} 切换到 ${fallbackModel} 以获得更快的响应，本次会话剩余时间有效。
+⚡ 可能的原因是您收到了多个连续的容量错误或已达到每日 ${currentModel} 配额限制
+⚡ 要继续访问 ${currentModel} 模型，请考虑使用 /auth 切换到使用 AI Studio 的付费 API 密钥 https://aistudio.google.com/apikey`;
         } else {
-          // Default fallback message for other cases (like consecutive 429s)
-          message = `⚡ Automatically switching from ${currentModel} to ${fallbackModel} for faster responses for the remainder of this session.
-⚡ Possible reasons for this are that you have received multiple consecutive capacity errors or you have reached your daily ${currentModel} quota limit
-⚡ To increase your limits, upgrade to a Gemini Code Assist Standard or Enterprise plan with higher limits at https://goo.gle/set-up-gemini-code-assist
-⚡ Or you can utilize a Gemini API Key. See: https://goo.gle/gemini-cli-docs-auth#gemini-api-key
-⚡ You can switch authentication methods by typing /auth`;
+          // 其他情况的默认回退消息（如连续 429 错误）
+          message = `⚡ 自动从 ${currentModel} 切换到 ${fallbackModel} 以获得更快的响应，本次会话剩余时间有效。
+⚡ 可能的原因是您收到了多个连续的容量错误或已达到每日 ${currentModel} 配额限制
+⚡ 要增加您的限制，请升级到具有更高限制的 Gemini Code Assist 标准版或企业版计划 https://goo.gle/set-up-gemini-code-assist
+⚡ 或者您可以使用 Gemini API 密钥。请参见: https://goo.gle/gemini-cli-docs-auth#gemini-api-key
+⚡ 您可以通过输入 /auth 切换认证方式`;
         }
       }
 
-      // Add message to UI history
+      // 添加消息到 UI 历史记录
       addItem(
         {
           type: MessageType.INFO,
@@ -348,17 +348,17 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
         Date.now(),
       );
 
-      // Set the flag to prevent tool continuation
+      // 设置标志以防止工具继续
       setModelSwitchedFromQuotaError(true);
-      // Set global quota error flag to prevent Flash model calls
+      // 设置全局配额错误标志以防止 Flash 模型调用
       config.setQuotaErrorOccurred(true);
-      // Switch model for future use but return false to stop current retry
+      // 切换模型供未来使用但返回 false 以停止当前重试
       config.setModel(fallbackModel);
       logFlashFallback(
         config,
         new FlashFallbackEvent(config.getContentGeneratorConfig().authType!),
       );
-      return false; // Don't continue with current prompt
+      return false; // 不继续当前提示
     };
 
     config.setFlashFallbackHandler(flashFallbackHandler);
@@ -432,7 +432,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
         if (quitCommand && quitCommand.action) {
           quitCommand.action(commandContext, '');
         } else {
-          // This is unlikely to be needed but added for an additional fallback.
+          // 这不太可能需要，但添加作为额外的后备。
           process.exit(0);
         }
       } else {
@@ -443,17 +443,16 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
         }, CTRL_EXIT_PROMPT_DURATION_MS);
       }
     },
-    // Add commandContext to the dependency array here!
+    // 在这里将 commandContext 添加到依赖数组！
     [slashCommands, commandContext],
   );
 
   useInput((input: string, key: InkKeyType) => {
     let enteringConstrainHeightMode = false;
     if (!constrainHeight) {
-      // Automatically re-enter constrain height mode if the user types
-      // anything. When constrainHeight==false, the user will experience
-      // significant flickering so it is best to disable it immediately when
-      // the user starts interacting with the app.
+      // 如果用户输入任何内容，自动重新进入约束高度模式。
+      // 当 constrainHeight==false 时，用户会经历显著的闪烁，
+      // 因此最好在用户开始与应用程序交互时立即禁用它。
       enteringConstrainHeightMode = true;
       setConstrainHeight(true);
     }
@@ -472,7 +471,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
       handleExit(ctrlCPressedOnce, setCtrlCPressedOnce, ctrlCTimerRef);
     } else if (key.ctrl && (input === 'd' || input === 'D')) {
       if (buffer.text.length > 0) {
-        // Do nothing if there is text in the input.
+        // 如果输入中有文本则不执行任何操作。
         return;
       }
       handleExit(ctrlDPressedOnce, setCtrlDPressedOnce, ctrlDTimerRef);
@@ -498,7 +497,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
   }, [settings, openEditorDialog]);
 
   const onAuthError = useCallback(() => {
-    setAuthError('reauth required');
+    setAuthError('需要重新认证');
     openAuthDialog();
   }, [openAuthDialog, setAuthError]);
 
@@ -543,7 +542,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
 
   useEffect(() => {
     const fetchUserMessages = async () => {
-      const pastMessagesRaw = (await logger?.getPreviousUserMessages()) || []; // Newest first
+      const pastMessagesRaw = (await logger?.getPreviousUserMessages()) || []; // 最新的在前
 
       const currentSessionUserMessages = history
         .filter(
@@ -553,25 +552,25 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
             item.text.trim() !== '',
         )
         .map((item) => item.text)
-        .reverse(); // Newest first, to match pastMessagesRaw sorting
+        .reverse(); // 最新的在前，以匹配 pastMessagesRaw 排序
 
-      // Combine, with current session messages being more recent
+      // 合并，当前会话消息更新
       const combinedMessages = [
         ...currentSessionUserMessages,
         ...pastMessagesRaw,
       ];
 
-      // Deduplicate consecutive identical messages from the combined list (still newest first)
+      // 从合并列表中去重连续的相同消息（仍然最新的在前）
       const deduplicatedMessages: string[] = [];
       if (combinedMessages.length > 0) {
-        deduplicatedMessages.push(combinedMessages[0]); // Add the newest one unconditionally
+        deduplicatedMessages.push(combinedMessages[0]); // 无条件添加最新的一个
         for (let i = 1; i < combinedMessages.length; i++) {
           if (combinedMessages[i] !== combinedMessages[i - 1]) {
             deduplicatedMessages.push(combinedMessages[i]);
           }
         }
       }
-      // Reverse to oldest first for useInputHistory
+      // 反转为最旧的在前以供 useInputHistory 使用
       setUserMessages(deduplicatedMessages.reverse());
     };
     fetchUserMessages();
@@ -596,20 +595,20 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     }
   }, [terminalHeight, consoleMessages, showErrorDetails]);
 
-  const staticExtraHeight = /* margins and padding */ 3;
+  const staticExtraHeight = /* 边距和填充 */ 3;
   const availableTerminalHeight = useMemo(
     () => terminalHeight - footerHeight - staticExtraHeight,
     [terminalHeight, footerHeight],
   );
 
   useEffect(() => {
-    // skip refreshing Static during first mount
+    // 跳过首次挂载时刷新 Static
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
 
-    // debounce so it doesn't fire up too often during resize
+    // 防抖动，使其在调整大小时不会过于频繁触发
     const handler = setTimeout(() => {
       setStaticNeedsRefresh(false);
       refreshStatic();
@@ -692,25 +691,25 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
   }
   const mainAreaWidth = Math.floor(terminalWidth * 0.9);
   const debugConsoleMaxHeight = Math.floor(Math.max(terminalHeight * 0.2, 5));
-  // Arbitrary threshold to ensure that items in the static area are large
-  // enough but not too large to make the terminal hard to use.
+  // 任意阈值以确保静态区域中的项目足够大
+  // 但又不会太大而使终端难以使用。
   const staticAreaMaxItemHeight = Math.max(terminalHeight * 4, 100);
   return (
     <StreamingContext.Provider value={streamingState}>
       <Box flexDirection="column" marginBottom={1} width="90%">
-        {/* Move UpdateNotification outside Static so it can re-render when updateMessage changes */}
+        {/* 将 UpdateNotification 移到 Static 外部，以便当 updateMessage 改变时可以重新渲染 */}
         {updateMessage && <UpdateNotification message={updateMessage} />}
 
         {/*
-         * The Static component is an Ink intrinsic in which there can only be 1 per application.
-         * Because of this restriction we're hacking it slightly by having a 'header' item here to
-         * ensure that it's statically rendered.
+         * Static 组件是 Ink 中的应用程序只能有一个的内在组件。
+         * 由于此限制，我们稍微进行了黑客处理，通过在这里放置一个 'header' 项目来
+         * 确保它是静态渲染的。
          *
-         * Background on the Static Item: Anything in the Static component is written a single time
-         * to the console. Think of it like doing a console.log and then never using ANSI codes to
-         * clear that content ever again. Effectively it has a moving frame that every time new static
-         * content is set it'll flush content to the terminal and move the area which it's "clearing"
-         * down a notch. Without Static the area which gets erased and redrawn continuously grows.
+         * 关于 Static 项目的背景：Static 组件中的任何内容都只写入一次
+         * 到控制台。可以将其视为执行 console.log 然后永远不使用 ANSI 代码来
+         * 清除该内容。实际上它有一个移动框架，每次设置新的静态
+         * 内容时，它都会将内容刷新到终端并将它"清除"的区域
+         * 向下移动一个位置。没有 Static，被擦除和重绘的区域会持续增长。
          */}
         <Static
           key={staticKey}
@@ -748,8 +747,8 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
                   constrainHeight ? availableTerminalHeight : undefined
                 }
                 terminalWidth={mainAreaWidth}
-                // TODO(taehykim): It seems like references to ids aren't necessary in
-                // HistoryItemDisplay. Refactor later. Use a fake id for now.
+                // TODO(taehykim): 看起来 HistoryItemDisplay 中对 id 的引用似乎不是必需的。
+                // 稍后重构。现在使用假 id。
                 item={{ ...item, id: 0 }}
                 isPending={true}
                 config={config}
@@ -802,7 +801,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
             <>
               <AuthInProgress
                 onTimeout={() => {
-                  setAuthError('Authentication timed out. Please try again.');
+                  setAuthError('认证超时。请重试。');
                   cancelAuthentication();
                   openAuthDialog();
                 }}
@@ -876,11 +875,11 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
                   )}
                   {ctrlCPressedOnce ? (
                     <Text color={Colors.AccentYellow}>
-                      Press Ctrl+C again to exit.
+                      再次按 Ctrl+C 退出。
                     </Text>
                   ) : ctrlDPressedOnce ? (
                     <Text color={Colors.AccentYellow}>
-                      Press Ctrl+D again to exit.
+                      再次按 Ctrl+D 退出。
                     </Text>
                   ) : (
                     <ContextSummaryDisplay
@@ -957,11 +956,11 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
               ) : (
                 <>
                   <Text color={Colors.AccentRed}>
-                    Initialization Error: {initError}
+                    初始化错误: {initError}
                   </Text>
                   <Text color={Colors.AccentRed}>
                     {' '}
-                    Please check API key and configuration.
+                    请检查 API 密钥和配置。
                   </Text>
                 </>
               )}
@@ -979,6 +978,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
             showMemoryUsage={
               config.getDebugMode() || config.getShowMemoryUsage()
             }
+            sessionStats={sessionStats}
             promptTokenCount={sessionStats.lastPromptTokenCount}
             nightly={nightly}
           />

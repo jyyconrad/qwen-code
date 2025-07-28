@@ -120,7 +120,7 @@ export type AllToolCallsCompleteHandler = (
 export type ToolCallsUpdateHandler = (toolCalls: ToolCall[]) => void;
 
 /**
- * Formats tool output for a Gemini FunctionResponse.
+ * 为 Gemini FunctionResponse 格式化工具输出。
  */
 function createFunctionResponsePart(
   callId: string,
@@ -154,12 +154,12 @@ export function convertToFunctionResponse(
     const functionResponse = createFunctionResponsePart(
       callId,
       toolName,
-      'Tool execution succeeded.',
+      '工具执行成功。',
     );
     return [functionResponse, ...contentToProcess];
   }
 
-  // After this point, contentToProcess is a single Part object.
+  // 此时，contentToProcess 是单个 Part 对象。
   if (contentToProcess.functionResponse) {
     if (contentToProcess.functionResponse.response?.content) {
       const stringifiedOutput =
@@ -168,7 +168,7 @@ export function convertToFunctionResponse(
         ) || '';
       return createFunctionResponsePart(callId, toolName, stringifiedOutput);
     }
-    // It's a functionResponse that we should pass through as is.
+    // 这是一个应该原样传递的 functionResponse。
     return contentToProcess;
   }
 
@@ -180,7 +180,7 @@ export function convertToFunctionResponse(
     const functionResponse = createFunctionResponsePart(
       callId,
       toolName,
-      `Binary content of type ${mimeType} was processed.`,
+      `类型为 ${mimeType} 的二进制内容已处理。`,
     );
     return [functionResponse, contentToProcess];
   }
@@ -189,11 +189,11 @@ export function convertToFunctionResponse(
     return createFunctionResponsePart(callId, toolName, contentToProcess.text);
   }
 
-  // Default case for other kinds of parts.
+  // 其他类型的 Part 的默认情况。
   return createFunctionResponsePart(
     callId,
     toolName,
-    'Tool execution succeeded.',
+    '工具执行成功。',
   );
 }
 
@@ -282,7 +282,7 @@ export class CoreToolScheduler {
         return currentCall;
       }
 
-      // currentCall is a non-terminal state here and should have startTime and tool.
+      // currentCall 在这里是非终端状态，应该有 startTime 和 tool。
       const existingStartTime = currentCall.startTime;
       const toolInstance = currentCall.tool;
 
@@ -346,7 +346,7 @@ export class CoreToolScheduler {
                   id: currentCall.request.callId,
                   name: currentCall.request.name,
                   response: {
-                    error: `[Operation Cancelled] Reason: ${auxiliaryData}`,
+                    error: `[操作已取消] 原因: ${auxiliaryData}`,
                   },
                 },
               },
@@ -406,7 +406,7 @@ export class CoreToolScheduler {
   ): Promise<void> {
     if (this.isRunning()) {
       throw new Error(
-        'Cannot schedule new tool calls while other tool calls are actively running (executing or awaiting approval).',
+        '无法在其他工具调用正在运行（执行中或等待批准）时安排新的工具调用。',
       );
     }
     const requestsToProcess = Array.isArray(request) ? request : [request];
@@ -421,7 +421,7 @@ export class CoreToolScheduler {
             request: reqInfo,
             response: createErrorResponse(
               reqInfo,
-              new Error(`Tool "${reqInfo.name}" not found in registry.`),
+              new Error(`在注册表中未找到工具 "${reqInfo.name}"。`),
             ),
             durationMs: 0,
           };
@@ -520,7 +520,7 @@ export class CoreToolScheduler {
       this.setStatusInternal(
         callId,
         'cancelled',
-        'User did not allow tool call',
+        '用户未允许工具调用',
       );
     } else if (outcome === ToolConfirmationOutcome.ModifyWithEditor) {
       const waitingToolCall = toolCall as WaitingToolCall;
@@ -552,7 +552,7 @@ export class CoreToolScheduler {
         } as ToolCallConfirmationDetails);
       }
     } else {
-      // If the client provided new content, apply it before scheduling.
+      // 如果客户端提供了新内容，在调度前应用它。
       if (payload?.newContent && toolCall) {
         await this._applyInlineModify(
           toolCall as WaitingToolCall,
@@ -566,9 +566,8 @@ export class CoreToolScheduler {
   }
 
   /**
-   * Applies user-provided content changes to a tool call that is awaiting confirmation.
-   * This method updates the tool's arguments and refreshes the confirmation prompt with a new diff
-   * before the tool is scheduled for execution.
+   * 将用户提供的内容更改应用于等待确认的工具调用。
+   * 此方法更新工具的参数，并在工具调度执行前用新的差异刷新确认提示。
    * @private
    */
   private async _applyInlineModify(
@@ -597,8 +596,8 @@ export class CoreToolScheduler {
       modifyContext.getFilePath(toolCall.request.args),
       currentContent,
       payload.newContent,
-      'Current',
-      'Proposed',
+      '当前',
+      '建议',
     );
 
     this.setArgsInternal(toolCall.request.callId, updatedParams);
@@ -651,7 +650,7 @@ export class CoreToolScheduler {
               this.setStatusInternal(
                 callId,
                 'cancelled',
-                'User cancelled tool execution.',
+                '用户取消了工具执行。',
               );
               return;
             }

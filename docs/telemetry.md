@@ -1,44 +1,44 @@
-# Gemini CLI Observability Guide
+# Gemini CLI 可观测性指南
 
-Telemetry provides data about Gemini CLI's performance, health, and usage. By enabling it, you can monitor operations, debug issues, and optimize tool usage through traces, metrics, and structured logs.
+遥测提供有关 Gemini CLI 性能、健康状况和使用情况的数据。通过启用遥测，你可以通过追踪、指标和结构化日志来监控操作、调试问题并优化工具使用。
 
-Gemini CLI's telemetry system is built on the **[OpenTelemetry] (OTEL)** standard, allowing you to send data to any compatible backend.
+Gemini CLI 的遥测系统基于 **[OpenTelemetry] (OTEL)** 标准构建，允许你将数据发送到任何兼容的后端。
 
 [OpenTelemetry]: https://opentelemetry.io/
 
-## Enabling telemetry
+## 启用遥测
 
-You can enable telemetry in multiple ways. Configuration is primarily managed via the [`.iflycode/settings.json` file](./cli/configuration.md) and environment variables, but CLI flags can override these settings for a specific session.
+你可以通过多种方式启用遥测。配置主要通过 [`.iflycode/settings.json` 文件](./cli/configuration.md) 和环境变量进行管理，但 CLI 标志可以在特定会话中覆盖这些设置。
 
-### Order of precedence
+### 优先级顺序
 
-The following lists the precedence for applying telemetry settings, with items listed higher having greater precedence:
+以下列出了应用遥测设置的优先级，列表中位置越高的项优先级越高：
 
-1.  **CLI flags (for `gemini` command):**
-    - `--telemetry` / `--no-telemetry`: Overrides `telemetry.enabled`.
-    - `--telemetry-target <local|gcp>`: Overrides `telemetry.target`.
-    - `--telemetry-otlp-endpoint <URL>`: Overrides `telemetry.otlpEndpoint`.
-    - `--telemetry-log-prompts` / `--no-telemetry-log-prompts`: Overrides `telemetry.logPrompts`.
+1.  **CLI 标志（用于 `gemini` 命令）：**
+    - `--telemetry` / `--no-telemetry`：覆盖 `telemetry.enabled`。
+    - `--telemetry-target <local|gcp>`：覆盖 `telemetry.target`。
+    - `--telemetry-otlp-endpoint <URL>`：覆盖 `telemetry.otlpEndpoint`。
+    - `--telemetry-log-prompts` / `--no-telemetry-log-prompts`：覆盖 `telemetry.logPrompts`。
 
-1.  **Environment variables:**
-    - `OTEL_EXPORTER_OTLP_ENDPOINT`: Overrides `telemetry.otlpEndpoint`.
+1.  **环境变量：**
+    - `OTEL_EXPORTER_OTLP_ENDPOINT`：覆盖 `telemetry.otlpEndpoint`。
 
-1.  **Workspace settings file (`.iflycode/settings.json`):** Values from the `telemetry` object in this project-specific file.
+1.  **工作区设置文件（`.iflycode/settings.json`）：** 此项目特定文件中 `telemetry` 对象的值。
 
-1.  **User settings file (`~/.iflycode/settings.json`):** Values from the `telemetry` object in this global user file.
+1.  **用户设置文件（`~/.iflycode/settings.json`）：** 此全局用户文件中 `telemetry` 对象的值。
 
-1.  **Defaults:** applied if not set by any of the above.
+1.  **默认值：** 如果未通过上述任何方式设置，则应用以下默认值。
     - `telemetry.enabled`: `false`
     - `telemetry.target`: `local`
     - `telemetry.otlpEndpoint`: `http://localhost:4317`
     - `telemetry.logPrompts`: `true`
 
-**For the `npm run telemetry -- --target=<gcp|local>` script:**
-The `--target` argument to this script _only_ overrides the `telemetry.target` for the duration and purpose of that script (i.e., choosing which collector to start). It does not permanently change your `settings.json`. The script will first look at `settings.json` for a `telemetry.target` to use as its default.
+**对于 `npm run telemetry -- --target=<gcp|local>` 脚本：**
+该脚本的 `--target` 参数仅在该脚本执行期间和目的上覆盖 `telemetry.target`（即选择要启动的收集器）。它不会永久更改你的 `settings.json`。该脚本首先会查看 `settings.json` 中的 `telemetry.target`，以用作其默认值。
 
-### Example settings
+### 示例设置
 
-The following code can be added to your workspace (`.iflycode/settings.json`) or user (`~/.iflycode/settings.json`) settings to enable telemetry and send the output to Google Cloud:
+以下代码可以添加到你的工作区（`.iflycode/settings.json`）或用户（`~/.iflycode/settings.json`）设置中，以启用遥测并将输出发送到 Google Cloud：
 
 ```json
 {
@@ -50,129 +50,129 @@ The following code can be added to your workspace (`.iflycode/settings.json`) or
 }
 ```
 
-## Running an OTEL Collector
+## 运行 OTEL 收集器
 
-An OTEL Collector is a service that receives, processes, and exports telemetry data.
-The CLI sends data using the OTLP/gRPC protocol.
+OTEL 收集器是一个接收、处理和导出遥测数据的服务。
+CLI 使用 OTLP/gRPC 协议发送数据。
 
-Learn more about OTEL exporter standard configuration in [documentation][otel-config-docs].
+在 [文档][otel-config-docs] 中了解有关 OTEL 导出器标准配置的更多信息。
 
 [otel-config-docs]: https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/
 
-### Local
+### 本地
 
-Use the `npm run telemetry -- --target=local` command to automate the process of setting up a local telemetry pipeline, including configuring the necessary settings in your `.iflycode/settings.json` file. The underlying script installs `otelcol-contrib` (the OpenTelemetry Collector) and `jaeger` (The Jaeger UI for viewing traces). To use it:
+使用 `npm run telemetry -- --target=local` 命令来自动化设置本地遥测管道的过程，包括在你的 `.iflycode/settings.json` 文件中配置必要的设置。底层脚本安装 `otelcol-contrib`（OpenTelemetry 收集器）和 `jaeger`（用于查看追踪的 Jaeger UI）。使用方法如下：
 
-1.  **Run the command**:
-    Execute the command from the root of the repository:
+1.  **运行命令：**
+    从仓库根目录执行以下命令：
 
     ```bash
     npm run telemetry -- --target=local
     ```
 
-    The script will:
-    - Download Jaeger and OTEL if needed.
-    - Start a local Jaeger instance.
-    - Start an OTEL collector configured to receive data from Gemini CLI.
-    - Automatically enable telemetry in your workspace settings.
-    - On exit, disable telemetry.
+    该脚本将：
+    - 如需要，下载 Jaeger 和 OTEL。
+    - 启动本地 Jaeger 实例。
+    - 启动配置为接收来自 Gemini CLI 数据的 OTEL 收集器。
+    - 自动在你的工作区设置中启用遥测。
+    - 退出时，禁用遥测。
 
-1.  **View traces**:
-    Open your web browser and navigate to **http://localhost:16686** to access the Jaeger UI. Here you can inspect detailed traces of Gemini CLI operations.
+1.  **查看追踪信息：**
+    打开你的网页浏览器，访问 **http://localhost:16686** 以访问 Jaeger UI。在这里你可以查看 Gemini CLI 操作的详细追踪信息。
 
-1.  **Inspect logs and metrics**:
-    The script redirects the OTEL collector output (which includes logs and metrics) to `~/.iflycode/tmp/<projectHash>/otel/collector.log`. The script will provide links to view and a command to tail your telemetry data (traces, metrics, logs) locally.
+1.  **检查日志和指标：**
+    该脚本将 OTEL 收集器输出（包括日志和指标）重定向到 `~/.iflycode/tmp/<projectHash>/otel/collector.log`。脚本将提供查看链接和用于实时查看你的遥测数据（追踪、指标、日志）的命令。
 
-1.  **Stop the services**:
-    Press `Ctrl+C` in the terminal where the script is running to stop the OTEL Collector and Jaeger services.
+1.  **停止服务：**
+    在运行脚本的终端中按下 `Ctrl+C` 以停止 OTEL 收集器和 Jaeger 服务。
 
 ### Google Cloud
 
-Use the `npm run telemetry -- --target=gcp` command to automate setting up a local OpenTelemetry collector that forwards data to your Google Cloud project, including configuring the necessary settings in your `.iflycode/settings.json` file. The underlying script installs `otelcol-contrib`. To use it:
+使用 `npm run telemetry -- --target=gcp` 命令来自动化设置一个将数据转发到你的 Google Cloud 项目的本地 OpenTelemetry 收集器，包括在你的 `.iflycode/settings.json` 文件中配置必要的设置。底层脚本安装 `otelcol-contrib`。使用方法如下：
 
-1.  **Prerequisites**:
-    - Have a Google Cloud project ID.
-    - Export the `GOOGLE_CLOUD_PROJECT` environment variable to make it available to the OTEL collector.
+1.  **前提条件：**
+    - 拥有一个 Google Cloud 项目 ID。
+    - 导出 `GOOGLE_CLOUD_PROJECT` 环境变量，以便 OTEL 收集器可以使用它。
       ```bash
       export OTLP_GOOGLE_CLOUD_PROJECT="your-project-id"
       ```
-    - Authenticate with Google Cloud (e.g., run `gcloud auth application-default login` or ensure `GOOGLE_APPLICATION_CREDENTIALS` is set).
-    - Ensure your Google Cloud account/service account has the necessary IAM roles: "Cloud Trace Agent", "Monitoring Metric Writer", and "Logs Writer".
+    - 与 Google Cloud 进行身份验证（例如，运行 `gcloud auth application-default login` 或确保设置了 `GOOGLE_APPLICATION_CREDENTIALS`）。
+    - 确保你的 Google Cloud 账户/服务账户具有必要的 IAM 角色："Cloud Trace Agent"、"Monitoring Metric Writer" 和 "Logs Writer"。
 
-1.  **Run the command**:
-    Execute the command from the root of the repository:
+1.  **运行命令：**
+    从仓库根目录执行以下命令：
 
     ```bash
     npm run telemetry -- --target=gcp
     ```
 
-    The script will:
-    - Download the `otelcol-contrib` binary if needed.
-    - Start an OTEL collector configured to receive data from Gemini CLI and export it to your specified Google Cloud project.
-    - Automatically enable telemetry and disable sandbox mode in your workspace settings (`.iflycode/settings.json`).
-    - Provide direct links to view traces, metrics, and logs in your Google Cloud Console.
-    - On exit (Ctrl+C), it will attempt to restore your original telemetry and sandbox settings.
+    该脚本将：
+    - 如需要，下载 `otelcol-contrib` 二进制文件。
+    - 启动配置为接收来自 Gemini CLI 数据并将其导出到你指定的 Google Cloud 项目的 OTEL 收集器。
+    - 自动在你的工作区设置（`.iflycode/settings.json`）中启用遥测并禁用沙箱模式。
+    - 提供直接链接以在 Google Cloud Console 中查看追踪、指标和日志。
+    - 在退出（Ctrl+C）时，尝试恢复你原来的遥测和沙箱设置。
 
-1.  **Run Gemini CLI:**
-    In a separate terminal, run your Gemini CLI commands. This generates telemetry data that the collector captures.
+1.  **运行 Gemini CLI：**
+    在另一个终端中运行你的 Gemini CLI 命令。这将生成收集器捕获的遥测数据。
 
-1.  **View telemetry in Google Cloud**:
-    Use the links provided by the script to navigate to the Google Cloud Console and view your traces, metrics, and logs.
+1.  **在 Google Cloud 中查看遥测数据：**
+    使用脚本提供的链接导航到 Google Cloud Console 并查看你的追踪、指标和日志。
 
-1.  **Inspect local collector logs**:
-    The script redirects the local OTEL collector output to `~/.iflycode/tmp/<projectHash>/otel/collector-gcp.log`. The script provides links to view and command to tail your collector logs locally.
+1.  **检查本地收集器日志：**
+    该脚本将本地 OTEL 收集器输出重定向到 `~/.iflycode/tmp/<projectHash>/otel/collector-gcp.log`。脚本提供了查看链接和用于实时查看收集器日志的命令。
 
-1.  **Stop the service**:
-    Press `Ctrl+C` in the terminal where the script is running to stop the OTEL Collector.
+1.  **停止服务：**
+    在运行脚本的终端中按下 `Ctrl+C` 以停止 OTEL 收集器。
 
-## Logs and metric reference
+## 日志和指标参考
 
-The following section describes the structure of logs and metrics generated for Gemini CLI.
+以下部分描述了为 Gemini CLI 生成的日志和指标的结构。
 
-- A `sessionId` is included as a common attribute on all logs and metrics.
+- 所有日志和指标上都包含一个 `sessionId` 作为公共属性。
 
-### Logs
+### 日志
 
-Logs are timestamped records of specific events. The following events are logged for Gemini CLI:
+日志是特定事件的时间戳记录。Gemini CLI 记录以下事件：
 
-- `gemini_cli.config`: This event occurs once at startup with the CLI's configuration.
-  - **Attributes**:
-    - `model` (string)
-    - `embedding_model` (string)
-    - `sandbox_enabled` (boolean)
-    - `core_tools_enabled` (string)
-    - `approval_mode` (string)
-    - `api_key_enabled` (boolean)
-    - `vertex_ai_enabled` (boolean)
-    - `code_assist_enabled` (boolean)
-    - `log_prompts_enabled` (boolean)
-    - `file_filtering_respect_git_ignore` (boolean)
-    - `debug_mode` (boolean)
-    - `mcp_servers` (string)
+- `gemini_cli.config`：此事件在 CLI 启动时发生一次，包含 CLI 的配置。
+  - **属性：**
+    - `model` (字符串)
+    - `embedding_model` (字符串)
+    - `sandbox_enabled` (布尔值)
+    - `core_tools_enabled` (字符串)
+    - `approval_mode` (字符串)
+    - `api_key_enabled` (布尔值)
+    - `vertex_ai_enabled` (布尔值)
+    - `code_assist_enabled` (布尔值)
+    - `log_prompts_enabled` (布尔值)
+    - `file_filtering_respect_git_ignore` (布尔值)
+    - `debug_mode` (布尔值)
+    - `mcp_servers` (字符串)
 
-- `gemini_cli.user_prompt`: This event occurs when a user submits a prompt.
-  - **Attributes**:
+- `gemini_cli.user_prompt`：当用户提交提示时发生此事件。
+  - **属性：**
     - `prompt_length`
-    - `prompt` (this attribute is excluded if `log_prompts_enabled` is configured to be `false`)
+    - `prompt`（如果 `log_prompts_enabled` 配置为 `false`，则不包含此属性）
     - `auth_type`
 
-- `gemini_cli.tool_call`: This event occurs for each function call.
-  - **Attributes**:
+- `gemini_cli.tool_call`：每次函数调用时发生此事件。
+  - **属性：**
     - `function_name`
     - `function_args`
     - `duration_ms`
-    - `success` (boolean)
-    - `decision` (string: "accept", "reject", or "modify", if applicable)
-    - `error` (if applicable)
-    - `error_type` (if applicable)
+    - `success` (布尔值)
+    - `decision` (字符串："accept"、"reject" 或 "modify"，如适用)
+    - `error` (如适用)
+    - `error_type` (如适用)
 
-- `gemini_cli.api_request`: This event occurs when making a request to Gemini API.
-  - **Attributes**:
+- `gemini_cli.api_request`：当向 Gemini API 发出请求时发生此事件。
+  - **属性：**
     - `model`
-    - `request_text` (if applicable)
+    - `request_text` (如适用)
 
-- `gemini_cli.api_error`: This event occurs if the API request fails.
-  - **Attributes**:
+- `gemini_cli.api_error`：如果 API 请求失败，则发生此事件。
+  - **属性：**
     - `model`
     - `error`
     - `error_type`
@@ -180,59 +180,59 @@ Logs are timestamped records of specific events. The following events are logged
     - `duration_ms`
     - `auth_type`
 
-- `gemini_cli.api_response`: This event occurs upon receiving a response from Gemini API.
-  - **Attributes**:
+- `gemini_cli.api_response`：收到 Gemini API 的响应时发生此事件。
+  - **属性：**
     - `model`
     - `status_code`
     - `duration_ms`
-    - `error` (optional)
+    - `error` (可选)
     - `input_token_count`
     - `output_token_count`
     - `cached_content_token_count`
     - `thoughts_token_count`
     - `tool_token_count`
-    - `response_text` (if applicable)
+    - `response_text` (如适用)
     - `auth_type`
 
-- `gemini_cli.flash_fallback`: This event occurs when Gemini CLI switches to flash as fallback.
-  - **Attributes**:
+- `gemini_cli.flash_fallback`：当 Gemini CLI 切换到 flash 作为回退时发生此事件。
+  - **属性：**
     - `auth_type`
 
-### Metrics
+### 指标
 
-Metrics are numerical measurements of behavior over time. The following metrics are collected for Gemini CLI:
+指标是随时间推移的行为数值测量。Gemini CLI 收集以下指标：
 
-- `gemini_cli.session.count` (Counter, Int): Incremented once per CLI startup.
+- `gemini_cli.session.count` (计数器，整数)：每次 CLI 启动时递增一次。
 
-- `gemini_cli.tool.call.count` (Counter, Int): Counts tool calls.
-  - **Attributes**:
+- `gemini_cli.tool.call.count` (计数器，整数)：统计工具调用次数。
+  - **属性：**
     - `function_name`
-    - `success` (boolean)
-    - `decision` (string: "accept", "reject", or "modify", if applicable)
+    - `success` (布尔值)
+    - `decision` (字符串："accept"、"reject" 或 "modify"，如适用)
 
-- `gemini_cli.tool.call.latency` (Histogram, ms): Measures tool call latency.
-  - **Attributes**:
+- `gemini_cli.tool.call.latency` (直方图，毫秒)：测量工具调用延迟。
+  - **属性：**
     - `function_name`
-    - `decision` (string: "accept", "reject", or "modify", if applicable)
+    - `decision` (字符串："accept"、"reject" 或 "modify"，如适用)
 
-- `gemini_cli.api.request.count` (Counter, Int): Counts all API requests.
-  - **Attributes**:
+- `gemini_cli.api.request.count` (计数器，整数)：统计所有 API 请求次数。
+  - **属性：**
     - `model`
     - `status_code`
-    - `error_type` (if applicable)
+    - `error_type` (如适用)
 
-- `gemini_cli.api.request.latency` (Histogram, ms): Measures API request latency.
-  - **Attributes**:
+- `gemini_cli.api.request.latency` (直方图，毫秒)：测量 API 请求延迟。
+  - **属性：**
     - `model`
 
-- `gemini_cli.token.usage` (Counter, Int): Counts the number of tokens used.
-  - **Attributes**:
+- `gemini_cli.token.usage` (计数器，整数)：统计使用的 token 数量。
+  - **属性：**
     - `model`
-    - `type` (string: "input", "output", "thought", "cache", or "tool")
+    - `type` (字符串："input"、"output"、"thought"、"cache" 或 "tool")
 
-- `gemini_cli.file.operation.count` (Counter, Int): Counts file operations.
-  - **Attributes**:
-    - `operation` (string: "create", "read", "update"): The type of file operation.
-    - `lines` (Int, if applicable): Number of lines in the file.
-    - `mimetype` (string, if applicable): Mimetype of the file.
-    - `extension` (string, if applicable): File extension of the file.
+- `gemini_cli.file.operation.count` (计数器，整数)：统计文件操作次数。
+  - **属性：**
+    - `operation` (字符串："create"、"read"、"update")：文件操作类型。
+    - `lines` (整数，如适用)：文件中的行数。
+    - `mimetype` (字符串，如适用)：文件的 MIME 类型。
+    - `extension` (字符串，如适用)：文件的扩展名。

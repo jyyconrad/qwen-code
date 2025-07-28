@@ -40,8 +40,8 @@ interface AtCommandPart {
 }
 
 /**
- * Parses a query string to find all '@<path>' commands and text segments.
- * Handles \ escaped spaces within paths.
+ * 解析查询字符串以查找所有 '@<path>' 命令和文本段。
+ * 处理路径中使用 \ 转义的空格。
  */
 function parseAllAtCommands(query: string): AtCommandPart[] {
   const parts: AtCommandPart[] = [];
@@ -50,7 +50,7 @@ function parseAllAtCommands(query: string): AtCommandPart[] {
   while (currentIndex < query.length) {
     let atIndex = -1;
     let nextSearchIndex = currentIndex;
-    // Find next unescaped '@'
+    // 查找下一个未转义的 '@'
     while (nextSearchIndex < query.length) {
       if (
         query[nextSearchIndex] === '@' &&
@@ -63,14 +63,14 @@ function parseAllAtCommands(query: string): AtCommandPart[] {
     }
 
     if (atIndex === -1) {
-      // No more @
+      // 没有更多 @
       if (currentIndex < query.length) {
         parts.push({ type: 'text', content: query.substring(currentIndex) });
       }
       break;
     }
 
-    // Add text before @
+    // 添加 @ 之前的文本
     if (atIndex > currentIndex) {
       parts.push({
         type: 'text',
@@ -78,7 +78,7 @@ function parseAllAtCommands(query: string): AtCommandPart[] {
       });
     }
 
-    // Parse @path
+    // 解析 @path
     let pathEndIndex = atIndex + 1;
     let inEscape = false;
     while (pathEndIndex < query.length) {
@@ -88,31 +88,29 @@ function parseAllAtCommands(query: string): AtCommandPart[] {
       } else if (char === '\\') {
         inEscape = true;
       } else if (/\s/.test(char)) {
-        // Path ends at first whitespace not escaped
+        // 路径在第一个未转义的空白字符处结束
         break;
       }
       pathEndIndex++;
     }
     const rawAtPath = query.substring(atIndex, pathEndIndex);
-    // unescapePath expects the @ symbol to be present, and will handle it.
+    // unescapePath 期望包含 @ 符号，并会处理它。
     const atPath = unescapePath(rawAtPath);
     parts.push({ type: 'atPath', content: atPath });
     currentIndex = pathEndIndex;
   }
-  // Filter out empty text parts that might result from consecutive @paths or leading/trailing spaces
+  // 过滤掉可能由连续的 @paths 或前导/尾随空格产生的空文本部分
   return parts.filter(
     (part) => !(part.type === 'text' && part.content.trim() === ''),
   );
 }
 
 /**
- * Processes user input potentially containing one or more '@<path>' commands.
- * If found, it attempts to read the specified files/directories using the
- * 'read_many_files' tool. The user query is modified to include resolved paths,
- * and the content of the files is appended in a structured block.
+ * 处理可能包含一个或多个 '@<path>' 命令的用户输入。
+ * 如果找到，则尝试使用 'read_many_files' 工具读取指定的文件/目录。
+ * 用户查询会被修改以包含解析后的路径，并在结构化块中附加文件内容。
  *
- * @returns An object indicating whether the main hook should proceed with an
- *          LLM call and the processed query parts (including file content).
+ * @returns 一个对象，指示主钩子是否应继续进行 LLM 调用以及处理后的查询部分（包括文件内容）。
  */
 export async function handleAtCommand({
   query,
@@ -134,7 +132,7 @@ export async function handleAtCommand({
 
   addItem({ type: 'user', text: query }, userMessageTimestamp);
 
-  // Get centralized file discovery service
+  // 获取中心化的文件发现服务
   const fileDiscovery = config.getFileService();
   const respectGitIgnore = config.getFileFilteringRespectGitIgnore();
 
@@ -149,42 +147,42 @@ export async function handleAtCommand({
 
   if (!readManyFilesTool) {
     addItem(
-      { type: 'error', text: 'Error: read_many_files tool not found.' },
+      { type: 'error', text: '错误：未找到 read_many_files 工具。' },
       userMessageTimestamp,
     );
     return { processedQuery: null, shouldProceed: false };
   }
 
   for (const atPathPart of atPathCommandParts) {
-    const originalAtPath = atPathPart.content; // e.g., "@file.txt" or "@"
+    const originalAtPath = atPathPart.content; // 例如，"@file.txt" 或 "@"
 
     if (originalAtPath === '@') {
       onDebugMessage(
-        'Lone @ detected, will be treated as text in the modified query.',
+        '检测到单独的 @，将在修改后的查询中作为文本处理。',
       );
       continue;
     }
 
     const pathName = originalAtPath.substring(1);
     if (!pathName) {
-      // This case should ideally not be hit if parseAllAtCommands ensures content after @
-      // but as a safeguard:
+      // 如果 parseAllAtCommands 确保 @ 后有内容，这种情况理论上不会发生
+      // 但作为保护措施：
       addItem(
         {
           type: 'error',
-          text: `Error: Invalid @ command '${originalAtPath}'. No path specified.`,
+          text: `错误：无效的 @ 命令 '${originalAtPath}'。未指定路径。`,
         },
         userMessageTimestamp,
       );
-      // Decide if this is a fatal error for the whole command or just skip this @ part
-      // For now, let's be strict and fail the command if one @path is malformed.
+      // 决定这是否是整个命令的致命错误，还是只跳过这个 @ 部分
+      // 现在，让我们严格处理，如果一个 @path 格式错误就失败整个命令。
       return { processedQuery: null, shouldProceed: false };
     }
 
-    // Check if path should be ignored based on filtering options
+    // 检查路径是否应根据过滤选项被忽略
     if (fileDiscovery.shouldIgnoreFile(pathName, { respectGitIgnore })) {
       const reason = respectGitIgnore ? 'git-ignored' : 'custom-ignored';
-      onDebugMessage(`Path ${pathName} is ${reason} and will be skipped.`);
+      onDebugMessage(`路径 ${pathName} 是 ${reason} 的，将被跳过。`);
       ignoredPaths.push(pathName);
       continue;
     }
@@ -200,17 +198,17 @@ export async function handleAtCommand({
           ? `${pathName}**`
           : `${pathName}/**`;
         onDebugMessage(
-          `Path ${pathName} resolved to directory, using glob: ${currentPathSpec}`,
+          `路径 ${pathName} 解析为目录，使用 glob: ${currentPathSpec}`,
         );
       } else {
-        onDebugMessage(`Path ${pathName} resolved to file: ${currentPathSpec}`);
+        onDebugMessage(`路径 ${pathName} 解析为文件: ${currentPathSpec}`);
       }
       resolvedSuccessfully = true;
     } catch (error) {
       if (isNodeError(error) && error.code === 'ENOENT') {
         if (config.getEnableRecursiveFileSearch() && globTool) {
           onDebugMessage(
-            `Path ${pathName} not found directly, attempting glob search.`,
+            `路径 ${pathName} 未直接找到，尝试 glob 搜索。`,
           );
           try {
             const globResult = await globTool.execute(
@@ -231,38 +229,38 @@ export async function handleAtCommand({
                   firstMatchAbsolute,
                 );
                 onDebugMessage(
-                  `Glob search for ${pathName} found ${firstMatchAbsolute}, using relative path: ${currentPathSpec}`,
+                  `Glob 搜索 ${pathName} 找到 ${firstMatchAbsolute}，使用相对路径: ${currentPathSpec}`,
                 );
                 resolvedSuccessfully = true;
               } else {
                 onDebugMessage(
-                  `Glob search for '**/*${pathName}*' did not return a usable path. Path ${pathName} will be skipped.`,
+                  `Glob 搜索 '**/*${pathName}*' 未返回可用路径。路径 ${pathName} 将被跳过。`,
                 );
               }
             } else {
               onDebugMessage(
-                `Glob search for '**/*${pathName}*' found no files or an error. Path ${pathName} will be skipped.`,
+                `Glob 搜索 '**/*${pathName}*' 未找到文件或出现错误。路径 ${pathName} 将被跳过。`,
               );
             }
           } catch (globError) {
             console.error(
-              `Error during glob search for ${pathName}: ${getErrorMessage(globError)}`,
+              `Glob 搜索 ${pathName} 时出错: ${getErrorMessage(globError)}`,
             );
             onDebugMessage(
-              `Error during glob search for ${pathName}. Path ${pathName} will be skipped.`,
+              `Glob 搜索 ${pathName} 时出错。路径 ${pathName} 将被跳过。`,
             );
           }
         } else {
           onDebugMessage(
-            `Glob tool not found. Path ${pathName} will be skipped.`,
+            `未找到 glob 工具。路径 ${pathName} 将被跳过。`,
           );
         }
       } else {
         console.error(
-          `Error stating path ${pathName}: ${getErrorMessage(error)}`,
+          `获取路径状态时出错 ${pathName}: ${getErrorMessage(error)}`,
         );
         onDebugMessage(
-          `Error stating path ${pathName}. Path ${pathName} will be skipped.`,
+          `获取路径状态时出错 ${pathName}。路径 ${pathName} 将被跳过。`,
         );
       }
     }
@@ -274,7 +272,7 @@ export async function handleAtCommand({
     }
   }
 
-  // Construct the initial part of the query for the LLM
+  // 为 LLM 构造查询的初始部分
   let initialQueryText = '';
   for (let i = 0; i < commandParts.length; i++) {
     const part = commandParts[i];
@@ -289,7 +287,7 @@ export async function handleAtCommand({
         !initialQueryText.endsWith(' ') &&
         resolvedSpec
       ) {
-        // Add space if previous part was text and didn't end with space, or if previous was @path
+        // 如果前一部分是文本且未以空格结尾，或者前一部分是 @path，则添加空格
         const prevPart = commandParts[i - 1];
         if (
           prevPart.type === 'text' ||
@@ -302,8 +300,8 @@ export async function handleAtCommand({
       if (resolvedSpec) {
         initialQueryText += `@${resolvedSpec}`;
       } else {
-        // If not resolved for reading (e.g. lone @ or invalid path that was skipped),
-        // add the original @-string back, ensuring spacing if it's not the first element.
+        // 如果未解析用于读取（例如单独的 @ 或被跳过的无效路径），
+        // 将原始的 @-字符串加回去，确保如果不是第一个元素则添加间距。
         if (
           i > 0 &&
           initialQueryText.length > 0 &&
@@ -318,25 +316,25 @@ export async function handleAtCommand({
   }
   initialQueryText = initialQueryText.trim();
 
-  // Inform user about ignored paths
+  // 通知用户被忽略的路径
   if (ignoredPaths.length > 0) {
     const ignoreType = respectGitIgnore ? 'git-ignored' : 'custom-ignored';
     onDebugMessage(
-      `Ignored ${ignoredPaths.length} ${ignoreType} files: ${ignoredPaths.join(', ')}`,
+      `忽略了 ${ignoredPaths.length} 个 ${ignoreType} 文件: ${ignoredPaths.join(', ')}`,
     );
   }
 
-  // Fallback for lone "@" or completely invalid @-commands resulting in empty initialQueryText
+  // 单独 "@" 或完全无效的 @-命令导致 initialQueryText 为空的回退处理
   if (pathSpecsToRead.length === 0) {
-    onDebugMessage('No valid file paths found in @ commands to read.');
+    onDebugMessage('在 @ 命令中未找到有效的文件路径进行读取。');
     if (initialQueryText === '@' && query.trim() === '@') {
-      // If the only thing was a lone @, pass original query (which might have spaces)
+      // 如果唯一的内容是单独的 @，传递原始查询（可能包含空格）
       return { processedQuery: [{ text: query }], shouldProceed: true };
     } else if (!initialQueryText && query) {
-      // If all @-commands were invalid and no surrounding text, pass original query
+      // 如果所有 @-命令都无效且没有周围文本，传递原始查询
       return { processedQuery: [{ text: query }], shouldProceed: true };
     }
-    // Otherwise, proceed with the (potentially modified) query text that doesn't involve file reading
+    // 否则，继续处理不涉及文件读取的（可能已修改的）查询文本
     return {
       processedQuery: [{ text: initialQueryText || query }],
       shouldProceed: true,
@@ -347,7 +345,7 @@ export async function handleAtCommand({
 
   const toolArgs = {
     paths: pathSpecsToRead,
-    respect_git_ignore: respectGitIgnore, // Use configuration setting
+    respect_git_ignore: respectGitIgnore, // 使用配置设置
   };
   let toolCallDisplay: IndividualToolCallDisplay;
 
@@ -360,37 +358,37 @@ export async function handleAtCommand({
       status: ToolCallStatus.Success,
       resultDisplay:
         result.returnDisplay ||
-        `Successfully read: ${contentLabelsForDisplay.join(', ')}`,
+        `成功读取: ${contentLabelsForDisplay.join(', ')}`,
       confirmationDetails: undefined,
     };
 
     if (Array.isArray(result.llmContent)) {
       const fileContentRegex = /^--- (.*?) ---\n\n([\s\S]*?)\n\n$/;
       processedQueryParts.push({
-        text: '\n--- Content from referenced files ---',
+        text: '\n--- 来自引用文件的内容 ---',
       });
       for (const part of result.llmContent) {
         if (typeof part === 'string') {
           const match = fileContentRegex.exec(part);
           if (match) {
-            const filePathSpecInContent = match[1]; // This is a resolved pathSpec
+            const filePathSpecInContent = match[1]; // 这是一个解析后的路径规范
             const fileActualContent = match[2].trim();
             processedQueryParts.push({
-              text: `\nContent from @${filePathSpecInContent}:\n`,
+              text: `\n来自 @${filePathSpecInContent} 的内容:\n`,
             });
             processedQueryParts.push({ text: fileActualContent });
           } else {
             processedQueryParts.push({ text: part });
           }
         } else {
-          // part is a Part object.
+          // part 是一个 Part 对象。
           processedQueryParts.push(part);
         }
       }
-      processedQueryParts.push({ text: '\n--- End of content ---' });
+      processedQueryParts.push({ text: '\n--- 内容结束 ---' });
     } else {
       onDebugMessage(
-        'read_many_files tool returned no content or empty content.',
+        'read_many_files 工具未返回内容或返回空内容。',
       );
     }
 
@@ -408,7 +406,7 @@ export async function handleAtCommand({
       name: readManyFilesTool.displayName,
       description: readManyFilesTool.getDescription(toolArgs),
       status: ToolCallStatus.Error,
-      resultDisplay: `Error reading files (${contentLabelsForDisplay.join(', ')}): ${getErrorMessage(error)}`,
+      resultDisplay: `读取文件时出错 (${contentLabelsForDisplay.join(', ')}): ${getErrorMessage(error)}`,
       confirmationDetails: undefined,
     };
     addItem(

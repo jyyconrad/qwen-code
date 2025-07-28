@@ -36,7 +36,7 @@ const mockConfig = {
   getNoBrowser: () => false,
 } as unknown as Config;
 
-// Mock fetch globally
+// 全局模拟 fetch
 global.fetch = vi.fn();
 
 describe('oauth2', () => {
@@ -54,7 +54,7 @@ describe('oauth2', () => {
     delete process.env.CLOUD_SHELL;
   });
 
-  it('should perform a web login', async () => {
+  it('应执行网页登录', async () => {
     const mockAuthUrl = 'https://example.com/auth';
     const mockCode = 'test-code';
     const mockState = 'test-state';
@@ -84,7 +84,7 @@ describe('oauth2', () => {
     vi.spyOn(crypto, 'randomBytes').mockReturnValue(mockState as never);
     (open as Mock).mockImplementation(async () => ({}) as never);
 
-    // Mock the UserInfo API response
+    // 模拟 UserInfo API 响应
     (global.fetch as Mock).mockResolvedValue({
       ok: true,
       json: vi
@@ -132,7 +132,7 @@ describe('oauth2', () => {
       mockConfig,
     );
 
-    // wait for server to start listening.
+    // 等待服务器开始监听。
     await serverListeningPromise;
 
     const mockReq = {
@@ -155,7 +155,7 @@ describe('oauth2', () => {
     });
     expect(mockSetCredentials).toHaveBeenCalledWith(mockTokens);
 
-    // Verify Google Account was cached
+    // 验证 Google 账户已缓存
     const googleAccountPath = path.join(
       tempHomeDir,
       '.iflycode',
@@ -168,11 +168,11 @@ describe('oauth2', () => {
       old: [],
     });
 
-    // Verify the getCachedGoogleAccount function works
+    // 验证 getCachedGoogleAccount 函数是否正常工作
     expect(getCachedGoogleAccount()).toBe('test-google-account@gmail.com');
   });
 
-  it('should perform login with user code', async () => {
+  it('应执行用户代码登录', async () => {
     const mockConfigWithNoBrowser = {
       getNoBrowser: () => true,
     } as unknown as Config;
@@ -221,14 +221,14 @@ describe('oauth2', () => {
 
     expect(client).toBe(mockOAuth2Client);
 
-    // Verify the auth flow
+    // 验证认证流程
     expect(mockGenerateCodeVerifierAsync).toHaveBeenCalled();
     expect(mockGenerateAuthUrl).toHaveBeenCalled();
     expect(consoleLogSpy).toHaveBeenCalledWith(
       expect.stringContaining(mockAuthUrl),
     );
     expect(mockReadline.question).toHaveBeenCalledWith(
-      'Enter the authorization code: ',
+      '输入授权码: ',
       expect.any(Function),
     );
     expect(mockGetToken).toHaveBeenCalledWith({
@@ -241,7 +241,7 @@ describe('oauth2', () => {
     consoleLogSpy.mockRestore();
   });
 
-  describe('in Cloud Shell', () => {
+  describe('在 Cloud Shell 中', () => {
     const mockGetAccessToken = vi.fn();
     let mockComputeClient: Compute;
 
@@ -250,8 +250,8 @@ describe('oauth2', () => {
       vi.spyOn(fs.promises, 'mkdir').mockResolvedValue(undefined);
       vi.spyOn(fs.promises, 'writeFile').mockResolvedValue(undefined);
       vi.spyOn(fs.promises, 'readFile').mockRejectedValue(
-        new Error('File not found'),
-      ); // Default to no cached creds
+        new Error('文件未找到'),
+      ); // 默认无缓存凭据
 
       mockGetAccessToken.mockResolvedValue({ token: 'test-access-token' });
       mockComputeClient = {
@@ -262,7 +262,7 @@ describe('oauth2', () => {
       (Compute as unknown as Mock).mockImplementation(() => mockComputeClient);
     });
 
-    it('should attempt to load cached credentials first', async () => {
+    it('应首先尝试加载缓存的凭据', async () => {
       const cachedCreds = { refresh_token: 'cached-token' };
       vi.spyOn(fs.promises, 'readFile').mockResolvedValue(
         JSON.stringify(cachedCreds),
@@ -275,7 +275,7 @@ describe('oauth2', () => {
         on: vi.fn(),
       };
 
-      // To mock the new OAuth2Client() inside the function
+      // 模拟函数内部的 new OAuth2Client()
       (OAuth2Client as unknown as Mock).mockImplementation(
         () => mockClient as unknown as OAuth2Client,
       );
@@ -289,17 +289,17 @@ describe('oauth2', () => {
       expect(mockClient.setCredentials).toHaveBeenCalledWith(cachedCreds);
       expect(mockClient.getAccessToken).toHaveBeenCalled();
       expect(mockClient.getTokenInfo).toHaveBeenCalled();
-      expect(Compute).not.toHaveBeenCalled(); // Should not fetch new client if cache is valid
+      expect(Compute).not.toHaveBeenCalled(); // 如果缓存有效，不应获取新客户端
     });
 
-    it('should use Compute to get a client if no cached credentials exist', async () => {
+    it('如果没有缓存凭据，应使用 Compute 获取客户端', async () => {
       await getOauthClient(AuthType.CLOUD_SHELL, mockConfig);
 
       expect(Compute).toHaveBeenCalledWith({});
       expect(mockGetAccessToken).toHaveBeenCalled();
     });
 
-    it('should not cache the credentials after fetching them via ADC', async () => {
+    it('通过 ADC 获取凭据后不应缓存凭据', async () => {
       const newCredentials = { refresh_token: 'new-adc-token' };
       mockComputeClient.credentials = newCredentials;
       mockGetAccessToken.mockResolvedValue({ token: 'new-adc-token' });
@@ -309,19 +309,19 @@ describe('oauth2', () => {
       expect(fs.promises.writeFile).not.toHaveBeenCalled();
     });
 
-    it('should return the Compute client on successful ADC authentication', async () => {
+    it('ADC 认证成功时应返回 Compute 客户端', async () => {
       const client = await getOauthClient(AuthType.CLOUD_SHELL, mockConfig);
       expect(client).toBe(mockComputeClient);
     });
 
-    it('should throw an error if ADC fails', async () => {
-      const testError = new Error('ADC Failed');
+    it('如果 ADC 失败应抛出错误', async () => {
+      const testError = new Error('ADC 失败');
       mockGetAccessToken.mockRejectedValue(testError);
 
       await expect(
         getOauthClient(AuthType.CLOUD_SHELL, mockConfig),
       ).rejects.toThrow(
-        'Could not authenticate using Cloud Shell credentials. Please select a different authentication method or ensure you are in a properly configured environment. Error: ADC Failed',
+        '无法使用 Cloud Shell 凭据进行身份验证。请选择其他认证方法或确保您处于正确配置的环境中。错误: ADC 失败',
       );
     });
   });

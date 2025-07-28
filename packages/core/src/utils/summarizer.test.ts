@@ -14,7 +14,7 @@ import {
 } from './summarizer.js';
 import { ToolResult } from '../tools/tools.js';
 
-// Mock GeminiClient and Config constructor
+// 模拟 GeminiClient 和 Config 构造函数
 vi.mock('../core/client.js');
 vi.mock('../config/config.js');
 
@@ -50,7 +50,7 @@ describe('summarizers', () => {
   });
 
   describe('summarizeToolOutput', () => {
-    it('should return original text if it is shorter than maxLength', async () => {
+    it('如果文本长度小于 maxLength，应返回原始文本', async () => {
       const shortText = 'This is a short text.';
       const result = await summarizeToolOutput(
         shortText,
@@ -62,7 +62,7 @@ describe('summarizers', () => {
       expect(mockGeminiClient.generateContent).not.toHaveBeenCalled();
     });
 
-    it('should return original text if it is empty', async () => {
+    it('如果文本为空，应返回原始文本', async () => {
       const emptyText = '';
       const result = await summarizeToolOutput(
         emptyText,
@@ -74,7 +74,7 @@ describe('summarizers', () => {
       expect(mockGeminiClient.generateContent).not.toHaveBeenCalled();
     });
 
-    it('should call generateContent if text is longer than maxLength', async () => {
+    it('如果文本长度超过 maxLength，应调用 generateContent', async () => {
       const longText = 'This is a very long text.'.repeat(200);
       const summary = 'This is a summary.';
       (mockGeminiClient.generateContent as Mock).mockResolvedValue({
@@ -92,7 +92,7 @@ describe('summarizers', () => {
       expect(result).toBe(summary);
     });
 
-    it('should return original text if generateContent throws an error', async () => {
+    it('如果 generateContent 抛出错误，应返回原始文本', async () => {
       const longText = 'This is a very long text.'.repeat(200);
       const error = new Error('API Error');
       (mockGeminiClient.generateContent as Mock).mockRejectedValue(error);
@@ -112,7 +112,7 @@ describe('summarizers', () => {
       );
     });
 
-    it('should construct the correct prompt for summarization', async () => {
+    it('应构造正确的摘要提示', async () => {
       const longText = 'This is a very long text.'.repeat(200);
       const summary = 'This is a summary.';
       (mockGeminiClient.generateContent as Mock).mockResolvedValue({
@@ -142,7 +142,7 @@ Return the summary string which should first contain an overall summarization of
   });
 
   describe('llmSummarizer', () => {
-    it('should summarize tool output using summarizeToolOutput', async () => {
+    it('应使用 summarizeToolOutput 摘要工具输出', async () => {
       const toolResult: ToolResult = {
         llmContent: 'This is a very long text.'.repeat(200),
         returnDisplay: '',
@@ -162,7 +162,7 @@ Return the summary string which should first contain an overall summarization of
       expect(result).toBe(summary);
     });
 
-    it('should handle different llmContent types', async () => {
+    it('应处理不同的 llmContent 类型', async () => {
       const longText = 'This is a very long text.'.repeat(200);
       const toolResult: ToolResult = {
         llmContent: [{ text: longText }],
@@ -189,7 +189,7 @@ Return the summary string which should first contain an overall summarization of
   });
 
   describe('defaultSummarizer', () => {
-    it('should stringify the llmContent', async () => {
+    it('应将 llmContent 字符串化', async () => {
       const toolResult: ToolResult = {
         llmContent: { text: 'some data' },
         returnDisplay: '',

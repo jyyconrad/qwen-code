@@ -39,9 +39,9 @@ export const useAuthCommand = (
       try {
         setIsAuthenticating(true);
         await config.refreshAuth(authType);
-        console.log(`Authenticated via "${authType}".`);
+        console.log(`通过 "${authType}" 认证。`);
       } catch (e) {
-        setAuthError(`Failed to login. Message: ${getErrorMessage(e)}`);
+        setAuthError(`登录失败。消息: ${getErrorMessage(e)}`);
         openAuthDialog();
       } finally {
         setIsAuthenticating(false);
@@ -61,7 +61,7 @@ export const useAuthCommand = (
           console.log(
             `
 ----------------------------------------------------------------
-Logging in with Google... Please restart Gemini CLI to continue.
+正在使用 Google 登录... 请重启 Gemini CLI 以继续。
 ----------------------------------------------------------------
             `,
           );

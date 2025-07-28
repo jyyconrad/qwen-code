@@ -82,7 +82,7 @@ vi.mock('../services/gitService.js', () => {
   return { GitService: GitServiceMock };
 });
 
-describe('Server Config (config.ts)', () => {
+describe('服务器配置 (config.ts)', () => {
   const MODEL = 'gemini-pro';
   const SANDBOX: SandboxConfig = {
     command: 'docker',
@@ -90,9 +90,9 @@ describe('Server Config (config.ts)', () => {
   };
   const TARGET_DIR = '/path/to/target';
   const DEBUG_MODE = false;
-  const QUESTION = 'test question';
+  const QUESTION = '测试问题';
   const FULL_CONTEXT = false;
-  const USER_MEMORY = 'Test User Memory';
+  const USER_MEMORY = '测试用户记忆';
   const TELEMETRY_SETTINGS = { enabled: false };
   const EMBEDDING_MODEL = 'gemini-embedding';
   const SESSION_ID = 'test-session-id';
@@ -116,8 +116,8 @@ describe('Server Config (config.ts)', () => {
   });
 
   describe('initialize', () => {
-    it('should throw an error if checkpointing is enabled and GitService fails', async () => {
-      const gitError = new Error('Git is not installed');
+    it('如果启用了检查点且 GitService 失败，应抛出错误', async () => {
+      const gitError = new Error('Git 未安装');
       (GitService.prototype.initialize as Mock).mockRejectedValue(gitError);
 
       const config = new Config({
@@ -128,8 +128,8 @@ describe('Server Config (config.ts)', () => {
       await expect(config.initialize()).rejects.toThrow(gitError);
     });
 
-    it('should not throw an error if checkpointing is disabled and GitService fails', async () => {
-      const gitError = new Error('Git is not installed');
+    it('如果禁用了检查点且 GitService 失败，不应抛出错误', async () => {
+      const gitError = new Error('Git 未安装');
       (GitService.prototype.initialize as Mock).mockRejectedValue(gitError);
 
       const config = new Config({
@@ -142,7 +142,7 @@ describe('Server Config (config.ts)', () => {
   });
 
   describe('refreshAuth', () => {
-    it('should refresh auth and update config', async () => {
+    it('应刷新认证并更新配置', async () => {
       const config = new Config(baseParams);
       const authType = AuthType.USE_GEMINI;
       const newModel = 'gemini-flash';
@@ -158,26 +158,26 @@ describe('Server Config (config.ts)', () => {
       await config.refreshAuth(authType);
 
       expect(createContentGeneratorConfig).toHaveBeenCalledWith(
-        MODEL, // Should be called with the original model 'gemini-pro'
+        MODEL, // 应使用原始模型 'gemini-pro' 调用
         authType,
       );
-      // Verify that contentGeneratorConfig is updated with the new model
+      // 验证 contentGeneratorConfig 是否已更新为新模型
       expect(config.getContentGeneratorConfig()).toEqual(mockContentConfig);
       expect(config.getContentGeneratorConfig().model).toBe(newModel);
-      expect(config.getModel()).toBe(newModel); // getModel() should return the updated model
+      expect(config.getModel()).toBe(newModel); // getModel() 应返回更新后的模型
       expect(GeminiClient).toHaveBeenCalledWith(config);
     });
   });
 
-  it('Config constructor should store userMemory correctly', () => {
+  it('Config 构造函数应正确存储 userMemory', () => {
     const config = new Config(baseParams);
 
     expect(config.getUserMemory()).toBe(USER_MEMORY);
-    // Verify other getters if needed
-    expect(config.getTargetDir()).toBe(path.resolve(TARGET_DIR)); // Check resolved path
+    // 如有必要，验证其他 getter
+    expect(config.getTargetDir()).toBe(path.resolve(TARGET_DIR)); // 检查解析后的路径
   });
 
-  it('Config constructor should default userMemory to empty string if not provided', () => {
+  it('如果未提供 userMemory，Config 构造函数应默认为空字符串', () => {
     const paramsWithoutMemory: ConfigParameters = { ...baseParams };
     delete paramsWithoutMemory.userMemory;
     const config = new Config(paramsWithoutMemory);
@@ -185,7 +185,7 @@ describe('Server Config (config.ts)', () => {
     expect(config.getUserMemory()).toBe('');
   });
 
-  it('Config constructor should call setGeminiMdFilename with contextFileName if provided', () => {
+  it('如果提供了 contextFileName，Config 构造函数应调用 setGeminiMdFilename', () => {
     const contextFileName = 'CUSTOM_AGENTS.md';
     const paramsWithContextFile: ConfigParameters = {
       ...baseParams,
@@ -195,17 +195,17 @@ describe('Server Config (config.ts)', () => {
     expect(mockSetGeminiMdFilename).toHaveBeenCalledWith(contextFileName);
   });
 
-  it('Config constructor should not call setGeminiMdFilename if contextFileName is not provided', () => {
-    new Config(baseParams); // baseParams does not have contextFileName
+  it('如果未提供 contextFileName，Config 构造函数不应调用 setGeminiMdFilename', () => {
+    new Config(baseParams); // baseParams 不包含 contextFileName
     expect(mockSetGeminiMdFilename).not.toHaveBeenCalled();
   });
 
-  it('should set default file filtering settings when not provided', () => {
+  it('当未提供文件过滤设置时，应设置默认值', () => {
     const config = new Config(baseParams);
     expect(config.getFileFilteringRespectGitIgnore()).toBe(true);
   });
 
-  it('should set custom file filtering settings when provided', () => {
+  it('当提供了自定义文件过滤设置时，应正确设置', () => {
     const paramsWithFileFiltering: ConfigParameters = {
       ...baseParams,
       fileFiltering: {
@@ -216,7 +216,7 @@ describe('Server Config (config.ts)', () => {
     expect(config.getFileFilteringRespectGitIgnore()).toBe(false);
   });
 
-  it('Config constructor should set telemetry to true when provided as true', () => {
+  it('当 telemetry 设置为 true 时，Config 构造函数应正确设置', () => {
     const paramsWithTelemetry: ConfigParameters = {
       ...baseParams,
       telemetry: { enabled: true },
@@ -225,7 +225,7 @@ describe('Server Config (config.ts)', () => {
     expect(config.getTelemetryEnabled()).toBe(true);
   });
 
-  it('Config constructor should set telemetry to false when provided as false', () => {
+  it('当 telemetry 设置为 false 时，Config 构造函数应正确设置', () => {
     const paramsWithTelemetry: ConfigParameters = {
       ...baseParams,
       telemetry: { enabled: false },
@@ -234,21 +234,21 @@ describe('Server Config (config.ts)', () => {
     expect(config.getTelemetryEnabled()).toBe(false);
   });
 
-  it('Config constructor should default telemetry to default value if not provided', () => {
+  it('如果未提供 telemetry，Config 构造函数应默认为默认值', () => {
     const paramsWithoutTelemetry: ConfigParameters = { ...baseParams };
     delete paramsWithoutTelemetry.telemetry;
     const config = new Config(paramsWithoutTelemetry);
     expect(config.getTelemetryEnabled()).toBe(TELEMETRY_SETTINGS.enabled);
   });
 
-  it('should have a getFileService method that returns FileDiscoveryService', () => {
+  it('应有一个 getFileService 方法返回 FileDiscoveryService', () => {
     const config = new Config(baseParams);
     const fileService = config.getFileService();
     expect(fileService).toBeDefined();
   });
 
-  describe('Telemetry Settings', () => {
-    it('should return default telemetry target if not provided', () => {
+  describe('遥测设置', () => {
+    it('如果未提供，应返回默认遥测目标', () => {
       const params: ConfigParameters = {
         ...baseParams,
         telemetry: { enabled: true },
@@ -257,7 +257,7 @@ describe('Server Config (config.ts)', () => {
       expect(config.getTelemetryTarget()).toBe(DEFAULT_TELEMETRY_TARGET);
     });
 
-    it('should return provided OTLP endpoint', () => {
+    it('应返回提供的 OTLP 端点', () => {
       const endpoint = 'http://custom.otel.collector:4317';
       const params: ConfigParameters = {
         ...baseParams,
@@ -267,7 +267,7 @@ describe('Server Config (config.ts)', () => {
       expect(config.getTelemetryOtlpEndpoint()).toBe(endpoint);
     });
 
-    it('should return default OTLP endpoint if not provided', () => {
+    it('如果未提供，应返回默认 OTLP 端点', () => {
       const params: ConfigParameters = {
         ...baseParams,
         telemetry: { enabled: true },
@@ -276,7 +276,7 @@ describe('Server Config (config.ts)', () => {
       expect(config.getTelemetryOtlpEndpoint()).toBe(DEFAULT_OTLP_ENDPOINT);
     });
 
-    it('should return provided logPrompts setting', () => {
+    it('应返回提供的 logPrompts 设置', () => {
       const params: ConfigParameters = {
         ...baseParams,
         telemetry: { enabled: true, logPrompts: false },
@@ -285,7 +285,7 @@ describe('Server Config (config.ts)', () => {
       expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
     });
 
-    it('should return default logPrompts setting (true) if not provided', () => {
+    it('如果未提供，应返回默认 logPrompts 设置 (true)', () => {
       const params: ConfigParameters = {
         ...baseParams,
         telemetry: { enabled: true },
@@ -294,21 +294,21 @@ describe('Server Config (config.ts)', () => {
       expect(config.getTelemetryLogPromptsEnabled()).toBe(true);
     });
 
-    it('should return default logPrompts setting (true) if telemetry object is not provided', () => {
+    it('如果未提供 telemetry 对象，应返回默认 logPrompts 设置 (true)', () => {
       const paramsWithoutTelemetry: ConfigParameters = { ...baseParams };
       delete paramsWithoutTelemetry.telemetry;
       const config = new Config(paramsWithoutTelemetry);
       expect(config.getTelemetryLogPromptsEnabled()).toBe(true);
     });
 
-    it('should return default telemetry target if telemetry object is not provided', () => {
+    it('如果未提供 telemetry 对象，应返回默认遥测目标', () => {
       const paramsWithoutTelemetry: ConfigParameters = { ...baseParams };
       delete paramsWithoutTelemetry.telemetry;
       const config = new Config(paramsWithoutTelemetry);
       expect(config.getTelemetryTarget()).toBe(DEFAULT_TELEMETRY_TARGET);
     });
 
-    it('should return default OTLP endpoint if telemetry object is not provided', () => {
+    it('如果未提供 telemetry 对象，应返回默认 OTLP 端点', () => {
       const paramsWithoutTelemetry: ConfigParameters = { ...baseParams };
       delete paramsWithoutTelemetry.telemetry;
       const config = new Config(paramsWithoutTelemetry);
@@ -317,7 +317,7 @@ describe('Server Config (config.ts)', () => {
   });
 
   describe('refreshMemory', () => {
-    it('should update memory and file count on successful refresh', async () => {
+    it('刷新成功时应更新内存和文件计数', async () => {
       const config = new Config(baseParams);
       const mockMemoryData = {
         memoryContent: 'new memory content',
@@ -340,9 +340,9 @@ describe('Server Config (config.ts)', () => {
       expect(result).toEqual(mockMemoryData);
     });
 
-    it('should propagate errors from loadServerHierarchicalMemory', async () => {
+    it('应传播来自 loadServerHierarchicalMemory 的错误', async () => {
       const config = new Config(baseParams);
-      const testError = new Error('Failed to load memory');
+      const testError = new Error('加载内存失败');
 
       (loadServerHierarchicalMemory as Mock).mockRejectedValue(testError);
 

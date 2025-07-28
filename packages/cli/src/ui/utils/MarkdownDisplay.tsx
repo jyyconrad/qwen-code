@@ -18,7 +18,7 @@ interface MarkdownDisplayProps {
   terminalWidth: number;
 }
 
-// Constants for Markdown parsing and rendering
+// Markdown 解析和渲染的常量
 
 const EMPTY_LINE_HEIGHT = 1;
 const CODE_BLOCK_PREFIX_PADDING = 1;
@@ -102,7 +102,7 @@ const MarkdownDisplayInternal: React.FC<MarkdownDisplayProps> = ({
       codeBlockFence = codeFenceMatch[1];
       codeBlockLang = codeFenceMatch[2] || null;
     } else if (tableRowMatch && !inTable) {
-      // Potential table start - check if next line is separator
+      // 潜在的表格开始 - 检查下一行是否为分隔符
       if (
         index + 1 < lines.length &&
         lines[index + 1].match(tableSeparatorRegex)
@@ -111,7 +111,7 @@ const MarkdownDisplayInternal: React.FC<MarkdownDisplayProps> = ({
         tableHeaders = tableRowMatch[1].split('|').map((cell) => cell.trim());
         tableRows = [];
       } else {
-        // Not a table, treat as regular text
+        // 不是表格，作为普通文本处理
         addContentBlock(
           <Box key={key}>
             <Text wrap="wrap">
@@ -121,11 +121,11 @@ const MarkdownDisplayInternal: React.FC<MarkdownDisplayProps> = ({
         );
       }
     } else if (inTable && tableSeparatorMatch) {
-      // Skip separator line - already handled
+      // 跳过分隔行 - 已经处理过
     } else if (inTable && tableRowMatch) {
-      // Add table row
+      // 添加表格行
       const cells = tableRowMatch[1].split('|').map((cell) => cell.trim());
-      // Ensure row has same column count as headers
+      // 确保行的列数与表头相同
       while (cells.length < tableHeaders.length) {
         cells.push('');
       }
@@ -134,7 +134,7 @@ const MarkdownDisplayInternal: React.FC<MarkdownDisplayProps> = ({
       }
       tableRows.push(cells);
     } else if (inTable && !tableRowMatch) {
-      // End of table
+      // 表格结束
       if (tableHeaders.length > 0 && tableRows.length > 0) {
         addContentBlock(
           <RenderTable
@@ -149,7 +149,7 @@ const MarkdownDisplayInternal: React.FC<MarkdownDisplayProps> = ({
       tableRows = [];
       tableHeaders = [];
 
-      // Process current line as normal
+      // 将当前行作为普通文本处理
       if (line.trim().length > 0) {
         addContentBlock(
           <Box key={key}>
@@ -266,7 +266,7 @@ const MarkdownDisplayInternal: React.FC<MarkdownDisplayProps> = ({
     );
   }
 
-  // Handle table at end of content
+  // 处理内容末尾的表格
   if (inTable && tableHeaders.length > 0 && tableRows.length > 0) {
     addContentBlock(
       <RenderTable
@@ -281,7 +281,7 @@ const MarkdownDisplayInternal: React.FC<MarkdownDisplayProps> = ({
   return <>{contentBlocks}</>;
 };
 
-// Helper functions (adapted from static methods of MarkdownRenderer)
+// 辅助函数（从 MarkdownRenderer 的静态方法改编）
 
 interface RenderCodeBlockProps {
   content: string[];
@@ -298,8 +298,8 @@ const RenderCodeBlockInternal: React.FC<RenderCodeBlockProps> = ({
   availableTerminalHeight,
   terminalWidth,
 }) => {
-  const MIN_LINES_FOR_MESSAGE = 1; // Minimum lines to show before the "generating more" message
-  const RESERVED_LINES = 2; // Lines reserved for the message itself and potential padding
+  const MIN_LINES_FOR_MESSAGE = 1; // 显示"正在生成更多"消息前的最小行数
+  const RESERVED_LINES = 2; // 为消息本身和可能的填充保留的行数
 
   if (isPending && availableTerminalHeight !== undefined) {
     const MAX_CODE_LINES_WHEN_PENDING = Math.max(
@@ -309,10 +309,10 @@ const RenderCodeBlockInternal: React.FC<RenderCodeBlockProps> = ({
 
     if (content.length > MAX_CODE_LINES_WHEN_PENDING) {
       if (MAX_CODE_LINES_WHEN_PENDING < MIN_LINES_FOR_MESSAGE) {
-        // Not enough space to even show the message meaningfully
+        // 空间不足以有意义地显示消息
         return (
           <Box paddingLeft={CODE_BLOCK_PREFIX_PADDING}>
-            <Text color={Colors.Gray}>... code is being written ...</Text>
+            <Text color={Colors.Gray}>... 代码正在编写中 ...</Text>
           </Box>
         );
       }
@@ -326,7 +326,7 @@ const RenderCodeBlockInternal: React.FC<RenderCodeBlockProps> = ({
       return (
         <Box paddingLeft={CODE_BLOCK_PREFIX_PADDING} flexDirection="column">
           {colorizedTruncatedCode}
-          <Text color={Colors.Gray}>... generating more ...</Text>
+          <Text color={Colors.Gray}>... 正在生成更多 ...</Text>
         </Box>
       );
     }

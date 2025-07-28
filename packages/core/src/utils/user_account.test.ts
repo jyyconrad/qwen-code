@@ -39,17 +39,17 @@ describe('user_account', () => {
   });
 
   describe('cacheGoogleAccount', () => {
-    it('should create directory and write initial account file', async () => {
+    it('应创建目录并写入初始账户文件', async () => {
       await cacheGoogleAccount('test1@google.com');
 
-      // Verify Google Account ID was cached
+      // 验证 Google 账户 ID 已缓存
       expect(fs.existsSync(accountsFile())).toBe(true);
       expect(fs.readFileSync(accountsFile(), 'utf-8')).toBe(
         JSON.stringify({ active: 'test1@google.com', old: [] }, null, 2),
       );
     });
 
-    it('should update active account and move previous to old', async () => {
+    it('应更新活跃账户并将之前的移到旧列表中', async () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(
         accountsFile(),
@@ -74,7 +74,7 @@ describe('user_account', () => {
       );
     });
 
-    it('should not add a duplicate to the old list', async () => {
+    it('不应将重复项添加到旧列表中', async () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(
         accountsFile(),
@@ -96,7 +96,7 @@ describe('user_account', () => {
       );
     });
 
-    it('should handle corrupted JSON by starting fresh', async () => {
+    it('应通过重新开始处理损坏的 JSON', async () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(accountsFile(), 'not valid json');
       const consoleDebugSpy = vi
@@ -114,7 +114,7 @@ describe('user_account', () => {
   });
 
   describe('getCachedGoogleAccount', () => {
-    it('should return the active account if file exists and is valid', () => {
+    it('如果文件存在且有效，应返回活跃账户', () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(
         accountsFile(),
@@ -124,21 +124,21 @@ describe('user_account', () => {
       expect(account).toBe('active@google.com');
     });
 
-    it('should return null if file does not exist', () => {
+    it('如果文件不存在，应返回 null', () => {
       const account = getCachedGoogleAccount();
       expect(account).toBeNull();
     });
 
-    it('should return null if file is empty', () => {
+    it('如果文件为空，应返回 null', () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(accountsFile(), '');
       const account = getCachedGoogleAccount();
       expect(account).toBeNull();
     });
 
-    it('should return null and log if file is corrupted', () => {
+    it('如果文件损坏，应返回 null 并记录日志', () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
-      fs.writeFileSync(accountsFile(), '{ "active": "test@google.com"'); // Invalid JSON
+      fs.writeFileSync(accountsFile(), '{ "active": "test@google.com"'); // 无效的 JSON
       const consoleDebugSpy = vi
         .spyOn(console, 'debug')
         .mockImplementation(() => {});
@@ -151,7 +151,7 @@ describe('user_account', () => {
   });
 
   describe('clearCachedGoogleAccount', () => {
-    it('should set active to null and move it to old', async () => {
+    it('应将活跃账户设为 null 并将其移至旧列表', async () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(
         accountsFile(),
@@ -169,7 +169,7 @@ describe('user_account', () => {
       expect(stored.old).toEqual(['old1@google.com', 'active@google.com']);
     });
 
-    it('should handle empty file gracefully', async () => {
+    it('应优雅地处理空文件', async () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(accountsFile(), '');
       await clearCachedGoogleAccount();
@@ -180,17 +180,17 @@ describe('user_account', () => {
   });
 
   describe('getLifetimeGoogleAccounts', () => {
-    it('should return 0 if the file does not exist', () => {
+    it('如果文件不存在，应返回 0', () => {
       expect(getLifetimeGoogleAccounts()).toBe(0);
     });
 
-    it('should return 0 if the file is empty', () => {
+    it('如果文件为空，应返回 0', () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(accountsFile(), '');
       expect(getLifetimeGoogleAccounts()).toBe(0);
     });
 
-    it('should return 0 if the file is corrupted', () => {
+    it('如果文件损坏，应返回 0', () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(accountsFile(), 'invalid json');
       const consoleDebugSpy = vi
@@ -201,7 +201,7 @@ describe('user_account', () => {
       expect(consoleDebugSpy).toHaveBeenCalled();
     });
 
-    it('should return 1 if there is only an active account', () => {
+    it('如果只有活跃账户，应返回 1', () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(
         accountsFile(),
@@ -210,7 +210,7 @@ describe('user_account', () => {
       expect(getLifetimeGoogleAccounts()).toBe(1);
     });
 
-    it('should correctly count old accounts when active is null', () => {
+    it('当活跃账户为 null 时，应正确计算旧账户数量', () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(
         accountsFile(),
@@ -222,7 +222,7 @@ describe('user_account', () => {
       expect(getLifetimeGoogleAccounts()).toBe(2);
     });
 
-    it('should correctly count both active and old accounts', () => {
+    it('应正确计算活跃账户和旧账户的总数', () => {
       fs.mkdirSync(path.dirname(accountsFile()), { recursive: true });
       fs.writeFileSync(
         accountsFile(),

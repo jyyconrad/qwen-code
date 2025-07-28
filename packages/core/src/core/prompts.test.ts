@@ -8,7 +8,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { getCoreSystemPrompt } from './prompts.js';
 import { isGitRepository } from '../utils/gitUtils.js';
 
-// Mock tool names if they are dynamically generated or complex
+// 如果工具名称是动态生成或复杂的，则进行模拟
 vi.mock('../tools/ls', () => ({ LSTool: { Name: 'list_directory' } }));
 vi.mock('../tools/edit', () => ({ EditTool: { Name: 'replace' } }));
 vi.mock('../tools/glob', () => ({ GlobTool: { Name: 'glob' } }));
@@ -27,16 +27,16 @@ vi.mock('../utils/gitUtils', () => ({
   isGitRepository: vi.fn(),
 }));
 
-describe('Core System Prompt (prompts.ts)', () => {
-  it('should return the base prompt when no userMemory is provided', () => {
+describe('核心系统提示（prompts.ts）', () => {
+  it('当未提供 userMemory 时应返回基础提示', () => {
     vi.stubEnv('SANDBOX', undefined);
     const prompt = getCoreSystemPrompt();
-    expect(prompt).not.toContain('---\n\n'); // Separator should not be present
-    expect(prompt).toContain('You are an interactive CLI agent'); // Check for core content
-    expect(prompt).toMatchSnapshot(); // Use snapshot for base prompt structure
+    expect(prompt).not.toContain('---\n\n'); // 分隔符不应存在
+    expect(prompt).toContain('You are an interactive CLI agent'); // 检查核心内容
+    expect(prompt).toMatchSnapshot(); // 使用快照记录基础提示结构
   });
 
-  it('should return the base prompt when userMemory is empty string', () => {
+  it('当 userMemory 为空字符串时应返回基础提示', () => {
     vi.stubEnv('SANDBOX', undefined);
     const prompt = getCoreSystemPrompt('');
     expect(prompt).not.toContain('---\n\n');
@@ -44,7 +44,7 @@ describe('Core System Prompt (prompts.ts)', () => {
     expect(prompt).toMatchSnapshot();
   });
 
-  it('should return the base prompt when userMemory is whitespace only', () => {
+  it('当 userMemory 仅为空白字符时应返回基础提示', () => {
     vi.stubEnv('SANDBOX', undefined);
     const prompt = getCoreSystemPrompt('   \n  \t ');
     expect(prompt).not.toContain('---\n\n');
@@ -52,19 +52,19 @@ describe('Core System Prompt (prompts.ts)', () => {
     expect(prompt).toMatchSnapshot();
   });
 
-  it('should append userMemory with separator when provided', () => {
+  it('当提供 userMemory 时应附加分隔符和记忆内容', () => {
     vi.stubEnv('SANDBOX', undefined);
-    const memory = 'This is custom user memory.\nBe extra polite.';
+    const memory = '这是自定义用户记忆。\n请格外礼貌。';
     const expectedSuffix = `\n\n---\n\n${memory}`;
     const prompt = getCoreSystemPrompt(memory);
 
     expect(prompt.endsWith(expectedSuffix)).toBe(true);
-    expect(prompt).toContain('You are an interactive CLI agent'); // Ensure base prompt follows
-    expect(prompt).toMatchSnapshot(); // Snapshot the combined prompt
+    expect(prompt).toContain('You are an interactive CLI agent'); // 确保基础提示跟随其后
+    expect(prompt).toMatchSnapshot(); // 快照记录组合后的提示
   });
 
-  it('should include sandbox-specific instructions when SANDBOX env var is set', () => {
-    vi.stubEnv('SANDBOX', 'true'); // Generic sandbox value
+  it('当设置 SANDBOX 环境变量时应包含沙箱特定指令', () => {
+    vi.stubEnv('SANDBOX', 'true'); // 通用沙箱值
     const prompt = getCoreSystemPrompt();
     expect(prompt).toContain('# Sandbox');
     expect(prompt).not.toContain('# MacOS Seatbelt');
@@ -72,7 +72,7 @@ describe('Core System Prompt (prompts.ts)', () => {
     expect(prompt).toMatchSnapshot();
   });
 
-  it('should include seatbelt-specific instructions when SANDBOX env var is "sandbox-exec"', () => {
+  it('当 SANDBOX 环境变量为 "sandbox-exec" 时应包含安全带特定指令', () => {
     vi.stubEnv('SANDBOX', 'sandbox-exec');
     const prompt = getCoreSystemPrompt();
     expect(prompt).toContain('# MacOS Seatbelt');
@@ -81,8 +81,8 @@ describe('Core System Prompt (prompts.ts)', () => {
     expect(prompt).toMatchSnapshot();
   });
 
-  it('should include non-sandbox instructions when SANDBOX env var is not set', () => {
-    vi.stubEnv('SANDBOX', undefined); // Ensure it's not set
+  it('当未设置 SANDBOX 环境变量时应包含非沙箱指令', () => {
+    vi.stubEnv('SANDBOX', undefined); // 确保未设置
     const prompt = getCoreSystemPrompt();
     expect(prompt).toContain('# Outside of Sandbox');
     expect(prompt).not.toContain('# Sandbox');
@@ -90,7 +90,7 @@ describe('Core System Prompt (prompts.ts)', () => {
     expect(prompt).toMatchSnapshot();
   });
 
-  it('should include git instructions when in a git repo', () => {
+  it('当处于 git 仓库中时应包含 git 指令', () => {
     vi.stubEnv('SANDBOX', undefined);
     vi.mocked(isGitRepository).mockReturnValue(true);
     const prompt = getCoreSystemPrompt();
@@ -98,7 +98,7 @@ describe('Core System Prompt (prompts.ts)', () => {
     expect(prompt).toMatchSnapshot();
   });
 
-  it('should not include git instructions when not in a git repo', () => {
+  it('当不处于 git 仓库中时不应包含 git 指令', () => {
     vi.stubEnv('SANDBOX', undefined);
     vi.mocked(isGitRepository).mockReturnValue(false);
     const prompt = getCoreSystemPrompt();

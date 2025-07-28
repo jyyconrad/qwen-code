@@ -1,45 +1,45 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /*
-**Background & Purpose:**
+**背景与目的：**
 
-The `findSafeSplitPoint` function is designed to address the challenge of displaying or processing large, potentially streaming, pieces of Markdown text. When content (e.g., from an LLM like Gemini) arrives in chunks or grows too large for a single display unit (like a message bubble), it needs to be split. A naive split (e.g., just at a character limit) can break Markdown formatting, especially critical for multi-line elements like code blocks, lists, or blockquotes, leading to incorrect rendering.
+`findSafeSplitPoint` 函数旨在解决显示或处理大段 Markdown 文本（可能是流式传输）的挑战。当内容（例如来自 Gemini 等 LLM）以块状到达，或者内容太大而无法在单个显示单元（如消息气泡）中完整显示时，就需要进行分割。简单的分割方式（例如按字符限制直接切分）可能会破坏 Markdown 格式，特别是对于代码块、列表或块引用等多行元素，导致渲染错误。
 
-This function aims to find an *intelligent* or "safe" index within the provided `content` string at which to make such a split, prioritizing the preservation of Markdown integrity.
+该函数的目标是在提供的 `content` 字符串中找到一个“智能”或“安全”的索引位置进行分割，优先保证 Markdown 结构的完整性。
 
-**Key Expectations & Behavior (Prioritized):**
+**关键期望与行为（按优先级排序）：**
 
-1.  **No Split if Short Enough:**
-    * If `content.length` is less than or equal to `idealMaxLength`, the function should return `content.length` (indicating no split is necessary for length reasons).
+1.  **长度足够短则不分割：**
+    * 如果 `content.length` 小于或等于 `idealMaxLength`，函数应返回 `content.length`（表示因长度原因无需分割）。
 
-2.  **Code Block Integrity (Highest Priority for Safety):**
-    * The function must try to avoid splitting *inside* a fenced code block (i.e., between ` ``` ` and ` ``` `).
-    * If `idealMaxLength` falls within a code block:
-        * The function will attempt to return an index that splits the content *before* the start of that code block.
-        * If a code block starts at the very beginning of the `content` and `idealMaxLength` falls within it (meaning the block itself is too long for the first chunk), the function might return `0`. This effectively makes the first chunk empty, pushing the entire oversized code block to the second part of the split.
-    * When considering splits near code blocks, the function prefers to keep the entire code block intact in one of the resulting chunks.
+2.  **代码块完整性（安全性的最高优先级）：**
+    * 函数必须尽量避免在围栏代码块内（即在 ` ``` ` 和 ` ``` ` 之间）进行分割。
+    * 如果 `idealMaxLength` 落在某个代码块内部：
+        * 函数将尝试返回一个索引，将内容分割在该代码块*之前*。
+        * 如果代码块从 `content` 的开头就开始，而 `idealMaxLength` 落在其中（意味着该代码块本身太长，无法放入第一个块），函数可能会返回 `0`。这实际上会使第一个块为空，将整个超长的代码块推到分割后的第二部分。
+    * 在考虑代码块附近的分割点时，函数倾向于将整个代码块保留在其中一个结果块中。
 
-3.  **Markdown-Aware Newline Splitting (If Not Governed by Code Block Logic):**
-    * If `idealMaxLength` does not fall within a code block (or after code block considerations have been made), the function will look for natural break points by scanning backwards from `idealMaxLength`:
-        * **Paragraph Breaks:** It prioritizes splitting after a double newline (`\n\n`), as this typically signifies the end of a paragraph or a block-level element.
-        * **Single Line Breaks:** If no double newline is found in a suitable range, it will look for a single newline (`\n`).
-    * Any newline chosen as a split point must also not be inside a code block.
+3.  **Markdown 感知的换行分割（在不被代码块逻辑主导时）：**
+    * 如果 `idealMaxLength` 不在代码块内（或在考虑完代码块因素后），函数将从 `idealMaxLength` 向前扫描，寻找自然的断点：
+        * **段落分隔符：** 优先选择在双换行符 (`\n\n`) 之后分割，因为这通常表示段落或块级元素的结束。
+        * **单个换行符：** 如果在合适的范围内找不到双换行符，则会寻找单个换行符 (`\n`)。
+    * 任何被选为分割点的换行符都不得位于代码块内。
 
-4.  **Fallback to `idealMaxLength`:**
-    * If no "safer" split point (respecting code blocks or finding suitable newlines) is identified before or at `idealMaxLength`, and `idealMaxLength` itself is not determined to be an unsafe split point (e.g., inside a code block), the function may return a length larger than `idealMaxLength`, again it CANNOT break markdown formatting. This could happen with very long lines of text without Markdown block structures or newlines.
+4.  **回退到 `idealMaxLength`：**
+    * 如果在 `idealMaxLength` 之前未找到更“安全”的分割点（即符合代码块规则或找到合适的换行符），且 `idealMaxLength` 本身不是一个不安全的分割点（例如在代码块内），函数可能会返回一个大于 `idealMaxLength` 的长度，但再次强调，它*不能*破坏 Markdown 格式。这种情况可能出现在没有 Markdown 块结构或换行符的超长文本行中。
 
-**In essence, `findSafeSplitPoint` tries to be a good Markdown citizen when forced to divide content, preferring structural boundaries over arbitrary character limits, with a strong emphasis on not corrupting code blocks.**
+**本质上，`findSafeSplitPoint` 在被迫分割内容时，会努力成为一个良好的 Markdown 公民，优先选择结构性边界而非任意字符限制，并特别强调不破坏代码块。**
 */
 
 /**
- * Checks if a given character index within a string is inside a fenced (```) code block.
- * @param content The full string content.
- * @param indexToTest The character index to test.
- * @returns True if the index is inside a code block's content, false otherwise.
+ * 检查字符串中的给定字符索引是否位于围栏（```）代码块内。
+ * @param content 完整的字符串内容。
+ * @param indexToTest 要测试的字符索引。
+ * @returns 如果索引在代码块内容内则返回 true，否则返回 false。
  */
 const isIndexInsideCodeBlock = (
   content: string,
@@ -59,11 +59,11 @@ const isIndexInsideCodeBlock = (
 };
 
 /**
- * Finds the starting index of the code block that encloses the given index.
- * Returns -1 if the index is not inside a code block.
- * @param content The markdown content.
- * @param index The index to check.
- * @returns Start index of the enclosing code block or -1.
+ * 查找包含给定索引的代码块的起始索引。
+ * 如果索引不在代码块内，则返回 -1。
+ * @param content Markdown 内容。
+ * @param index 要检查的索引。
+ * @returns 包含代码块的起始索引，或 -1。
  */
 const findEnclosingCodeBlockStart = (
   content: string,
@@ -96,16 +96,16 @@ export const findLastSafeSplitPoint = (content: string) => {
     content.length,
   );
   if (enclosingBlockStart !== -1) {
-    // The end of the content is contained in a code block. Split right before.
+    // 内容末尾位于代码块中。在代码块前进行分割。
     return enclosingBlockStart;
   }
 
-  // Search for the last double newline (\n\n) not in a code block.
+  // 搜索不在代码块内的最后一个双换行符 (\n\n)。
   let searchStartIndex = content.length;
   while (searchStartIndex >= 0) {
     const dnlIndex = content.lastIndexOf('\n\n', searchStartIndex);
     if (dnlIndex === -1) {
-      // No more double newlines found.
+      // 未找到更多双换行符。
       break;
     }
 
@@ -114,12 +114,12 @@ export const findLastSafeSplitPoint = (content: string) => {
       return potentialSplitPoint;
     }
 
-    // If potentialSplitPoint was inside a code block,
-    // the next search should start *before* the \n\n we just found to ensure progress.
+    // 如果 potentialSplitPoint 位于代码块内，
+    // 下一次搜索应从刚刚找到的 \n\n *之前* 开始，以确保进度。
     searchStartIndex = dnlIndex - 1;
   }
 
-  // If no safe double newline is found, return content.length
-  // to keep the entire content as one piece.
+  // 如果未找到安全的双换行符，则返回 content.length
+  // 以将整个内容保持为一个整体。
   return content.length;
 };

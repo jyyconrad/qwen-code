@@ -14,23 +14,23 @@ const MAX_ITEMS = 200;
 const TRUNCATION_INDICATOR = '...';
 const DEFAULT_IGNORED_FOLDERS = new Set(['node_modules', '.git', 'dist']);
 
-// --- Interfaces ---
+// --- 接口定义 ---
 
-/** Options for customizing folder structure retrieval. */
+/** 用于自定义文件夹结构检索的选项。 */
 interface FolderStructureOptions {
-  /** Maximum number of files and folders combined to display. Defaults to 200. */
+  /** 要显示的文件和文件夹的最大数量。默认为 200。 */
   maxItems?: number;
-  /** Set of folder names to ignore completely. Case-sensitive. */
+  /** 要完全忽略的文件夹名称集合。区分大小写。 */
   ignoredFolders?: Set<string>;
-  /** Optional regex to filter included files by name. */
+  /** 可选的正则表达式，用于按名称筛选包含的文件。 */
   fileIncludePattern?: RegExp;
-  /** For filtering files. */
+  /** 用于筛选文件。 */
   fileService?: FileDiscoveryService;
-  /** Whether to use .gitignore patterns. */
+  /** 是否使用 .gitignore 模式。 */
   respectGitIgnore?: boolean;
 }
 
-// Define a type for the merged options where fileIncludePattern remains optional
+// 定义合并选项的类型，其中 fileIncludePattern 保持可选
 type MergedFolderStructureOptions = Required<
   Omit<FolderStructureOptions, 'fileIncludePattern' | 'fileService'>
 > & {
@@ -38,22 +38,22 @@ type MergedFolderStructureOptions = Required<
   fileService?: FileDiscoveryService;
 };
 
-/** Represents the full, unfiltered information about a folder and its contents. */
+/** 表示文件夹及其内容的完整未过滤信息。 */
 interface FullFolderInfo {
   name: string;
   path: string;
   files: string[];
   subFolders: FullFolderInfo[];
-  totalChildren: number; // Number of files and subfolders included from this folder during BFS scan
-  totalFiles: number; // Number of files included from this folder during BFS scan
-  isIgnored?: boolean; // Flag to easily identify ignored folders later
-  hasMoreFiles?: boolean; // Indicates if files were truncated for this specific folder
-  hasMoreSubfolders?: boolean; // Indicates if subfolders were truncated for this specific folder
+  totalChildren: number; // 在 BFS 扫描期间从此文件夹包含的文件和子文件夹数量
+  totalFiles: number; // 在 BFS 扫描期间从此文件夹包含的文件数量
+  isIgnored?: boolean; // 标志，用于稍后轻松识别被忽略的文件夹
+  hasMoreFiles?: boolean; // 表示此特定文件夹的文件是否被截断
+  hasMoreSubfolders?: boolean; // 表示此特定文件夹的子文件夹是否被截断
 }
 
-// --- Interfaces ---
+// --- 接口定义 ---
 
-// --- Helper Functions ---
+// --- 辅助函数 ---
 
 async function readFullStructure(
   rootPath: string,
@@ -73,9 +73,9 @@ async function readFullStructure(
     { folderInfo: rootNode, currentPath: rootPath },
   ];
   let currentItemCount = 0;
-  // Count the root node itself as one item if we are not just listing its content
+  // 如果我们不只是列出其内容，则将根节点本身计为一项
 
-  const processedPaths = new Set<string>(); // To avoid processing same path if symlinks create loops
+  const processedPaths = new Set<string>(); // 为避免处理相同路径（如果符号链接创建循环）
 
   while (queue.length > 0) {
     const { folderInfo, currentPath } = queue.shift()!;
@@ -86,16 +86,16 @@ async function readFullStructure(
     processedPaths.add(currentPath);
 
     if (currentItemCount >= options.maxItems) {
-      // If the root itself caused us to exceed, we can't really show anything.
-      // Otherwise, this folder won't be processed further.
-      // The parent that queued this would have set its own hasMoreSubfolders flag.
+      // 如果根节点本身导致我们超出限制，我们实际上无法显示任何内容。
+      // 否则，此文件夹将不会被进一步处理。
+      // 将其加入队列的父级应已设置其自己的 hasMoreSubfolders 标志。
       continue;
     }
 
     let entries: Dirent[];
     try {
       const rawEntries = await fs.readdir(currentPath, { withFileTypes: true });
-      // Sort entries alphabetically by name for consistent processing order
+      // 按名称对条目进行字母排序以确保处理顺序一致
       entries = rawEntries.sort((a, b) => a.name.localeCompare(b.name));
     } catch (error: unknown) {
       if (
@@ -103,12 +103,12 @@ async function readFullStructure(
         (error.code === 'EACCES' || error.code === 'ENOENT')
       ) {
         console.warn(
-          `Warning: Could not read directory ${currentPath}: ${error.message}`,
+          `警告: 无法读取目录 ${currentPath}: ${error.message}`,
         );
         if (currentPath === rootPath && error.code === 'ENOENT') {
-          return null; // Root directory itself not found
+          return null; // 根目录本身不存在
         }
-        // For other EACCES/ENOENT on subdirectories, just skip them.
+        // 对于子目录上的其他 EACCES/ENOENT 错误，只需跳过它们。
         continue;
       }
       throw error;
@@ -117,7 +117,7 @@ async function readFullStructure(
     const filesInCurrentDir: string[] = [];
     const subFoldersInCurrentDir: FullFolderInfo[] = [];
 
-    // Process files first in the current directory
+    // 首先处理当前目录中的文件
     for (const entry of entries) {
       if (entry.isFile()) {
         if (currentItemCount >= options.maxItems) {
@@ -144,18 +144,18 @@ async function readFullStructure(
     }
     folderInfo.files = filesInCurrentDir;
 
-    // Then process directories and queue them
+    // 然后处理目录并将其加入队列
     for (const entry of entries) {
       if (entry.isDirectory()) {
-        // Check if adding this directory ITSELF would meet or exceed maxItems
-        // (currentItemCount refers to items *already* added before this one)
+        // 检查添加此目录本身是否会达到或超过 maxItems
+        // (currentItemCount 指的是在此之前已添加的项目)
         if (currentItemCount >= options.maxItems) {
           folderInfo.hasMoreSubfolders = true;
-          break; // Already at limit, cannot add this folder or any more
+          break; // 已达到限制，无法添加此文件夹或任何更多文件夹
         }
-        // If adding THIS folder makes us hit the limit exactly, and it might have children,
-        // it's better to show '...' for the parent, unless this is the very last item slot.
-        // This logic is tricky. Let's try a simpler: if we can't add this item, mark and break.
+        // 如果添加此文件夹使我们恰好达到限制，并且它可能有子项，
+        // 最好为父级显示 '...'，除非这是最后一个项目槽位。
+        // 此逻辑很棘手。让我们尝试一个更简单的：如果我们无法添加此项目，则标记并跳出。
 
         const subFolderName = entry.name;
         const subFolderPath = path.join(currentPath, subFolderName);
@@ -178,8 +178,8 @@ async function readFullStructure(
             isIgnored: true,
           };
           subFoldersInCurrentDir.push(ignoredSubFolder);
-          currentItemCount++; // Count the ignored folder itself
-          folderInfo.totalChildren++; // Also counts towards parent's children
+          currentItemCount++; // 计算被忽略的文件夹本身
+          folderInfo.totalChildren++; // 也计入父级的子项
           continue;
         }
 
@@ -193,9 +193,9 @@ async function readFullStructure(
         };
         subFoldersInCurrentDir.push(subFolderNode);
         currentItemCount++;
-        folderInfo.totalChildren++; // Counts towards parent's children
+        folderInfo.totalChildren++; // 计入父级的子项
 
-        // Add to queue for processing its children later
+        // 添加到队列中以便稍后处理其子项
         queue.push({ folderInfo: subFolderNode, currentPath: subFolderPath });
       }
     }
@@ -206,11 +206,11 @@ async function readFullStructure(
 }
 
 /**
- * Reads the directory structure using BFS, respecting maxItems.
- * @param node The current node in the reduced structure.
- * @param indent The current indentation string.
- * @param isLast Sibling indicator.
- * @param builder Array to build the string lines.
+ * 使用 BFS 读取目录结构，遵守 maxItems 限制。
+ * @param node 简化结构中的当前节点。
+ * @param indent 当前缩进字符串。
+ * @param isLast 兄弟节点指示符。
+ * @param builder 用于构建字符串行的数组。
  */
 function formatStructure(
   node: FullFolderInfo,
@@ -221,24 +221,24 @@ function formatStructure(
 ): void {
   const connector = isLastChildOfParent ? '└───' : '├───';
 
-  // The root node of the structure (the one passed initially to getFolderStructure)
-  // is not printed with a connector line itself, only its name as a header.
-  // Its children are printed relative to that conceptual root.
-  // Ignored root nodes ARE printed with a connector.
+  // 结构的根节点（最初传递给 getFolderStructure 的节点）
+  // 不会使用连接线本身打印，只会打印其名称作为标题。
+  // 其子项相对于该概念根节点打印。
+  // 被忽略的根节点会使用连接线打印。
   if (!isProcessingRootNode || node.isIgnored) {
     builder.push(
       `${currentIndent}${connector}${node.name}/${node.isIgnored ? TRUNCATION_INDICATOR : ''}`,
     );
   }
 
-  // Determine the indent for the children of *this* node.
-  // If *this* node was the root of the whole structure, its children start with no indent before their connectors.
-  // Otherwise, children's indent extends from the current node's indent.
+  // 确定此节点子项的缩进。
+  // 如果此节点是整个结构的根节点，则其子项在连接线前不缩进。
+  // 否则，子项的缩进从当前节点的缩进扩展。
   const indentForChildren = isProcessingRootNode
     ? ''
     : currentIndent + (isLastChildOfParent ? '    ' : '│   ');
 
-  // Render files of the current node
+  // 渲染当前节点的文件
   const fileCount = node.files.length;
   for (let i = 0; i < fileCount; i++) {
     const isLastFileAmongSiblings =
@@ -255,12 +255,12 @@ function formatStructure(
     builder.push(`${indentForChildren}${fileConnector}${TRUNCATION_INDICATOR}`);
   }
 
-  // Render subfolders of the current node
+  // 渲染当前节点的子文件夹
   const subFolderCount = node.subFolders.length;
   for (let i = 0; i < subFolderCount; i++) {
     const isLastSubfolderAmongSiblings =
       i === subFolderCount - 1 && !node.hasMoreSubfolders;
-    // Children are never the root node being processed initially.
+    // 子项永远不会是最初处理的根节点。
     formatStructure(
       node.subFolders[i],
       indentForChildren,
@@ -274,16 +274,16 @@ function formatStructure(
   }
 }
 
-// --- Main Exported Function ---
+// --- 主要导出函数 ---
 
 /**
- * Generates a string representation of a directory's structure,
- * limiting the number of items displayed. Ignored folders are shown
- * followed by '...' instead of their contents.
+ * 生成目录结构的字符串表示，
+ * 限制显示的项目数量。被忽略的文件夹会显示
+ * 后跟 '...' 而不是其内容。
  *
- * @param directory The absolute or relative path to the directory.
- * @param options Optional configuration settings.
- * @returns A promise resolving to the formatted folder structure string.
+ * @param directory 目录的绝对或相对路径。
+ * @param options 可选的配置设置。
+ * @returns 解析为格式化文件夹结构字符串的 Promise。
  */
 export async function getFolderStructure(
   directory: string,
@@ -299,24 +299,24 @@ export async function getFolderStructure(
   };
 
   try {
-    // 1. Read the structure using BFS, respecting maxItems
+    // 1. 使用 BFS 读取结构，遵守 maxItems 限制
     const structureRoot = await readFullStructure(resolvedPath, mergedOptions);
 
     if (!structureRoot) {
-      return `Error: Could not read directory "${resolvedPath}". Check path and permissions.`;
+      return `错误: 无法读取目录 "${resolvedPath}"。请检查路径和权限。`;
     }
 
-    // 2. Format the structure into a string
+    // 2. 将结构格式化为字符串
     const structureLines: string[] = [];
-    // Pass true for isRoot for the initial call
+    // 为初始调用传递 true 表示是根节点
     formatStructure(structureRoot, '', true, true, structureLines);
 
-    // 3. Build the final output string
+    // 3. 构建最终输出字符串
     const displayPath = resolvedPath.replace(/\\/g, '/');
 
     let disclaimer = '';
-    // Check if truncation occurred anywhere or if ignored folders are present.
-    // A simple check: if any node indicates more files/subfolders, or is ignored.
+    // 检查是否在任何地方发生了截断或是否存在被忽略的文件夹。
+    // 简单检查：如果任何节点指示有更多文件/子文件夹，或被忽略。
     let truncationOccurred = false;
     function checkForTruncation(node: FullFolderInfo) {
       if (node.hasMoreFiles || node.hasMoreSubfolders || node.isIgnored) {
@@ -332,16 +332,16 @@ export async function getFolderStructure(
     checkForTruncation(structureRoot);
 
     if (truncationOccurred) {
-      disclaimer = `Folders or files indicated with ${TRUNCATION_INDICATOR} contain more items not shown, were ignored, or the display limit (${mergedOptions.maxItems} items) was reached.`;
+      disclaimer = `带有 ${TRUNCATION_INDICATOR} 标记的文件夹或文件包含未显示的更多项目，已被忽略，或已达到显示限制 (${mergedOptions.maxItems} 个项目)。`;
     }
 
     const summary =
-      `Showing up to ${mergedOptions.maxItems} items (files + folders). ${disclaimer}`.trim();
+      `最多显示 ${mergedOptions.maxItems} 个项目（文件 + 文件夹）。 ${disclaimer}`.trim();
 
     const output = `${summary}\n\n${displayPath}/\n${structureLines.join('\n')}`;
     return output;
   } catch (error: unknown) {
-    console.error(`Error getting folder structure for ${resolvedPath}:`, error);
-    return `Error processing directory "${resolvedPath}": ${getErrorMessage(error)}`;
+    console.error(`获取 ${resolvedPath} 的文件夹结构时出错:`, error);
+    return `处理目录 "${resolvedPath}" 时出错: ${getErrorMessage(error)}`;
   }
 }

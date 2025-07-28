@@ -5,16 +5,16 @@
  */
 
 /**
- * Integration test to verify circular reference handling with proxy agents
+ * 集成测试：验证代理代理中的循环引用处理
  */
 
 import { describe, it, expect } from 'vitest';
 import { ClearcutLogger } from './clearcut-logger/clearcut-logger.js';
 import { Config } from '../config/config.js';
 
-describe('Circular Reference Integration Test', () => {
-  it('should handle HttpsProxyAgent-like circular references in clearcut logging', () => {
-    // Create a mock config with proxy
+describe('循环引用集成测试', () => {
+  it('应在 clearcut 日志记录中处理类似 HttpsProxyAgent 的循环引用', () => {
+    // 创建一个带代理的模拟配置
     const mockConfig = {
       getTelemetryEnabled: () => true,
       getUsageStatisticsEnabled: () => true,
@@ -25,7 +25,7 @@ describe('Circular Reference Integration Test', () => {
       getProxy: () => 'http://proxy.example.com:8080',
     } as unknown as Config;
 
-    // Simulate the structure that causes the circular reference error
+    // 模拟导致循环引用错误的结构
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const proxyAgentLike: any = {
       sockets: {},
@@ -40,19 +40,19 @@ describe('Circular Reference Integration Test', () => {
       },
     };
 
-    socketLike._httpMessage.socket = socketLike; // Create circular reference
+    socketLike._httpMessage.socket = socketLike; // 创建循环引用
     proxyAgentLike.sockets['cloudcode-pa.googleapis.com:443'] = [socketLike];
 
-    // Create an event that would contain this circular structure
+    // 创建一个包含此循环结构的事件
     const problematicEvent = {
-      error: new Error('Network error'),
+      error: new Error('网络错误'),
       function_args: {
         filePath: '/test/file.txt',
-        httpAgent: proxyAgentLike, // This would cause the circular reference
+        httpAgent: proxyAgentLike, // 这将导致循环引用
       },
     };
 
-    // Test that ClearcutLogger can handle this
+    // 测试 ClearcutLogger 能否处理此情况
     const logger = ClearcutLogger.getInstance(mockConfig);
 
     expect(() => {

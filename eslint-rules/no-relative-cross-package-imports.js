@@ -5,7 +5,7 @@
  */
 
 /**
- * @fileoverview Disallows relative imports between specified monorepo packages.
+ * @fileoverview 禁止在指定的 monorepo 包之间使用相对导入。
  */
 'use strict';
 
@@ -13,22 +13,21 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 /**
- * Finds the package name by searching for the nearest `package.json` file
- * in the directory hierarchy, starting from the given file's directory
- * and moving upwards until the specified root directory is reached.
- * It reads the `package.json` and extracts the `name` property.
+ * 通过在目录层级中搜索最近的 `package.json` 文件来查找包名，
+ * 从给定文件的目录开始向上搜索，直到到达指定的根目录为止。
+ * 它读取 `package.json` 并提取 `name` 属性。
  *
- * @requires module:path Node.js path module
- * @requires module:fs Node.js fs module
+ * @requires module:path Node.js path 模块
+ * @requires module:fs Node.js fs 模块
  *
- * @param {string} filePath - The path (absolute or relative) to a file within the potential package structure.
- * The search starts from the directory containing this file.
- * @param {string} root - The absolute path to the root directory of the project/monorepo.
- * The upward search stops when this directory is reached.
- * @returns {string | undefined | null} The value of the `name` field from the first `package.json` found.
- * Returns `undefined` if the `name` field doesn't exist in the found `package.json`.
- * Returns `null` if no `package.json` is found before reaching the `root` directory.
- * @throws {Error} Can throw an error if `fs.readFileSync` fails (e.g., permissions) or if `JSON.parse` fails on invalid JSON content.
+ * @param {string} filePath - 潜在包结构内某个文件的路径（绝对或相对）。
+ * 搜索从包含该文件的目录开始。
+ * @param {string} root - 项目/monorepo 根目录的绝对路径。
+ * 向上的搜索会在到达此目录时停止。
+ * @returns {string | undefined | null} 从找到的第一个 `package.json` 中提取的 `name` 字段值。
+ * 如果找到的 `package.json` 中不存在 `name` 字段，则返回 `undefined`。
+ * 如果在到达 `root` 目录之前未找到 `package.json`，则返回 `null`。
+ * @throws {Error} 当 `fs.readFileSync` 失败（例如权限问题）或 `JSON.parse` 在无效 JSON 内容上失败时可能抛出错误。
  */
 function findPackageName(filePath, root) {
   let currentDir = path.dirname(path.resolve(filePath));
@@ -40,21 +39,21 @@ function findPackageName(filePath, root) {
       return pkg.name;
     }
 
-    // Move up one level
+    // 向上移动一级
     currentDir = parentDir;
-    // Safety break if we somehow reached the root directly in the loop condition (less likely with path.resolve)
+    // 安全退出：如果以某种方式直接在循环条件中到达了根目录（使用 path.resolve 时不太可能发生）
     if (path.dirname(currentDir) === currentDir) break;
   }
 
-  return null; // Not found within the expected structure
+  return null; // 在预期结构中未找到
 }
 
 export default {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Disallow relative imports between packages.',
-      category: 'Best Practices',
+      description: '禁止包之间使用相对导入。',
+      category: '最佳实践',
       recommended: 'error',
     },
     fixable: 'code',
@@ -65,7 +64,7 @@ export default {
           root: {
             type: 'string',
             description:
-              'Absolute path to the root of all relevant packages to consider.',
+              '所有相关包的根目录的绝对路径。',
           },
         },
         required: ['root'],
@@ -74,9 +73,9 @@ export default {
     ],
     messages: {
       noRelativePathsForCrossPackageImport:
-        "Relative import '{{importedPath}}' crosses package boundary from '{{importingPackage}}' to '{{importedPackage}}'. Use a direct package import ('{{importedPackage}}') instead.",
+        "相对导入 '{{importedPath}}' 跨越了从 '{{importingPackage}}' 到 '{{importedPackage}}' 的包边界。请使用直接包导入 ('{{importedPackage}}') 代替。",
       relativeImportIsInvalidPackage:
-        "Relative import '{{importedPath}}' does not reference a valid package. All source must be in a package directory.",
+        "相对导入 '{{importedPath}}' 未引用有效包。所有源代码必须位于包目录中。",
     },
   },
 
@@ -90,13 +89,13 @@ export default {
       currentFilePath === '<input>' ||
       currentFilePath === '<text>'
     ) {
-      // Skip if filename is not available (e.g., linting raw text)
+      // 如果文件名不可用（例如，对原始文本进行 lint），则跳过
       return {};
     }
 
     const currentPackage = findPackageName(currentFilePath, allPackagesRoot);
 
-    // If the current file isn't inside a package structure, don't apply the rule
+    // 如果当前文件不在包结构内，则不应用此规则
     if (!currentPackage) {
       return {};
     }
@@ -106,7 +105,7 @@ export default {
         const importingPackage = currentPackage;
         const importedPath = node.source.value;
 
-        // Only interested in relative paths
+        // 只关注相对路径
         if (
           !importedPath ||
           typeof importedPath !== 'string' ||
@@ -115,19 +114,19 @@ export default {
           return;
         }
 
-        // Resolve the absolute path of the imported module
+        // 解析导入模块的绝对路径
         const absoluteImportPath = path.resolve(
           path.dirname(currentFilePath),
           importedPath,
         );
 
-        // Find the package information for the imported file
+        // 查找导入文件的包信息
         const importedPackage = findPackageName(
           absoluteImportPath,
           allPackagesRoot,
         );
 
-        // If the imported file isn't in a recognized package, report issue
+        // 如果导入的文件不在已识别的包中，则报告问题
         if (!importedPackage) {
           context.report({
             node: node.source,
@@ -137,11 +136,11 @@ export default {
           return;
         }
 
-        // The core check: Are the source and target packages different?
+        // 核心检查：源包和目标包是否不同？
         if (currentPackage !== importedPackage) {
-          // We found a relative import crossing package boundaries
+          // 我们发现了一个跨越包边界的相对导入
           context.report({
-            node: node.source, // Report the error on the source string literal
+            node: node.source, // 在源字符串字面量上报告错误
             messageId: 'noRelativePathsForCrossPackageImport',
             data: {
               importedPath,

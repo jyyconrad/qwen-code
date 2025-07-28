@@ -18,11 +18,13 @@ import {
   ToolCallDecision,
 } from './types.js';
 
+// UI 事件类型
 export type UiEvent =
   | (ApiResponseEvent & { 'event.name': typeof EVENT_API_RESPONSE })
   | (ApiErrorEvent & { 'event.name': typeof EVENT_API_ERROR })
   | (ToolCallEvent & { 'event.name': typeof EVENT_TOOL_CALL });
 
+// 工具调用统计信息
 export interface ToolCallStats {
   count: number;
   success: number;
@@ -35,6 +37,7 @@ export interface ToolCallStats {
   };
 }
 
+// 模型指标
 export interface ModelMetrics {
   api: {
     totalRequests: number;
@@ -51,6 +54,7 @@ export interface ModelMetrics {
   };
 }
 
+// 会话指标
 export interface SessionMetrics {
   models: Record<string, ModelMetrics>;
   tools: {
@@ -67,6 +71,7 @@ export interface SessionMetrics {
   };
 }
 
+// 创建初始模型指标
 const createInitialModelMetrics = (): ModelMetrics => ({
   api: {
     totalRequests: 0,
@@ -83,6 +88,7 @@ const createInitialModelMetrics = (): ModelMetrics => ({
   },
 });
 
+// 创建初始指标
 const createInitialMetrics = (): SessionMetrics => ({
   models: {},
   tools: {
@@ -99,10 +105,12 @@ const createInitialMetrics = (): SessionMetrics => ({
   },
 });
 
+// UI 遥测服务
 export class UiTelemetryService extends EventEmitter {
   #metrics: SessionMetrics = createInitialMetrics();
   #lastPromptTokenCount = 0;
 
+  // 添加事件
   addEvent(event: UiEvent) {
     switch (event['event.name']) {
       case EVENT_API_RESPONSE:
@@ -115,7 +123,7 @@ export class UiTelemetryService extends EventEmitter {
         this.processToolCall(event);
         break;
       default:
-        // We should not emit update for any other event metric.
+        // 我们不应为任何其他事件指标发出更新。
         return;
     }
 
@@ -125,14 +133,17 @@ export class UiTelemetryService extends EventEmitter {
     });
   }
 
+  // 获取指标
   getMetrics(): SessionMetrics {
     return this.#metrics;
   }
 
+  // 获取最后的提示词数量
   getLastPromptTokenCount(): number {
     return this.#lastPromptTokenCount;
   }
 
+  // 获取或创建模型指标
   private getOrCreateModelMetrics(modelName: string): ModelMetrics {
     if (!this.#metrics.models[modelName]) {
       this.#metrics.models[modelName] = createInitialModelMetrics();
@@ -140,6 +151,7 @@ export class UiTelemetryService extends EventEmitter {
     return this.#metrics.models[modelName];
   }
 
+  // 处理 API 响应
   private processApiResponse(event: ApiResponseEvent) {
     const modelMetrics = this.getOrCreateModelMetrics(event.model);
 
@@ -156,6 +168,7 @@ export class UiTelemetryService extends EventEmitter {
     this.#lastPromptTokenCount = event.input_token_count;
   }
 
+  // 处理 API 错误
   private processApiError(event: ApiErrorEvent) {
     const modelMetrics = this.getOrCreateModelMetrics(event.model);
     modelMetrics.api.totalRequests++;
@@ -163,6 +176,7 @@ export class UiTelemetryService extends EventEmitter {
     modelMetrics.api.totalLatencyMs += event.duration_ms;
   }
 
+  // 处理工具调用
   private processToolCall(event: ToolCallEvent) {
     const { tools } = this.#metrics;
     tools.totalCalls++;
@@ -204,4 +218,5 @@ export class UiTelemetryService extends EventEmitter {
   }
 }
 
+// UI 遥测服务实例
 export const uiTelemetryService = new UiTelemetryService();

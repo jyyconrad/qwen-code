@@ -13,7 +13,7 @@ import { glob } from 'glob';
 import { CommandContext, SlashCommand } from '../commands/types.js';
 import { Config, FileDiscoveryService } from '@google/gemini-cli-core';
 
-// Mock dependencies
+// 模拟依赖项
 vi.mock('fs/promises');
 vi.mock('glob');
 vi.mock('@google/gemini-cli-core', async () => {
@@ -61,42 +61,42 @@ describe('useCompletion', () => {
       {
         name: 'help',
         altName: '?',
-        description: 'Show help',
+        description: '显示帮助',
         action: vi.fn(),
       },
       {
         name: 'clear',
-        description: 'Clear the screen',
+        description: '清屏',
         action: vi.fn(),
       },
       {
         name: 'memory',
-        description: 'Manage memory',
+        description: '管理内存',
         subCommands: [
           {
             name: 'show',
-            description: 'Show memory',
+            description: '显示内存',
             action: vi.fn(),
           },
           {
             name: 'add',
-            description: 'Add to memory',
+            description: '添加到内存',
             action: vi.fn(),
           },
         ],
       },
       {
         name: 'chat',
-        description: 'Manage chat history',
+        description: '管理聊天历史',
         subCommands: [
           {
             name: 'save',
-            description: 'Save chat',
+            description: '保存聊天',
             action: vi.fn(),
           },
           {
             name: 'resume',
-            description: 'Resume a saved chat',
+            description: '恢复已保存的聊天',
             action: vi.fn(),
             completion: vi.fn().mockResolvedValue(['chat1', 'chat2']),
           },
@@ -111,8 +111,8 @@ describe('useCompletion', () => {
     vi.restoreAllMocks();
   });
 
-  describe('Hook initialization and state', () => {
-    it('should initialize with default state', () => {
+  describe('Hook 初始化和状态', () => {
+    it('应使用默认状态初始化', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '',
@@ -131,7 +131,7 @@ describe('useCompletion', () => {
       expect(result.current.isLoadingSuggestions).toBe(false);
     });
 
-    it('should reset state when isActive becomes false', () => {
+    it('当 isActive 变为 false 时应重置状态', () => {
       const { result, rerender } = renderHook(
         ({ isActive }) =>
           useCompletion(
@@ -154,7 +154,7 @@ describe('useCompletion', () => {
       expect(result.current.isLoadingSuggestions).toBe(false);
     });
 
-    it('should provide required functions', () => {
+    it('应提供所需函数', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '',
@@ -175,7 +175,7 @@ describe('useCompletion', () => {
   });
 
   describe('resetCompletionState', () => {
-    it('should reset all state to default values', () => {
+    it('应将所有状态重置为默认值', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/help',
@@ -204,8 +204,8 @@ describe('useCompletion', () => {
     });
   });
 
-  describe('Navigation functions', () => {
-    it('should handle navigateUp with no suggestions', () => {
+  describe('导航函数', () => {
+    it('在没有建议时应处理 navigateUp', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '',
@@ -224,7 +224,7 @@ describe('useCompletion', () => {
       expect(result.current.activeSuggestionIndex).toBe(-1);
     });
 
-    it('should handle navigateDown with no suggestions', () => {
+    it('在没有建议时应处理 navigateDown', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '',
@@ -243,7 +243,7 @@ describe('useCompletion', () => {
       expect(result.current.activeSuggestionIndex).toBe(-1);
     });
 
-    it('should navigate up through suggestions with wrap-around', () => {
+    it('应通过建议向上导航并循环', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/h',
@@ -265,7 +265,7 @@ describe('useCompletion', () => {
       expect(result.current.activeSuggestionIndex).toBe(0);
     });
 
-    it('should navigate down through suggestions with wrap-around', () => {
+    it('应通过建议向下导航并循环', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/h',
@@ -287,7 +287,7 @@ describe('useCompletion', () => {
       expect(result.current.activeSuggestionIndex).toBe(0);
     });
 
-    it('should handle navigation with multiple suggestions', () => {
+    it('应处理多个建议的导航', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/',
@@ -328,10 +328,10 @@ describe('useCompletion', () => {
       expect(result.current.activeSuggestionIndex).toBe(3);
     });
 
-    it('should handle navigation with large suggestion lists and scrolling', () => {
+    it('应处理大型建议列表和滚动的导航', () => {
       const largeMockCommands = Array.from({ length: 15 }, (_, i) => ({
         name: `command${i}`,
-        description: `Command ${i}`,
+        description: `命令 ${i}`,
         action: vi.fn(),
       }));
 
@@ -359,8 +359,8 @@ describe('useCompletion', () => {
     });
   });
 
-  describe('Slash command completion', () => {
-    it('should show all commands for root slash', () => {
+  describe('斜杠命令补全', () => {
+    it('应为根斜杠显示所有命令', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/',
@@ -380,7 +380,7 @@ describe('useCompletion', () => {
       expect(result.current.activeSuggestionIndex).toBe(0);
     });
 
-    it('should filter commands by prefix', () => {
+    it('应按前缀过滤命令', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/h',
@@ -394,10 +394,10 @@ describe('useCompletion', () => {
 
       expect(result.current.suggestions).toHaveLength(1);
       expect(result.current.suggestions[0].label).toBe('help');
-      expect(result.current.suggestions[0].description).toBe('Show help');
+      expect(result.current.suggestions[0].description).toBe('显示帮助');
     });
 
-    it('should suggest commands by altName', () => {
+    it('应按 altName 建议命令', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/?',
@@ -413,7 +413,7 @@ describe('useCompletion', () => {
       expect(result.current.suggestions[0].label).toBe('help');
     });
 
-    it('should not show suggestions for exact leaf command match', () => {
+    it('对于精确的叶命令匹配不应显示建议', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/clear',
@@ -429,7 +429,7 @@ describe('useCompletion', () => {
       expect(result.current.showSuggestions).toBe(false);
     });
 
-    it('should show sub-commands for parent commands', () => {
+    it('应为父命令显示子命令', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/memory',
@@ -447,7 +447,7 @@ describe('useCompletion', () => {
       );
     });
 
-    it('should show all sub-commands after parent command with space', () => {
+    it('应在父命令后加空格显示所有子命令', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/memory ',
@@ -465,7 +465,7 @@ describe('useCompletion', () => {
       );
     });
 
-    it('should filter sub-commands by prefix', () => {
+    it('应按前缀过滤子命令', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/memory a',
@@ -481,7 +481,7 @@ describe('useCompletion', () => {
       expect(result.current.suggestions[0].label).toBe('add');
     });
 
-    it('should handle unknown command gracefully', () => {
+    it('应优雅地处理未知命令', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '/unknown',
@@ -498,8 +498,8 @@ describe('useCompletion', () => {
     });
   });
 
-  describe('Command argument completion', () => {
-    it('should call completion function for command arguments', async () => {
+  describe('命令参数补全', () => {
+    it('应为命令参数调用补全函数', async () => {
       const completionFn = vi.fn().mockResolvedValue(['arg1', 'arg2']);
       const commandsWithCompletion = [...mockSlashCommands];
       const chatCommand = commandsWithCompletion.find(
@@ -535,7 +535,7 @@ describe('useCompletion', () => {
       ]);
     });
 
-    it('should call completion function with partial argument', async () => {
+    it('应使用部分参数调用补全函数', async () => {
       const completionFn = vi.fn().mockResolvedValue(['arg1', 'arg2']);
       const commandsWithCompletion = [...mockSlashCommands];
       const chatCommand = commandsWithCompletion.find(
@@ -566,7 +566,7 @@ describe('useCompletion', () => {
       expect(completionFn).toHaveBeenCalledWith(mockCommandContext, 'ar');
     });
 
-    it('should handle completion function that returns null', async () => {
+    it('应处理返回 null 的补全函数', async () => {
       const completionFn = vi.fn().mockResolvedValue(null);
       const commandsWithCompletion = [...mockSlashCommands];
       const chatCommand = commandsWithCompletion.find(
@@ -599,7 +599,7 @@ describe('useCompletion', () => {
     });
   });
 
-  describe('File path completion (@-syntax)', () => {
+  describe('文件路径补全 (@-语法)', () => {
     beforeEach(() => {
       vi.mocked(fs.readdir).mockResolvedValue([
         { name: 'file1.txt', isDirectory: () => false },
@@ -609,7 +609,7 @@ describe('useCompletion', () => {
       ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
     });
 
-    it('should show file completions for @ prefix', async () => {
+    it('应为 @ 前缀显示文件补全', async () => {
       const { result } = renderHook(() =>
         useCompletion(
           '@',
@@ -631,8 +631,8 @@ describe('useCompletion', () => {
       );
     });
 
-    it('should filter files by prefix', async () => {
-      // Mock for recursive search since enableRecursiveFileSearch is true
+    it('应按前缀过滤文件', async () => {
+      // 由于 enableRecursiveFileSearch 为 true，模拟递归搜索
       vi.mocked(glob).mockResolvedValue([
         `${testCwd}/file1.txt`,
         `${testCwd}/file2.js`,
@@ -659,8 +659,8 @@ describe('useCompletion', () => {
       );
     });
 
-    it('should include hidden files when prefix starts with dot', async () => {
-      // Mock for recursive search since enableRecursiveFileSearch is true
+    it('当前缀以点开头时应包含隐藏文件', async () => {
+      // 由于 enableRecursiveFileSearch 为 true，模拟递归搜索
       vi.mocked(glob).mockResolvedValue([`${testCwd}/.hidden`]);
 
       const { result } = renderHook(() =>
@@ -682,7 +682,7 @@ describe('useCompletion', () => {
       expect(result.current.suggestions[0].label).toBe('.hidden');
     });
 
-    it('should handle ENOENT error gracefully', async () => {
+    it('应优雅地处理 ENOENT 错误', async () => {
       const enoentError = new Error('No such file or directory');
       (enoentError as Error & { code: string }).code = 'ENOENT';
       vi.mocked(fs.readdir).mockRejectedValue(enoentError);
@@ -706,7 +706,7 @@ describe('useCompletion', () => {
       expect(result.current.showSuggestions).toBe(false);
     });
 
-    it('should handle other errors by resetting state', async () => {
+    it('应通过重置状态处理其他错误', async () => {
       const consoleErrorSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -736,9 +736,9 @@ describe('useCompletion', () => {
     });
   });
 
-  describe('Debouncing', () => {
-    it('should debounce file completion requests', async () => {
-      // Mock for recursive search since enableRecursiveFileSearch is true
+  describe('防抖', () => {
+    it('应对文件补全请求进行防抖', async () => {
+      // 由于 enableRecursiveFileSearch 为 true，模拟递归搜索
       vi.mocked(glob).mockResolvedValue([`${testCwd}/file1.txt`]);
 
       const { rerender } = renderHook(
@@ -766,8 +766,8 @@ describe('useCompletion', () => {
     });
   });
 
-  describe('Query handling edge cases', () => {
-    it('should handle empty query', () => {
+  describe('查询处理边缘情况', () => {
+    it('应处理空查询', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '',
@@ -783,7 +783,7 @@ describe('useCompletion', () => {
       expect(result.current.showSuggestions).toBe(false);
     });
 
-    it('should handle query without slash or @', () => {
+    it('应处理不带斜杠或 @ 的查询', () => {
       const { result } = renderHook(() =>
         useCompletion(
           'regular text',
@@ -799,7 +799,7 @@ describe('useCompletion', () => {
       expect(result.current.showSuggestions).toBe(false);
     });
 
-    it('should handle query with whitespace', () => {
+    it('应处理带空格的查询', () => {
       const { result } = renderHook(() =>
         useCompletion(
           '   /hel',
@@ -815,8 +815,8 @@ describe('useCompletion', () => {
       expect(result.current.suggestions[0].label).toBe('help');
     });
 
-    it('should handle @ at the end of query', async () => {
-      // Mock for recursive search since enableRecursiveFileSearch is true
+    it('应处理查询末尾的 @', async () => {
+      // 由于 enableRecursiveFileSearch 为 true，模拟递归搜索
       vi.mocked(glob).mockResolvedValue([`${testCwd}/file1.txt`]);
 
       const { result } = renderHook(() =>
@@ -830,20 +830,20 @@ describe('useCompletion', () => {
         ),
       );
 
-      // Wait for completion
+      // 等待补全完成
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 150));
       });
 
-      // Should process the @ query and get suggestions
+      // 应处理 @ 查询并获取建议
       expect(result.current.isLoadingSuggestions).toBe(false);
       expect(result.current.suggestions.length).toBeGreaterThanOrEqual(0);
     });
   });
 
-  describe('File sorting behavior', () => {
-    it('should prioritize source files over test files with same base name', async () => {
-      // Mock glob to return files with same base name but different extensions
+  describe('文件排序行为', () => {
+    it('应优先显示同名基础文件的源文件而非测试文件', async () => {
+      // 模拟 glob 返回具有相同基础名称但不同扩展名的文件
       vi.mocked(glob).mockResolvedValue([
         `${testCwd}/component.test.ts`,
         `${testCwd}/component.ts`,
@@ -872,10 +872,10 @@ describe('useCompletion', () => {
 
       expect(result.current.suggestions).toHaveLength(6);
 
-      // Extract labels for easier testing
+      // 提取标签以便于测试
       const labels = result.current.suggestions.map((s) => s.label);
 
-      // Verify the exact sorted order: source files should come before their test counterparts
+      // 验证确切的排序顺序：源文件应排在其测试文件之前
       expect(labels).toEqual([
         'api.tsx',
         'api.test.tsx',
@@ -887,8 +887,8 @@ describe('useCompletion', () => {
     });
   });
 
-  describe('Config and FileDiscoveryService integration', () => {
-    it('should work without config', async () => {
+  describe('配置和 FileDiscoveryService 集成', () => {
+    it('应在没有配置的情况下工作', async () => {
       vi.mocked(fs.readdir).mockResolvedValue([
         { name: 'file1.txt', isDirectory: () => false },
       ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
@@ -912,7 +912,7 @@ describe('useCompletion', () => {
       expect(result.current.suggestions[0].label).toBe('file1.txt');
     });
 
-    it('should respect file filtering when config is provided', async () => {
+    it('当提供配置时应尊重文件过滤', async () => {
       vi.mocked(fs.readdir).mockResolvedValue([
         { name: 'file1.txt', isDirectory: () => false },
         { name: 'ignored.log', isDirectory: () => false },

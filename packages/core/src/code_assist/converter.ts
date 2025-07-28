@@ -156,10 +156,10 @@ function toVertexGenerateContentRequest(
 
 function toContents(contents: ContentListUnion): Content[] {
   if (Array.isArray(contents)) {
-    // it's a Content[] or a PartsUnion[]
+    // 它是一个 Content[] 或 PartsUnion[]
     return contents.map(toContent);
   }
-  // it's a Content or a PartsUnion
+  // 它是一个 Content 或 PartsUnion
   return [toContent(contents)];
 }
 
@@ -172,24 +172,24 @@ function maybeToContent(content?: ContentUnion): Content | undefined {
 
 function toContent(content: ContentUnion): Content {
   if (Array.isArray(content)) {
-    // it's a PartsUnion[]
+    // 它是一个 PartsUnion[]
     return {
       role: 'user',
       parts: toParts(content),
     };
   }
   if (typeof content === 'string') {
-    // it's a string
+    // 它是一个字符串
     return {
       role: 'user',
       parts: [{ text: content }],
     };
   }
   if ('parts' in content) {
-    // it's a Content
+    // 它是一个 Content
     return content;
   }
-  // it's a Part
+  // 它是一个 Part
   return {
     role: 'user',
     parts: [content as Part],
@@ -202,7 +202,7 @@ function toParts(parts: PartUnion[]): Part[] {
 
 function toPart(part: PartUnion): Part {
   if (typeof part === 'string') {
-    // it's a string
+    // 它是一个字符串
     return { text: part };
   }
   return part;

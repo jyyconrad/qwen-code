@@ -15,7 +15,7 @@ import { themeCommand } from '../ui/commands/themeCommand.js';
 import { privacyCommand } from '../ui/commands/privacyCommand.js';
 import { aboutCommand } from '../ui/commands/aboutCommand.js';
 
-// Mock the command modules to isolate the service from the command implementations.
+// 模拟命令模块以将服务与命令实现隔离
 vi.mock('../ui/commands/memoryCommand.js', () => ({
   memoryCommand: { name: 'memory', description: 'Mock Memory' },
 }));
@@ -54,14 +54,14 @@ describe('CommandService', () => {
 
     describe('loadCommands', () => {
       it('should load the built-in commands into the command tree', async () => {
-        // Pre-condition check
+        // 前置条件检查
         expect(commandService.getCommands().length).toBe(0);
 
-        // Action
+        // 操作
         await commandService.loadCommands();
         const tree = commandService.getCommands();
 
-        // Post-condition assertions
+        // 后置条件断言
         expect(tree.length).toBe(7);
 
         const commandNames = tree.map((cmd) => cmd.name);
@@ -75,15 +75,15 @@ describe('CommandService', () => {
       });
 
       it('should overwrite any existing commands when called again', async () => {
-        // Load once
+        // 加载一次
         await commandService.loadCommands();
         expect(commandService.getCommands().length).toBe(7);
 
-        // Load again
+        // 再次加载
         await commandService.loadCommands();
         const tree = commandService.getCommands();
 
-        // Should not append, but overwrite
+        // 不应追加，而应覆盖
         expect(tree.length).toBe(7);
       });
     });
@@ -112,27 +112,27 @@ describe('CommandService', () => {
 
   describe('when initialized with an injected loader function', () => {
     it('should use the provided loader instead of the built-in one', async () => {
-      // Arrange: Create a set of mock commands.
+      // 安排：创建一组模拟命令
       const mockCommands: SlashCommand[] = [
         { name: 'injected-test-1', description: 'injected 1' },
         { name: 'injected-test-2', description: 'injected 2' },
       ];
 
-      // Arrange: Create a mock loader FUNCTION that resolves with our mock commands.
+      // 安排：创建一个解析为我们的模拟命令的模拟加载器函数
       const mockLoader = vi.fn().mockResolvedValue(mockCommands);
 
-      // Act: Instantiate the service WITH the injected loader function.
+      // 操作：使用注入的加载器函数实例化服务
       const commandService = new CommandService(mockLoader);
       await commandService.loadCommands();
       const tree = commandService.getCommands();
 
-      // Assert: The tree should contain ONLY our injected commands.
-      expect(mockLoader).toHaveBeenCalled(); // Verify our mock loader was actually called.
+      // 断言：树应仅包含我们注入的命令
+      expect(mockLoader).toHaveBeenCalled(); // 验证我们的模拟加载器确实被调用了
       expect(tree.length).toBe(2);
       expect(tree).toEqual(mockCommands);
 
       const commandNames = tree.map((cmd) => cmd.name);
-      expect(commandNames).not.toContain('memory'); // Verify it didn't load production commands.
+      expect(commandNames).not.toContain('memory'); // 验证它没有加载生产命令
     });
   });
 });

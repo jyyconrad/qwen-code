@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,7 +10,7 @@ import { LoadedSettings } from '../config/settings.js';
 import { GitService } from '@google/gemini-cli-core';
 import { SessionStatsState } from '../ui/contexts/SessionContext.js';
 
-// A utility type to make all properties of an object, and its nested objects, partial.
+// 一个工具类型，使对象及其嵌套对象的所有属性都变为可选。
 type DeepPartial<T> = T extends object
   ? {
       [P in keyof T]?: DeepPartial<T[P]>;
@@ -18,11 +18,11 @@ type DeepPartial<T> = T extends object
   : T;
 
 /**
- * Creates a deep, fully-typed mock of the CommandContext for use in tests.
- * All functions are pre-mocked with `vi.fn()`.
+ * 创建一个深度、完全类型的 CommandContext 模拟对象，用于测试。
+ * 所有函数都预先使用 `vi.fn()` 进行模拟。
  *
- * @param overrides - A deep partial object to override any default mock values.
- * @returns A complete, mocked CommandContext object.
+ * @param overrides - 一个深度部分对象，用于覆盖任何默认的模拟值。
+ * @returns 一个完整的、模拟的 CommandContext 对象。
  */
 export const createMockCommandContext = (
   overrides: DeepPartial<CommandContext> = {},
@@ -38,7 +38,7 @@ export const createMockCommandContext = (
         saveCheckpoint: vi.fn(),
         loadCheckpoint: vi.fn().mockResolvedValue([]),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any, // Cast because Logger is a class.
+      } as any, // 强制转换，因为 Logger 是一个类。
     },
     ui: {
       addItem: vi.fn(),

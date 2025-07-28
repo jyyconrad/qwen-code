@@ -25,7 +25,7 @@ export const ContextSummaryDisplay: React.FC<ContextSummaryDisplayProps> = ({
   const mcpServerCount = Object.keys(mcpServers || {}).length;
 
   if (geminiMdFileCount === 0 && mcpServerCount === 0) {
-    return <Text> </Text>; // Render an empty space to reserve height
+    return <Text> </Text>; // 渲染一个空格以保留高度
   }
 
   const geminiMdText = (() => {
@@ -44,21 +44,21 @@ export const ContextSummaryDisplay: React.FC<ContextSummaryDisplayProps> = ({
       ? `${mcpServerCount} MCP server${mcpServerCount > 1 ? 's' : ''}`
       : '';
 
-  let summaryText = 'Using ';
+  let summaryText = '使用 ';
   if (geminiMdText) {
     summaryText += geminiMdText;
   }
   if (geminiMdText && mcpText) {
-    summaryText += ' and ';
+    summaryText += ' 和 ';
   }
   if (mcpText) {
     summaryText += mcpText;
-    // Add ctrl+t hint when MCP servers are available
+    // 当 MCP 服务器可用时添加 ctrl+t 提示
     if (mcpServers && Object.keys(mcpServers).length > 0) {
       if (showToolDescriptions) {
-        summaryText += ' (ctrl+t to toggle)';
+        summaryText += ' (按 ctrl+t 切换)';
       } else {
-        summaryText += ' (ctrl+t to view)';
+        summaryText += ' (按 ctrl+t 查看)';
       }
     }
   }

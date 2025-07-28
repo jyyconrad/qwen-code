@@ -16,23 +16,23 @@ describe('themeCommand', () => {
     mockContext = createMockCommandContext();
   });
 
-  it('should return a dialog action to open the theme dialog', () => {
-    // Ensure the command has an action to test.
+  it('应返回一个对话框操作以打开主题对话框', () => {
+    // 确保命令具有要测试的操作。
     if (!themeCommand.action) {
-      throw new Error('The theme command must have an action.');
+      throw new Error('主题命令必须具有操作。');
     }
 
     const result = themeCommand.action(mockContext, '');
 
-    // Assert that the action returns the correct object to trigger the theme dialog.
+    // 断言操作返回正确的对象以触发主题对话框。
     expect(result).toEqual({
       type: 'dialog',
       dialog: 'theme',
     });
   });
 
-  it('should have the correct name and description', () => {
+  it('应具有正确的名称和描述', () => {
     expect(themeCommand.name).toBe('theme');
-    expect(themeCommand.description).toBe('change the theme');
+    expect(themeCommand.description).toBe('更改主题');
   });
 });

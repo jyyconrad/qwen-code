@@ -40,7 +40,7 @@ export const HistoryItemDisplay: React.FC<HistoryItemDisplayProps> = ({
   isFocused = true,
 }) => (
   <Box flexDirection="column" key={item.id}>
-    {/* Render standard message types */}
+    {/* 渲染标准消息类型 */}
     {item.type === 'user' && <UserMessage text={item.text} />}
     {item.type === 'user_shell' && <UserShellMessage text={item.text} />}
     {item.type === 'gemini' && (

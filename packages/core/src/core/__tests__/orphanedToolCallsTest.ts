@@ -5,21 +5,21 @@
  */
 
 /**
- * Test cases for orphaned tool calls cleanup
+ * 孤立工具调用清理的测试用例
  */
 
 export const createTestMessages = () => [
-  // System message
+  // 系统消息
   {
     role: 'system' as const,
     content: 'You are a helpful assistant.',
   },
-  // User message
+  // 用户消息
   {
     role: 'user' as const,
     content: 'Please use a tool to help me.',
   },
-  // Assistant message with tool calls (some will be orphaned)
+  // 包含工具调用的助手消息（部分将被孤立）
   {
     role: 'assistant' as const,
     content: 'I will help you with that.',
@@ -41,7 +41,7 @@ export const createTestMessages = () => [
         },
       },
       {
-        id: 'call_3', // This will be orphaned
+        id: 'call_3', // 这将被孤立
         type: 'function' as const,
         function: {
           name: 'send_email',
@@ -50,21 +50,21 @@ export const createTestMessages = () => [
       },
     ],
   },
-  // Tool response for call_1
+  // call_1 的工具响应
   {
     role: 'tool' as const,
     tool_call_id: 'call_1',
     content: 'Search results: Found relevant information.',
   },
-  // Tool response for call_2
+  // call_2 的工具响应
   {
     role: 'tool' as const,
     tool_call_id: 'call_2',
     content: 'Calculation result: 4',
   },
-  // Note: No tool response for call_3 (this creates the orphaned tool call issue)
+  // 注意：没有 call_3 的工具响应（这造成了孤立工具调用问题）
 
-  // User continues conversation
+  // 用户继续对话
   {
     role: 'user' as const,
     content: 'Thank you, that was helpful.',
@@ -72,17 +72,17 @@ export const createTestMessages = () => [
 ];
 
 export const expectedCleanedMessages = () => [
-  // System message (unchanged)
+  // 系统消息（未更改）
   {
     role: 'system' as const,
     content: 'You are a helpful assistant.',
   },
-  // User message (unchanged)
+  // 用户消息（未更改）
   {
     role: 'user' as const,
     content: 'Please use a tool to help me.',
   },
-  // Assistant message with only valid tool calls
+  // 仅包含有效工具调用的助手消息
   {
     role: 'assistant' as const,
     content: 'I will help you with that.',
@@ -103,10 +103,10 @@ export const expectedCleanedMessages = () => [
           arguments: '{"expression": "2+2"}',
         },
       },
-      // call_3 removed because it has no response
+      // call_3 已移除，因为它没有响应
     ],
   },
-  // Tool responses (unchanged because they have corresponding calls)
+  // 工具响应（未更改，因为它们有对应的调用）
   {
     role: 'tool' as const,
     tool_call_id: 'call_1',
@@ -117,7 +117,7 @@ export const expectedCleanedMessages = () => [
     tool_call_id: 'call_2',
     content: 'Calculation result: 4',
   },
-  // User message (unchanged)
+  // 用户消息（未更改）
   {
     role: 'user' as const,
     content: 'Thank you, that was helpful.',

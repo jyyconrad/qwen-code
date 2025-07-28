@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -33,16 +33,16 @@ const EditConfig: GenerateContentConfig = {
 
 const MAX_CACHE_SIZE = 50;
 
-// Cache for ensureCorrectEdit results
+// ensureCorrectEdit 结果的缓存
 const editCorrectionCache = new LruCache<string, CorrectedEditResult>(
   MAX_CACHE_SIZE,
 );
 
-// Cache for ensureCorrectFileContent results
+// ensureCorrectFileContent 结果的缓存
 const fileContentCorrectionCache = new LruCache<string, string>(MAX_CACHE_SIZE);
 
 /**
- * Defines the structure of the parameters within CorrectedEditResult
+ * 定义 CorrectedEditResult 中参数的结构
  */
 interface CorrectedEditParams {
   file_path: string;
@@ -51,7 +51,7 @@ interface CorrectedEditParams {
 }
 
 /**
- * Defines the result structure for ensureCorrectEdit.
+ * 定义 ensureCorrectEdit 的结果结构。
  */
 export interface CorrectedEditResult {
   params: CorrectedEditParams;
@@ -59,10 +59,10 @@ export interface CorrectedEditResult {
 }
 
 /**
- * Extracts the timestamp from the .id value, which is in format
+ * 从 .id 值中提取时间戳，格式为
  * <tool.name>-<timestamp>-<uuid>
- * @param fcnId the ID value of a functionCall or functionResponse object
- * @returns -1 if the timestamp could not be extracted, else the timestamp (as a number)
+ * @param fcnId 函数调用或函数响应对象的 ID 值
+ * @returns 如果无法提取时间戳则返回 -1，否则返回时间戳（数字）
  */
 function getTimestampFromFunctionId(fcnId: string): number {
   const idParts = fcnId.split('-');
@@ -76,11 +76,11 @@ function getTimestampFromFunctionId(fcnId: string): number {
 }
 
 /**
- * Will look through the gemini client history and determine when the most recent
- * edit to a target file occured. If no edit happened, it will return -1
- * @param filePath the path to the file
- * @param client the geminiClient, so that we can get the history
- * @returns a DateTime (as a number) of when the last edit occured, or -1 if no edit was found.
+ * 将查看 gemini 客户端历史记录并确定对目标文件的最近一次编辑何时发生。
+ * 如果没有发生编辑，将返回 -1
+ * @param filePath 文件路径
+ * @param client geminiClient，用于获取历史记录
+ * @returns 上次编辑发生的时间（数字形式的 DateTime），如果未找到编辑则返回 -1。
  */
 async function findLastEditTimestamp(
   filePath: string,
@@ -88,17 +88,17 @@ async function findLastEditTimestamp(
 ): Promise<number> {
   const history = (await client.getHistory()) ?? [];
 
-  // Tools that may reference the file path in their FunctionResponse `output`.
+  // 可能在其 FunctionResponse `output` 中引用文件路径的工具。
   const toolsInResp = new Set([
     WriteFileTool.Name,
     EditTool.Name,
     ReadManyFilesTool.Name,
     GrepTool.Name,
   ]);
-  // Tools that may reference the file path in their FunctionCall `args`.
+  // 可能在其 FunctionCall `args` 中引用文件路径的工具。
   const toolsInCall = new Set([...toolsInResp, ReadFileTool.Name]);
 
-  // Iterate backwards to find the most recent relevant action.
+  // 反向迭代以找到最近的相关操作。
   for (const entry of history.slice().reverse()) {
     if (!entry.parts) continue;
 
@@ -106,7 +106,7 @@ async function findLastEditTimestamp(
       let id: string | undefined;
       let content: unknown;
 
-      // Check for a relevant FunctionCall with the file path in its arguments.
+      // 检查带有文件路径参数的相关 FunctionCall。
       if (
         isFunctionCall(entry) &&
         part.functionCall?.name &&
@@ -115,7 +115,7 @@ async function findLastEditTimestamp(
         id = part.functionCall.id;
         content = part.functionCall.args;
       }
-      // Check for a relevant FunctionResponse with the file path in its output.
+      // 检查带有文件路径输出的相关 FunctionResponse。
       else if (
         isFunctionResponse(entry) &&
         part.functionResponse?.name &&
@@ -130,14 +130,13 @@ async function findLastEditTimestamp(
 
       if (!id || content === undefined) continue;
 
-      // Use the "blunt hammer" approach to find the file path in the content.
-      // Note that the tool response data is inconsistent in their formatting
-      // with successes and errors - so, we just check for the existance
-      // as the best guess to if error/failed occured with the response.
+      // 使用“钝锤”方法在内容中查找文件路径。
+      // 注意，工具响应数据在成功和错误情况下的格式不一致 - 所以我们只是检查是否存在，
+      // 作为对响应是否发生错误/失败的最佳猜测。
       const stringified = JSON.stringify(content);
       if (
-        !stringified.includes('Error') && // only applicable for functionResponse
-        !stringified.includes('Failed') && // only applicable for functionResponse
+        !stringified.includes('Error') && // 仅适用于 functionResponse
+        !stringified.includes('Failed') && // 仅适用于 functionResponse
         stringified.includes(filePath)
       ) {
         return getTimestampFromFunctionId(id);
@@ -149,20 +148,19 @@ async function findLastEditTimestamp(
 }
 
 /**
- * Attempts to correct edit parameters if the original old_string is not found.
- * It tries unescaping, and then LLM-based correction.
- * Results are cached to avoid redundant processing.
+ * 如果原始 old_string 未找到，则尝试纠正编辑参数。
+ * 它会尝试取消转义，然后基于 LLM 进行纠正。
+ * 结果会被缓存以避免重复处理。
  *
- * @param currentContent The current content of the file.
- * @param originalParams The original EditToolParams
- * @param client The GeminiClient for LLM calls.
- * @returns A promise resolving to an object containing the (potentially corrected)
- *          EditToolParams (as CorrectedEditParams) and the final occurrences count.
+ * @param currentContent 文件的当前内容。
+ * @param originalParams 原始 EditToolParams
+ * @param client 用于 LLM 调用的 GeminiClient。
+ * @returns 解析为包含（可能已纠正的）EditToolParams（作为 CorrectedEditParams）和最终出现次数的对象的 Promise。
  */
 export async function ensureCorrectEdit(
   filePath: string,
   currentContent: string,
-  originalParams: EditToolParams, // This is the EditToolParams from edit.ts, without \'corrected\'
+  originalParams: EditToolParams, // 这是来自 edit.ts 的 EditToolParams，不包含 'corrected'
   client: GeminiClient,
   abortSignal: AbortSignal,
 ): Promise<CorrectedEditResult> {
@@ -194,7 +192,7 @@ export async function ensureCorrectEdit(
   } else if (occurrences > expectedReplacements) {
     const expectedReplacements = originalParams.expected_replacements ?? 1;
 
-    // If user expects multiple replacements, return as-is
+    // 如果用户期望多次替换，按原样返回
     if (occurrences === expectedReplacements) {
       const result: CorrectedEditResult = {
         params: { ...originalParams },
@@ -204,7 +202,7 @@ export async function ensureCorrectEdit(
       return result;
     }
 
-    // If user expects 1 but found multiple, try to correct (existing behavior)
+    // 如果用户期望 1 次但找到多次，尝试纠正（现有行为）
     if (expectedReplacements === 1) {
       const result: CorrectedEditResult = {
         params: { ...originalParams },
@@ -214,7 +212,7 @@ export async function ensureCorrectEdit(
       return result;
     }
 
-    // If occurrences don't match expected, return as-is (will fail validation later)
+    // 如果出现次数与预期不符，按原样返回（稍后将失败验证）
     const result: CorrectedEditResult = {
       params: { ...originalParams },
       occurrences,
@@ -222,7 +220,7 @@ export async function ensureCorrectEdit(
     editCorrectionCache.set(cacheKey, result);
     return result;
   } else {
-    // occurrences is 0 or some other unexpected state initially
+    // 出现次数最初为 0 或其他意外状态
     const unescapedOldStringAttempt = unescapeStringForGeminiBug(
       originalParams.old_string,
     );
@@ -233,34 +231,32 @@ export async function ensureCorrectEdit(
       if (newStringPotentiallyEscaped) {
         finalNewString = await correctNewString(
           client,
-          originalParams.old_string, // original old
-          unescapedOldStringAttempt, // corrected old
-          originalParams.new_string, // original new (which is potentially escaped)
+          originalParams.old_string, // 原始旧值
+          unescapedOldStringAttempt, // 纠正后的旧值
+          originalParams.new_string, // 原始新值（可能是转义的）
           abortSignal,
         );
       }
     } else if (occurrences === 0) {
       if (filePath) {
-        // In order to keep from clobbering edits made outside our system,
-        // let's check if there was a more recent edit to the file than what
-        // our system has done
+        // 为了避免覆盖系统外的编辑，
+        // 让我们检查文件是否有比我们系统更近期的编辑
         const lastEditedByUsTime = await findLastEditTimestamp(
           filePath,
           client,
         );
 
-        // Add a 1-second buffer to account for timing inaccuracies. If the file
-        // was modified more than a second after the last edit tool was run, we
-        // can assume it was modified by something else.
+        // 添加 1 秒缓冲区以考虑时间不准确。如果文件
+        // 在上次编辑工具运行后超过一秒被修改，我们可以假设它被其他东西修改了。
         if (lastEditedByUsTime > 0) {
           const stats = fs.statSync(filePath);
           const diff = stats.mtimeMs - lastEditedByUsTime;
           if (diff > 2000) {
-            // Hard coded for 2 seconds
-            // This file was edited sooner
+            // 硬编码为 2 秒
+            // 此文件被更早编辑
             const result: CorrectedEditResult = {
               params: { ...originalParams },
-              occurrences: 0, // Explicitly 0 as LLM failed
+              occurrences: 0, // 明确为 0，因为 LLM 失败
             };
             editCorrectionCache.set(cacheKey, result);
             return result;
@@ -289,26 +285,26 @@ export async function ensureCorrectEdit(
           );
           finalNewString = await correctNewString(
             client,
-            originalParams.old_string, // original old
-            llmCorrectedOldString, // corrected old
-            baseNewStringForLLMCorrection, // base new for correction
+            originalParams.old_string, // 原始旧值
+            llmCorrectedOldString, // 纠正后的旧值
+            baseNewStringForLLMCorrection, // 用于纠正的基础新值
             abortSignal,
           );
         }
       } else {
-        // LLM correction also failed for old_string
+        // LLM 对 old_string 的纠正也失败了
         const result: CorrectedEditResult = {
           params: { ...originalParams },
-          occurrences: 0, // Explicitly 0 as LLM failed
+          occurrences: 0, // 明确为 0，因为 LLM 失败
         };
         editCorrectionCache.set(cacheKey, result);
         return result;
       }
     } else {
-      // Unescaping old_string resulted in > 1 occurrence
+      // 取消转义 old_string 导致 > 1 次出现
       const result: CorrectedEditResult = {
         params: { ...originalParams },
-        occurrences, // This will be > 1
+        occurrences, // 这将 > 1
       };
       editCorrectionCache.set(cacheKey, result);
       return result;
@@ -324,14 +320,14 @@ export async function ensureCorrectEdit(
   finalOldString = targetString;
   finalNewString = pair;
 
-  // Final result construction
+  // 最终结果构建
   const result: CorrectedEditResult = {
     params: {
       file_path: originalParams.file_path,
       old_string: finalOldString,
       new_string: finalNewString,
     },
-    occurrences: countOccurrences(currentContent, finalOldString), // Recalculate occurrences with the final old_string
+    occurrences: countOccurrences(currentContent, finalOldString), // 使用最终的 old_string 重新计算出现次数
   };
   editCorrectionCache.set(cacheKey, result);
   return result;
@@ -363,14 +359,14 @@ export async function ensureCorrectFileContent(
   return correctedContent;
 }
 
-// Define the expected JSON schema for the LLM response for old_string correction
+// 为 old_string 纠正定义 LLM 响应的预期 JSON 模式
 const OLD_STRING_CORRECTION_SCHEMA: SchemaUnion = {
   type: Type.OBJECT,
   properties: {
     corrected_target_snippet: {
       type: Type.STRING,
       description:
-        'The corrected version of the target snippet that exactly and uniquely matches a segment within the provided file content.',
+        '目标片段的纠正版本，与提供的文件内容中的段落完全且唯一匹配。',
     },
   },
   required: ['corrected_target_snippet'],
@@ -383,24 +379,24 @@ export async function correctOldStringMismatch(
   abortSignal: AbortSignal,
 ): Promise<string> {
   const prompt = `
-Context: A process needs to find an exact literal, unique match for a specific text snippet within a file's content. The provided snippet failed to match exactly. This is most likely because it has been overly escaped.
+上下文：一个进程需要在文件内容中找到特定文本片段的完全字面、唯一匹配。提供的片段未能完全匹配。这很可能是因为它被过度转义了。
 
-Task: Analyze the provided file content and the problematic target snippet. Identify the segment in the file content that the snippet was *most likely* intended to match. Output the *exact*, literal text of that segment from the file content. Focus *only* on removing extra escape characters and correcting formatting, whitespace, or minor differences to achieve a PERFECT literal match. The output must be the exact literal text as it appears in the file.
+任务：分析提供的文件内容和有问题的目标片段。识别文件内容中最可能与该片段匹配的段落。输出该段落的完全字面文本。仅专注于移除多余的转义字符和纠正格式、空白或微小差异，以实现完美的字面匹配。输出必须是文件中出现的完全字面文本。
 
-Problematic target snippet:
+有问题的目标片段：
 \`\`\`
 ${problematicSnippet}
 \`\`\`
 
-File Content:
+文件内容：
 \`\`\`
 ${fileContent}
 \`\`\`
 
-For example, if the problematic target snippet was "\\\\\\nconst greeting = \`Hello \\\\\`\${name}\\\\\`\`;" and the file content had content that looked like "\nconst greeting = \`Hello ${'\\`'}\${name}${'\\`'}\`;", then corrected_target_snippet should likely be "\nconst greeting = \`Hello ${'\\`'}\${name}${'\\`'}\`;" to fix the incorrect escaping to match the original file content.
-If the differences are only in whitespace or formatting, apply similar whitespace/formatting changes to the corrected_target_snippet.
+例如，如果问题目标片段是 "\\\\\\nconst greeting = \`Hello \\\\\`\${name}\\\\\`\`;" 而文件内容中有类似 "\nconst greeting = \`Hello ${'\\`'}\${name}${'\\`'}\`;" 的内容，那么 corrected_target_snippet 应该可能是 "\nconst greeting = \`Hello ${'\\`'}\${name}${'\\`'}\`;" 以修复不正确的转义以匹配原始文件内容。
+如果差异仅在于空白或格式，请对 corrected_target_snippet 应用类似的空白/格式更改。
 
-Return ONLY the corrected target snippet in the specified JSON format with the key 'corrected_target_snippet'. If no clear, unique match can be found, return an empty string for 'corrected_target_snippet'.
+仅以指定的 JSON 格式返回纠正后的目标片段，键为 'corrected_target_snippet'。如果找不到明确、唯一的匹配，请为 'corrected_target_snippet' 返回空字符串。
 `.trim();
 
   const contents: Content[] = [{ role: 'user', parts: [{ text: prompt }] }];
@@ -429,7 +425,7 @@ Return ONLY the corrected target snippet in the specified JSON format with the k
     }
 
     console.error(
-      'Error during LLM call for old string snippet correction:',
+      '旧字符串片段纠正期间的 LLM 调用错误：',
       error,
     );
 
@@ -437,21 +433,21 @@ Return ONLY the corrected target snippet in the specified JSON format with the k
   }
 }
 
-// Define the expected JSON schema for the new_string correction LLM response
+// 为 new_string 纠正定义 LLM 响应的预期 JSON 模式
 const NEW_STRING_CORRECTION_SCHEMA: SchemaUnion = {
   type: Type.OBJECT,
   properties: {
     corrected_new_string: {
       type: Type.STRING,
       description:
-        'The original_new_string adjusted to be a suitable replacement for the corrected_old_string, while maintaining the original intent of the change.',
+        '根据纠正后的 old_string 调整的 original_new_string，在保持原始更改意图的同时。',
     },
   },
   required: ['corrected_new_string'],
 };
 
 /**
- * Adjusts the new_string to align with a corrected old_string, maintaining the original intent.
+ * 调整 new_string 以与纠正后的 old_string 对齐，同时保持原始意图。
  */
 export async function correctNewString(
   geminiClient: GeminiClient,
@@ -465,30 +461,30 @@ export async function correctNewString(
   }
 
   const prompt = `
-Context: A text replacement operation was planned. The original text to be replaced (original_old_string) was slightly different from the actual text in the file (corrected_old_string). The original_old_string has now been corrected to match the file content.
-We now need to adjust the replacement text (original_new_string) so that it makes sense as a replacement for the corrected_old_string, while preserving the original intent of the change.
+上下文：计划进行文本替换操作。要替换的原始文本（original_old_string）与文件中的实际文本（corrected_old_string）略有不同。现在 original_old_string 已被纠正以匹配文件内容。
+我们现在需要调整替换文本（original_new_string），使其作为 corrected_old_string 的替换有意义，同时保持原始更改的精神。
 
-original_old_string (what was initially intended to be found):
+original_old_string（最初打算找到的内容）：
 \`\`\`
 ${originalOldString}
 \`\`\`
 
-corrected_old_string (what was actually found in the file and will be replaced):
+corrected_old_string（实际在文件中找到并将被替换的内容）：
 \`\`\`
 ${correctedOldString}
 \`\`\`
 
-original_new_string (what was intended to replace original_old_string):
+original_new_string（打算替换 original_old_string 的内容）：
 \`\`\`
 ${originalNewString}
 \`\`\`
 
-Task: Based on the differences between original_old_string and corrected_old_string, and the content of original_new_string, generate a corrected_new_string. This corrected_new_string should be what original_new_string would have been if it was designed to replace corrected_old_string directly, while maintaining the spirit of the original transformation.
+任务：基于 original_old_string 和 corrected_old_string 之间的差异以及 original_new_string 的内容，生成 corrected_new_string。这个 corrected_new_string 应该是如果 original_new_string 是直接设计来替换 corrected_old_string 时的样子，同时保持原始转换的精神。
 
-For example, if original_old_string was "\\\\\\nconst greeting = \`Hello \\\\\`\${name}\\\\\`\`;" and corrected_old_string is "\nconst greeting = \`Hello ${'\\`'}\${name}${'\\`'}\`;", and original_new_string was "\\\\\\nconst greeting = \`Hello \\\\\`\${name} \${lastName}\\\\\`\`;", then corrected_new_string should likely be "\nconst greeting = \`Hello ${'\\`'}\${name} \${lastName}${'\\`'}\`;" to fix the incorrect escaping.
-If the differences are only in whitespace or formatting, apply similar whitespace/formatting changes to the corrected_new_string.
+例如，如果 original_old_string 是 "\\\\\\nconst greeting = \`Hello \\\\\`\${name}\\\\\`\`;" 而 corrected_old_string 是 "\nconst greeting = \`Hello ${'\\`'}\${name}${'\\`'}\`;"，并且 original_new_string 是 "\\\\\\nconst greeting = \`Hello \\\\\`\${name} \${lastName}\\\\\`\`;"，那么 corrected_new_string 应该可能是 "\nconst greeting = \`Hello ${'\\`'}\${name} \${lastName}${'\\`'}\`;" 以修复不正确的转义。
+如果差异仅在于空白或格式，请对 corrected_new_string 应用类似的空白/格式更改。
 
-Return ONLY the corrected string in the specified JSON format with the key 'corrected_new_string'. If no adjustment is deemed necessary or possible, return the original_new_string.
+仅以指定的 JSON 格式返回纠正后的字符串，键为 'corrected_new_string'。如果认为不需要或不可能进行调整，请返回 original_new_string。
   `.trim();
 
   const contents: Content[] = [{ role: 'user', parts: [{ text: prompt }] }];
@@ -516,7 +512,7 @@ Return ONLY the corrected string in the specified JSON format with the key 'corr
       throw error;
     }
 
-    console.error('Error during LLM call for new_string correction:', error);
+    console.error('new_string 纠正期间的 LLM 调用错误：', error);
     return originalNewString;
   }
 }
@@ -527,7 +523,7 @@ const CORRECT_NEW_STRING_ESCAPING_SCHEMA: SchemaUnion = {
     corrected_new_string_escaping: {
       type: Type.STRING,
       description:
-        'The new_string with corrected escaping, ensuring it is a proper replacement for the old_string, especially considering potential over-escaping issues from previous LLM generations.',
+        '具有纠正转义的新字符串，确保它是 old_string 的适当替换，特别是考虑到之前 LLM 生成可能存在的过度转义问题。',
     },
   },
   required: ['corrected_new_string_escaping'],
@@ -540,24 +536,24 @@ export async function correctNewStringEscaping(
   abortSignal: AbortSignal,
 ): Promise<string> {
   const prompt = `
-Context: A text replacement operation is planned. The text to be replaced (old_string) has been correctly identified in the file. However, the replacement text (new_string) might have been improperly escaped by a previous LLM generation (e.g. too many backslashes for newlines like \\n instead of \n, or unnecessarily quotes like \\"Hello\\" instead of "Hello").
+上下文：计划进行文本替换操作。要替换的文本（old_string）已在文件中正确识别。然而，替换文本（new_string）可能被之前的 LLM 生成不当地转义了（例如，换行符 \n 的反斜杠太多，如 \\n 而不是 \n，或不必要的引号如 \\"Hello\\" 而不是 "Hello"）。
 
-old_string (this is the exact text that will be replaced):
+old_string（这是将被替换的确切文本）：
 \`\`\`
 ${oldString}
 \`\`\`
 
-potentially_problematic_new_string (this is the text that should replace old_string, but MIGHT have bad escaping, or might be entirely correct):
+potentially_problematic_new_string（这是应该替换 old_string 的文本，但可能有错误的转义，或者完全正确）：
 \`\`\`
 ${potentiallyProblematicNewString}
 \`\`\`
 
-Task: Analyze the potentially_problematic_new_string. If it's syntactically invalid due to incorrect escaping (e.g., "\n", "\t", "\\", "\\'", "\\""), correct the invalid syntax. The goal is to ensure the new_string, when inserted into the code, will be a valid and correctly interpreted.
+任务：分析 potentially_problematic_new_string。如果由于不正确的转义（例如，"\n", "\t", "\\", "\\'", "\\"）导致语法无效，请纠正无效的语法。目标是确保 new_string 插入代码时是有效且正确解释的。
 
-For example, if old_string is "foo" and potentially_problematic_new_string is "bar\\nbaz", the corrected_new_string_escaping should be "bar\nbaz".
-If potentially_problematic_new_string is console.log(\\"Hello World\\"), it should be console.log("Hello World").
+例如，如果 old_string 是 "foo" 而 potentially_problematic_new_string 是 "bar\\nbaz"，那么 corrected_new_string_escaping 应该是 "bar\nbaz"。
+如果 potentially_problematic_new_string 是 console.log(\\"Hello World\\")，它应该是 console.log("Hello World")。
 
-Return ONLY the corrected string in the specified JSON format with the key 'corrected_new_string_escaping'. If no escaping correction is needed, return the original potentially_problematic_new_string.
+仅以指定的 JSON 格式返回纠正后的字符串，键为 'corrected_new_string_escaping'。如果不需要转义纠正，请返回原始的 potentially_problematic_new_string。
   `.trim();
 
   const contents: Content[] = [{ role: 'user', parts: [{ text: prompt }] }];
@@ -586,7 +582,7 @@ Return ONLY the corrected string in the specified JSON format with the key 'corr
     }
 
     console.error(
-      'Error during LLM call for new_string escaping correction:',
+      'new_string 转义纠正期间的 LLM 调用错误：',
       error,
     );
     return potentiallyProblematicNewString;
@@ -599,7 +595,7 @@ const CORRECT_STRING_ESCAPING_SCHEMA: SchemaUnion = {
     corrected_string_escaping: {
       type: Type.STRING,
       description:
-        'The string with corrected escaping, ensuring it is valid, specially considering potential over-escaping issues from previous LLM generations.',
+        '具有纠正转义的字符串，确保它是有效的，特别考虑到之前 LLM 生成可能存在的过度转义问题。',
     },
   },
   required: ['corrected_string_escaping'],
@@ -611,19 +607,19 @@ export async function correctStringEscaping(
   abortSignal: AbortSignal,
 ): Promise<string> {
   const prompt = `
-Context: An LLM has just generated potentially_problematic_string and the text might have been improperly escaped (e.g. too many backslashes for newlines like \\n instead of \n, or unnecessarily quotes like \\"Hello\\" instead of "Hello").
+上下文：LLM 刚刚生成了 potentially_problematic_string，文本可能被不当地转义了（例如，换行符 \n 的反斜杠太多，如 \\n 而不是 \n，或不必要的引号如 \\"Hello\\" 而不是 "Hello"）。
 
-potentially_problematic_string (this text MIGHT have bad escaping, or might be entirely correct):
+potentially_problematic_string（此文本可能有错误的转义，或者完全正确）：
 \`\`\`
 ${potentiallyProblematicString}
 \`\`\`
 
-Task: Analyze the potentially_problematic_string. If it's syntactically invalid due to incorrect escaping (e.g., "\n", "\t", "\\", "\\'", "\\""), correct the invalid syntax. The goal is to ensure the text will be a valid and correctly interpreted.
+任务：分析 potentially_problematic_string。如果由于不正确的转义（例如，"\n", "\t", "\\", "\\'", "\\"）导致语法无效，请纠正无效的语法。目标是确保文本是有效且正确解释的。
 
-For example, if potentially_problematic_string is "bar\\nbaz", the corrected_new_string_escaping should be "bar\nbaz".
-If potentially_problematic_string is console.log(\\"Hello World\\"), it should be console.log("Hello World").
+例如，如果 potentially_problematic_string 是 "bar\\nbaz"，那么 corrected_new_string_escaping 应该是 "bar\nbaz"。
+如果 potentially_problematic_string 是 console.log(\\"Hello World\\")，它应该是 console.log("Hello World")。
 
-Return ONLY the corrected string in the specified JSON format with the key 'corrected_string_escaping'. If no escaping correction is needed, return the original potentially_problematic_string.
+仅以指定的 JSON 格式返回纠正后的字符串，键为 'corrected_string_escaping'。如果不需要转义纠正，请返回原始的 potentially_problematic_string。
   `.trim();
 
   const contents: Content[] = [{ role: 'user', parts: [{ text: prompt }] }];
@@ -652,7 +648,7 @@ Return ONLY the corrected string in the specified JSON format with the key 'corr
     }
 
     console.error(
-      'Error during LLM call for string escaping correction:',
+      '字符串转义纠正期间的 LLM 调用错误：',
       error,
     );
     return potentiallyProblematicString;
@@ -688,45 +684,44 @@ function trimPairIfPossible(
 }
 
 /**
- * Unescapes a string that might have been overly escaped by an LLM.
+ * 取消可能被 LLM 过度转义的字符串。
  */
 export function unescapeStringForGeminiBug(inputString: string): string {
-  // Regex explanation:
-  // \\ : Matches exactly one literal backslash character.
-  // (n|t|r|'|"|`|\\|\n) : This is a capturing group. It matches one of the following:
-  //   n, t, r, ', ", ` : These match the literal characters 'n', 't', 'r', single quote, double quote, or backtick.
-  //                       This handles cases like "\\n", "\\`", etc.
-  //   \\ : This matches a literal backslash. This handles cases like "\\\\" (escaped backslash).
-  //   \n : This matches an actual newline character. This handles cases where the input
-  //        string might have something like "\\\n" (a literal backslash followed by a newline).
-  // g : Global flag, to replace all occurrences.
+  // 正则表达式解释：
+  // \\ : 匹配恰好一个字面反斜杠字符。
+  // (n|t|r|'|"|`|\\|\n) : 这是一个捕获组。它匹配以下之一：
+  //   n, t, r, ', ", ` : 这些匹配字面字符 'n', 't', 'r', 单引号, 双引号, 或反引号。
+  //                       这处理像 "\\n", "\\`" 等情况。
+  //   \\ : 这匹配一个字面反斜杠。这处理像 "\\\\"（转义反斜杠）的情况。
+  //   \n : 这匹配一个实际的换行符。这处理输入字符串中可能有像 "\\\n"（字面反斜杠后跟换行符）的情况。
+  // g : 全局标志，替换所有出现的情况。
 
   return inputString.replace(
     /\\+(n|t|r|'|"|`|\\|\n)/g,
     (match, capturedChar) => {
-      // 'match' is the entire erroneous sequence, e.g., if the input (in memory) was "\\\\`", match is "\\\\`".
-      // 'capturedChar' is the character that determines the true meaning, e.g., '`'.
+      // 'match' 是整个错误序列，例如，如果输入（在内存中）是 "\\\\`"，match 是 "\\\\`"。
+      // 'capturedChar' 是决定真正含义的字符，例如，'`'。
 
       switch (capturedChar) {
         case 'n':
-          return '\n'; // Correctly escaped: \n (newline character)
+          return '\n'; // 正确转义：\n（换行符）
         case 't':
-          return '\t'; // Correctly escaped: \t (tab character)
+          return '\t'; // 正确转义：\t（制表符）
         case 'r':
-          return '\r'; // Correctly escaped: \r (carriage return character)
+          return '\r'; // 正确转义：\r（回车符）
         case "'":
-          return "'"; // Correctly escaped: ' (apostrophe character)
+          return "'"; // 正确转义：'（撇号字符）
         case '"':
-          return '"'; // Correctly escaped: " (quotation mark character)
+          return '"'; // 正确转义："（引号字符）
         case '`':
-          return '`'; // Correctly escaped: ` (backtick character)
-        case '\\': // This handles when 'capturedChar' is a literal backslash
-          return '\\'; // Replace escaped backslash (e.g., "\\\\") with single backslash
-        case '\n': // This handles when 'capturedChar' is an actual newline
-          return '\n'; // Replace the whole erroneous sequence (e.g., "\\\n" in memory) with a clean newline
+          return '`'; // 正确转义：`（反引号字符）
+        case '\\': // 这处理 'capturedChar' 是字面反斜杠的情况
+          return '\\'; // 用单个反斜杠替换转义反斜杠（例如，"\\\\"）
+        case '\n': // 这处理 'capturedChar' 是实际换行符的情况
+          return '\n'; // 用干净的换行符替换整个错误序列（例如，内存中的 "\\\n"）
         default:
-          // This fallback should ideally not be reached if the regex captures correctly.
-          // It would return the original matched sequence if an unexpected character was captured.
+          // 如果正则表达式正确捕获，这个后备方案理想情况下不应该到达。
+          // 如果捕获了意外字符，它将返回原始匹配序列。
           return match;
       }
     },
@@ -734,7 +729,7 @@ export function unescapeStringForGeminiBug(inputString: string): string {
 }
 
 /**
- * Counts occurrences of a substring in a string
+ * 计算字符串中子字符串的出现次数
  */
 export function countOccurrences(str: string, substr: string): number {
   if (substr === '') {
@@ -744,7 +739,7 @@ export function countOccurrences(str: string, substr: string): number {
   let pos = str.indexOf(substr);
   while (pos !== -1) {
     count++;
-    pos = str.indexOf(substr, pos + substr.length); // Start search after the current match
+    pos = str.indexOf(substr, pos + substr.length); // 从当前匹配后开始搜索
   }
   return count;
 }

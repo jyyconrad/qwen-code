@@ -22,7 +22,7 @@ import { useGeminiStream } from './hooks/useGeminiStream.js';
 import { StreamingState } from './types.js';
 import { Tips } from './components/Tips.js';
 
-// Define a more complete mock server config based on actual Config
+// 基于实际 Config 定义更完整的模拟服务器配置
 interface MockServerConfig {
   apiKey: string;
   model: string;
@@ -35,7 +35,7 @@ interface MockServerConfig {
   toolDiscoveryCommand?: string;
   toolCallCommand?: string;
   mcpServerCommand?: string;
-  mcpServers?: Record<string, MCPServerConfig>; // Use imported MCPServerConfig
+  mcpServers?: Record<string, MCPServerConfig>; // 使用导入的 MCPServerConfig
   userAgent: string;
   userMemory: string;
   geminiMdFileCount: number;
@@ -49,7 +49,7 @@ interface MockServerConfig {
   getModel: Mock<() => string>;
   getSandbox: Mock<() => SandboxConfig | undefined>;
   getTargetDir: Mock<() => string>;
-  getToolRegistry: Mock<() => ToolRegistry>; // Use imported ToolRegistry type
+  getToolRegistry: Mock<() => ToolRegistry>; // 使用导入的 ToolRegistry 类型
   getDebugMode: Mock<() => boolean>;
   getQuestion: Mock<() => string | undefined>;
   getFullContext: Mock<() => boolean>;
@@ -74,15 +74,15 @@ interface MockServerConfig {
   getUserTier: Mock<() => Promise<string | undefined>>;
 }
 
-// Mock @iflytek/iflycode-core and its Config class
+// 模拟 @iflytek/iflycode-core 及其 Config 类
 vi.mock('@iflytek/iflycode-core', async (importOriginal) => {
   const actualCore =
     await importOriginal<typeof import('@iflytek/iflycode-core')>();
   const ConfigClassMock = vi
     .fn()
     .mockImplementation((optionsPassedToConstructor) => {
-      const opts = { ...optionsPassedToConstructor }; // Clone
-      // Basic mock structure, will be extended by the instance in tests
+      const opts = { ...optionsPassedToConstructor }; // 克隆
+      // 基本模拟结构，将在测试中的实例中扩展
       return {
         apiKey: opts.apiKey || 'test-key',
         model: opts.model || 'test-model-in-mock-factory',
@@ -109,7 +109,7 @@ vi.mock('@iflytek/iflycode-core', async (importOriginal) => {
         getModel: vi.fn(() => opts.model || 'test-model-in-mock-factory'),
         getSandbox: vi.fn(() => opts.sandbox),
         getTargetDir: vi.fn(() => opts.targetDir || '/test/dir'),
-        getToolRegistry: vi.fn(() => ({}) as ToolRegistry), // Simple mock
+        getToolRegistry: vi.fn(() => ({}) as ToolRegistry), // 简单模拟
         getDebugMode: vi.fn(() => opts.debugMode || false),
         getQuestion: vi.fn(() => opts.question),
         getFullContext: vi.fn(() => opts.fullContext ?? false),
@@ -145,7 +145,7 @@ vi.mock('@iflytek/iflycode-core', async (importOriginal) => {
   };
 });
 
-// Mock heavy dependencies or those with side effects
+// 模拟重量级依赖或有副作用的模块
 vi.mock('./hooks/useGeminiStream', () => ({
   useGeminiStream: vi.fn(() => ({
     streamingState: 'Idle',
@@ -175,7 +175,7 @@ vi.mock('./hooks/useLogger', () => ({
 vi.mock('../config/config.js', async (importOriginal) => {
   const actual = await importOriginal();
   return {
-    // @ts-expect-error - this is fine
+    // @ts-expect-error - 这是可以的
     ...actual,
     loadHierarchicalGeminiMemory: vi
       .fn()
@@ -240,13 +240,13 @@ describe('App UI', () => {
     }) as unknown as MockServerConfig;
     mockVersion = '0.0.0-test';
 
-    // Ensure the getShowMemoryUsage mock function is specifically set up if not covered by constructor mock
+    // 确保 getShowMemoryUsage 模拟函数已设置，如果构造函数模拟未覆盖
     if (!mockConfig.getShowMemoryUsage) {
       mockConfig.getShowMemoryUsage = vi.fn(() => false);
     }
-    mockConfig.getShowMemoryUsage.mockReturnValue(false); // Default for most tests
+    mockConfig.getShowMemoryUsage.mockReturnValue(false); // 大多数测试的默认值
 
-    // Ensure a theme is set so the theme dialog does not appear.
+    // 确保设置了主题，这样主题对话框不会出现。
     mockSettings = createMockSettings({ workspace: { theme: 'Default' } });
   });
 
@@ -255,12 +255,12 @@ describe('App UI', () => {
       currentUnmount();
       currentUnmount = undefined;
     }
-    vi.clearAllMocks(); // Clear mocks after each test
+    vi.clearAllMocks(); // 每次测试后清除模拟
   });
 
   it('should display default "GEMINI.md" in footer when contextFileName is not set and count is 1', async () => {
     mockConfig.getGeminiMdFileCount.mockReturnValue(1);
-    // For this test, ensure showMemoryUsage is false or debugMode is false if it relies on that
+    // 对于此测试，确保 showMemoryUsage 为 false 或 debugMode 为 false（如果依赖于此）
     mockConfig.getDebugMode.mockReturnValue(false);
     mockConfig.getShowMemoryUsage.mockReturnValue(false);
 
@@ -272,7 +272,7 @@ describe('App UI', () => {
       />,
     );
     currentUnmount = unmount;
-    await Promise.resolve(); // Wait for any async updates
+    await Promise.resolve(); // 等待任何异步更新
     expect(lastFrame()).toContain('Using 1 GEMINI.md file');
   });
 
@@ -505,7 +505,7 @@ describe('App UI', () => {
 
     beforeEach(() => {
       originalNoColor = process.env.NO_COLOR;
-      // Ensure no theme is set for these tests
+      // 确保这些测试中未设置主题
       mockSettings = createMockSettings({});
       mockConfig.getDebugMode.mockReturnValue(false);
       mockConfig.getShowMemoryUsage.mockReturnValue(false);
@@ -576,7 +576,7 @@ describe('App UI', () => {
       );
       currentUnmount = unmount;
 
-      // Force a re-render to trigger useEffect
+      // 强制重新渲染以触发 useEffect
       rerender(
         <App
           config={mockConfig as unknown as ServerConfig}

@@ -7,63 +7,63 @@
 import { FunctionDeclaration, PartListUnion, Schema } from '@google/genai';
 
 /**
- * Interface representing the base Tool functionality
+ * 表示基础工具功能的接口
  */
 export interface Tool<
   TParams = unknown,
   TResult extends ToolResult = ToolResult,
 > {
   /**
-   * The internal name of the tool (used for API calls)
+   * 工具的内部名称（用于 API 调用）
    */
   name: string;
 
   /**
-   * The user-friendly display name of the tool
+   * 工具的用户友好显示名称
    */
   displayName: string;
 
   /**
-   * Description of what the tool does
+   * 工具功能的描述
    */
   description: string;
 
   /**
-   * Function declaration schema from @google/genai
+   * 来自 @google/genai 的函数声明模式
    */
   schema: FunctionDeclaration;
 
   /**
-   * Whether the tool's output should be rendered as markdown
+   * 工具的输出是否应渲染为 Markdown
    */
   isOutputMarkdown: boolean;
 
   /**
-   * Whether the tool supports live (streaming) output
+   * 工具是否支持实时（流式）输出
    */
   canUpdateOutput: boolean;
 
   /**
-   * Validates the parameters for the tool
-   * Should be called from both `shouldConfirmExecute` and `execute`
-   * `shouldConfirmExecute` should return false immediately if invalid
-   * @param params Parameters to validate
-   * @returns An error message string if invalid, null otherwise
+   * 验证工具的参数
+   * 应从 `shouldConfirmExecute` 和 `execute` 中调用
+   * 如果参数无效，`shouldConfirmExecute` 应立即返回 false
+   * @param params 要验证的参数
+   * @returns 如果无效则返回错误消息字符串，否则返回 null
    */
   validateToolParams(params: TParams): string | null;
 
   /**
-   * Gets a pre-execution description of the tool operation
-   * @param params Parameters for the tool execution
-   * @returns A markdown string describing what the tool will do
-   * Optional for backward compatibility
+   * 获取工具操作的执行前描述
+   * @param params 工具执行的参数
+   * @returns 描述工具将要做什么的 Markdown 字符串
+   * 可选，用于向后兼容
    */
   getDescription(params: TParams): string;
 
   /**
-   * Determines if the tool should prompt for confirmation before execution
-   * @param params Parameters for the tool execution
-   * @returns Whether execute should be confirmed.
+   * 确定工具在执行前是否应提示确认
+   * @param params 工具执行的参数
+   * @returns 是否应确认执行
    */
   shouldConfirmExecute(
     params: TParams,
@@ -71,9 +71,9 @@ export interface Tool<
   ): Promise<ToolCallConfirmationDetails | false>;
 
   /**
-   * Executes the tool with the given parameters
-   * @param params Parameters for the tool execution
-   * @returns Result of the tool execution
+   * 使用给定参数执行工具
+   * @param params 工具执行的参数
+   * @returns 工具执行的结果
    */
   execute(
     params: TParams,
@@ -83,7 +83,7 @@ export interface Tool<
 }
 
 /**
- * Base implementation for tools with common functionality
+ * 具有通用功能的工具基础实现
  */
 export abstract class BaseTool<
   TParams = unknown,
@@ -91,13 +91,13 @@ export abstract class BaseTool<
 > implements Tool<TParams, TResult>
 {
   /**
-   * Creates a new instance of BaseTool
-   * @param name Internal name of the tool (used for API calls)
-   * @param displayName User-friendly display name of the tool
-   * @param description Description of what the tool does
-   * @param isOutputMarkdown Whether the tool's output should be rendered as markdown
-   * @param canUpdateOutput Whether the tool supports live (streaming) output
-   * @param parameterSchema JSON Schema defining the parameters
+   * 创建 BaseTool 的新实例
+   * @param name 工具的内部名称（用于 API 调用）
+   * @param displayName 工具的用户友好显示名称
+   * @param description 工具功能的描述
+   * @param isOutputMarkdown 工具的输出是否应渲染为 Markdown
+   * @param canUpdateOutput 工具是否支持实时（流式）输出
+   * @param parameterSchema 定义参数的 JSON 模式
    */
   constructor(
     readonly name: string,
@@ -109,7 +109,7 @@ export abstract class BaseTool<
   ) {}
 
   /**
-   * Function declaration schema computed from name, description, and parameterSchema
+   * 根据名称、描述和 parameterSchema 计算出的函数声明模式
    */
   get schema(): FunctionDeclaration {
     return {
@@ -120,34 +120,34 @@ export abstract class BaseTool<
   }
 
   /**
-   * Validates the parameters for the tool
-   * This is a placeholder implementation and should be overridden
-   * Should be called from both `shouldConfirmExecute` and `execute`
-   * `shouldConfirmExecute` should return false immediately if invalid
-   * @param params Parameters to validate
-   * @returns An error message string if invalid, null otherwise
+   * 验证工具的参数
+   * 这是一个占位实现，应被重写
+   * 应从 `shouldConfirmExecute` 和 `execute` 中调用
+   * 如果参数无效，`shouldConfirmExecute` 应立即返回 false
+   * @param params 要验证的参数
+   * @returns 如果无效则返回错误消息字符串，否则返回 null
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   validateToolParams(params: TParams): string | null {
-    // Implementation would typically use a JSON Schema validator
-    // This is a placeholder that should be implemented by derived classes
+    // 实现通常会使用 JSON 模式验证器
+    // 这是一个占位符，应由派生类实现
     return null;
   }
 
   /**
-   * Gets a pre-execution description of the tool operation
-   * Default implementation that should be overridden by derived classes
-   * @param params Parameters for the tool execution
-   * @returns A markdown string describing what the tool will do
+   * 获取工具操作的执行前描述
+   * 默认实现，应由派生类重写
+   * @param params 工具执行的参数
+   * @returns 描述工具将要做什么的 Markdown 字符串
    */
   getDescription(params: TParams): string {
     return JSON.stringify(params);
   }
 
   /**
-   * Determines if the tool should prompt for confirmation before execution
-   * @param params Parameters for the tool execution
-   * @returns Whether or not execute should be confirmed by the user.
+   * 确定工具在执行前是否应提示确认
+   * @param params 工具执行的参数
+   * @returns 是否应由用户确认执行
    */
   shouldConfirmExecute(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -159,11 +159,11 @@ export abstract class BaseTool<
   }
 
   /**
-   * Abstract method to execute the tool with the given parameters
-   * Must be implemented by derived classes
-   * @param params Parameters for the tool execution
-   * @param signal AbortSignal for tool cancellation
-   * @returns Result of the tool execution
+   * 使用给定参数执行工具的抽象方法
+   * 必须由派生类实现
+   * @param params 工具执行的参数
+   * @param signal 用于工具取消的 AbortSignal
+   * @returns 工具执行的结果
    */
   abstract execute(
     params: TParams,
@@ -174,22 +174,22 @@ export abstract class BaseTool<
 
 export interface ToolResult {
   /**
-   * A short, one-line summary of the tool's action and result.
-   * e.g., "Read 5 files", "Wrote 256 bytes to foo.txt"
+   * 工具操作和结果的简短一行摘要。
+   * 例如："读取了 5 个文件"，"向 foo.txt 写入了 256 字节"
    */
   summary?: string;
   /**
-   * Content meant to be included in LLM history.
-   * This should represent the factual outcome of the tool execution.
+   * 旨在包含在 LLM 历史中的内容。
+   * 这应代表工具执行的事实结果。
    */
   llmContent: PartListUnion;
 
   /**
-   * Markdown string for user display.
-   * This provides a user-friendly summary or visualization of the result.
-   * NOTE: This might also be considered UI-specific and could potentially be
-   * removed or modified in a further refactor if the server becomes purely API-driven.
-   * For now, we keep it as the core logic in ReadFileTool currently produces it.
+   * 用于用户显示的 Markdown 字符串。
+   * 这提供了结果的用户友好摘要或可视化。
+   * 注意：这也可能被认为是特定于 UI 的，如果服务器变为纯 API 驱动，
+   * 在进一步重构中可能会被移除或修改。
+   * 目前，我们保留它，因为 ReadFileTool 中的核心逻辑目前会生成它。
    */
   returnDisplay: ToolResultDisplay;
 }
@@ -214,8 +214,7 @@ export interface ToolEditConfirmationDetails {
 }
 
 export interface ToolConfirmationPayload {
-  // used to override `modifiedProposedContent` for modifiable tools in the
-  // inline modify flow
+  // 用于在内联修改流程中覆盖可修改工具的 `modifiedProposedContent`
   newContent: string;
 }
 

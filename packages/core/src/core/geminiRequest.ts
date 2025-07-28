@@ -7,9 +7,9 @@
 import { type PartListUnion, type Part } from '@google/genai';
 
 /**
- * Represents a request to be sent to the Gemini API.
- * For now, it's an alias to PartListUnion as the primary content.
- * This can be expanded later to include other request parameters.
+ * 表示要发送到 Gemini API 的请求。
+ * 目前，它作为主要内容是 PartListUnion 的别名。
+ * 以后可以扩展以包含其他请求参数。
  */
 export type GeminiCodeRequest = PartListUnion;
 
@@ -22,7 +22,7 @@ export function partListUnionToString(value: PartListUnion): string {
     return value.map(partListUnionToString).join('');
   }
 
-  // Cast to Part, assuming it might contain project-specific fields
+  // 转换为 Part，假设它可能包含项目特定字段
   const part = value as Part & {
     videoMetadata?: unknown;
     thought?: string;
@@ -31,32 +31,32 @@ export function partListUnionToString(value: PartListUnion): string {
   };
 
   if (part.videoMetadata !== undefined) {
-    return `[Video Metadata]`;
+    return `[视频元数据]`;
   }
 
   if (part.thought !== undefined) {
-    return `[Thought: ${part.thought}]`;
+    return `[思考: ${part.thought}]`;
   }
 
   if (part.codeExecutionResult !== undefined) {
-    return `[Code Execution Result]`;
+    return `[代码执行结果]`;
   }
 
   if (part.executableCode !== undefined) {
-    return `[Executable Code]`;
+    return `[可执行代码]`;
   }
 
-  // Standard Part fields
+  // 标准 Part 字段
   if (part.fileData !== undefined) {
-    return `[File Data]`;
+    return `[文件数据]`;
   }
 
   if (part.functionCall !== undefined) {
-    return `[Function Call: ${part.functionCall.name}]`;
+    return `[函数调用: ${part.functionCall.name}]`;
   }
 
   if (part.functionResponse !== undefined) {
-    return `[Function Response: ${part.functionResponse.name}]`;
+    return `[函数响应: ${part.functionResponse.name}]`;
   }
 
   if (part.inlineData !== undefined) {

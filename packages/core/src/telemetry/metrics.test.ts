@@ -54,7 +54,7 @@ function originalOtelMockFactory() {
 
 vi.mock('@opentelemetry/api', originalOtelMockFactory);
 
-describe('Telemetry Metrics', () => {
+describe('遥测指标', () => {
   let initializeMetricsModule: typeof import('./metrics.js').initializeMetrics;
   let recordTokenUsageMetricsModule: typeof import('./metrics.js').recordTokenUsageMetrics;
   let recordFileOperationMetricModule: typeof import('./metrics.js').recordFileOperationMetric;
@@ -90,12 +90,12 @@ describe('Telemetry Metrics', () => {
       getSessionId: () => 'test-session-id',
     } as unknown as Config;
 
-    it('should not record metrics if not initialized', () => {
+    it('如果未初始化则不应记录指标', () => {
       recordTokenUsageMetricsModule(mockConfig, 'gemini-pro', 100, 'input');
       expect(mockCounterAddFn).not.toHaveBeenCalled();
     });
 
-    it('should record token usage with the correct attributes', () => {
+    it('应使用正确的属性记录令牌使用情况', () => {
       initializeMetricsModule(mockConfig);
       recordTokenUsageMetricsModule(mockConfig, 'gemini-pro', 100, 'input');
       expect(mockCounterAddFn).toHaveBeenCalledTimes(2);
@@ -109,7 +109,7 @@ describe('Telemetry Metrics', () => {
       });
     });
 
-    it('should record token usage for different types', () => {
+    it('应记录不同类型的令牌使用情况', () => {
       initializeMetricsModule(mockConfig);
       mockCounterAddFn.mockClear();
 
@@ -142,7 +142,7 @@ describe('Telemetry Metrics', () => {
       });
     });
 
-    it('should handle different models', () => {
+    it('应处理不同的模型', () => {
       initializeMetricsModule(mockConfig);
       mockCounterAddFn.mockClear();
 
@@ -160,7 +160,7 @@ describe('Telemetry Metrics', () => {
       getSessionId: () => 'test-session-id',
     } as unknown as Config;
 
-    it('should not record metrics if not initialized', () => {
+    it('如果未初始化则不应记录指标', () => {
       recordFileOperationMetricModule(
         mockConfig,
         FileOperation.CREATE,
@@ -171,7 +171,7 @@ describe('Telemetry Metrics', () => {
       expect(mockCounterAddFn).not.toHaveBeenCalled();
     });
 
-    it('should record file creation with all attributes', () => {
+    it('应记录包含所有属性的文件创建操作', () => {
       initializeMetricsModule(mockConfig);
       recordFileOperationMetricModule(
         mockConfig,
@@ -194,7 +194,7 @@ describe('Telemetry Metrics', () => {
       });
     });
 
-    it('should record file read with minimal attributes', () => {
+    it('应记录包含最少属性的文件读取操作', () => {
       initializeMetricsModule(mockConfig);
       mockCounterAddFn.mockClear();
 
@@ -205,7 +205,7 @@ describe('Telemetry Metrics', () => {
       });
     });
 
-    it('should record file update with some attributes', () => {
+    it('应记录包含部分属性的文件更新操作', () => {
       initializeMetricsModule(mockConfig);
       mockCounterAddFn.mockClear();
 

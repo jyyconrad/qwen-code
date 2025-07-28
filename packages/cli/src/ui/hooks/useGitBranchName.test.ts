@@ -16,15 +16,15 @@ import {
 import { act } from 'react';
 import { renderHook } from '@testing-library/react';
 import { useGitBranchName } from './useGitBranchName.js';
-import { fs, vol } from 'memfs'; // For mocking fs
+import { fs, vol } from 'memfs'; // 用于模拟 fs
 import { EventEmitter } from 'node:events';
 import { exec as mockExec, type ChildProcess } from 'node:child_process';
 import type { FSWatcher } from 'memfs/lib/volume.js';
 
-// Mock child_process
+// 模拟 child_process
 vi.mock('child_process');
 
-// Mock fs and fs/promises
+// 模拟 fs 和 fs/promises
 vi.mock('node:fs', async () => {
   const memfs = await vi.importActual<typeof import('memfs')>('memfs');
   return memfs.fs;
@@ -40,11 +40,11 @@ const GIT_HEAD_PATH = `${CWD}/.git/HEAD`;
 
 describe('useGitBranchName', () => {
   beforeEach(() => {
-    vol.reset(); // Reset in-memory filesystem
+    vol.reset(); // 重置内存文件系统
     vol.fromJSON({
       [GIT_HEAD_PATH]: 'ref: refs/heads/main',
     });
-    vi.useFakeTimers(); // Use fake timers for async operations
+    vi.useFakeTimers(); // 使用假定时器处理异步操作
   });
 
   afterEach(() => {
@@ -52,7 +52,7 @@ describe('useGitBranchName', () => {
     vi.clearAllTimers();
   });
 
-  it('should return branch name', async () => {
+  it('应返回分支名称', async () => {
     (mockExec as MockedFunction<typeof mockExec>).mockImplementation(
       (_command, _options, callback) => {
         callback?.(null, 'main\n', '');
@@ -63,14 +63,14 @@ describe('useGitBranchName', () => {
     const { result, rerender } = renderHook(() => useGitBranchName(CWD));
 
     await act(async () => {
-      vi.runAllTimers(); // Advance timers to trigger useEffect and exec callback
-      rerender(); // Rerender to get the updated state
+      vi.runAllTimers(); // 推进定时器以触发 useEffect 和 exec 回调
+      rerender(); // 重新渲染以获取更新后的状态
     });
 
     expect(result.current).toBe('main');
   });
 
-  it('should return undefined if git command fails', async () => {
+  it('如果 git 命令失败应返回 undefined', async () => {
     (mockExec as MockedFunction<typeof mockExec>).mockImplementation(
       (_command, _options, callback) => {
         callback?.(new Error('Git error'), '', 'error output');
@@ -88,7 +88,7 @@ describe('useGitBranchName', () => {
     expect(result.current).toBeUndefined();
   });
 
-  it('should return short commit hash if branch is HEAD (detached state)', async () => {
+  it('如果分支是 HEAD（分离状态）应返回短提交哈希', async () => {
     (mockExec as MockedFunction<typeof mockExec>).mockImplementation(
       (command, _options, callback) => {
         if (command === 'git rev-parse --abbrev-ref HEAD') {
@@ -108,7 +108,7 @@ describe('useGitBranchName', () => {
     expect(result.current).toBe('a1b2c3d');
   });
 
-  it('should return undefined if branch is HEAD and getting commit hash fails', async () => {
+  it('如果分支是 HEAD 且获取提交哈希失败应返回 undefined', async () => {
     (mockExec as MockedFunction<typeof mockExec>).mockImplementation(
       (command, _options, callback) => {
         if (command === 'git rev-parse --abbrev-ref HEAD') {
@@ -128,8 +128,8 @@ describe('useGitBranchName', () => {
     expect(result.current).toBeUndefined();
   });
 
-  it('should update branch name when .git/HEAD changes', async ({ skip }) => {
-    skip(); // TODO: fix
+  it('当 .git/HEAD 改变时应更新分支名称', async ({ skip }) => {
+    skip(); // TODO: 修复
     (mockExec as MockedFunction<typeof mockExec>).mockImplementationOnce(
       (_command, _options, callback) => {
         callback?.(null, 'main\n', '');
@@ -145,7 +145,7 @@ describe('useGitBranchName', () => {
     });
     expect(result.current).toBe('main');
 
-    // Simulate a branch change
+    // 模拟分支变更
     (mockExec as MockedFunction<typeof mockExec>).mockImplementationOnce(
       (_command, _options, callback) => {
         callback?.(null, 'develop\n', '');
@@ -153,19 +153,19 @@ describe('useGitBranchName', () => {
       },
     );
 
-    // Simulate file change event
-    // Ensure the watcher is set up before triggering the change
+    // 模拟文件变更事件
+    // 确保在触发变更前监视器已设置
     await act(async () => {
-      fs.writeFileSync(GIT_HEAD_PATH, 'ref: refs/heads/develop'); // Trigger watcher
-      vi.runAllTimers(); // Process timers for watcher and exec
+      fs.writeFileSync(GIT_HEAD_PATH, 'ref: refs/heads/develop'); // 触发监视器
+      vi.runAllTimers(); // 处理监视器和 exec 的定时器
       rerender();
     });
 
     expect(result.current).toBe('develop');
   });
 
-  it('should handle watcher setup error silently', async () => {
-    // Remove .git/HEAD to cause an error in fs.watch setup
+  it('应静默处理监视器设置错误', async () => {
+    // 移除 .git/HEAD 以在 fs.watch 设置时引发错误
     vol.unlinkSync(GIT_HEAD_PATH);
 
     (mockExec as MockedFunction<typeof mockExec>).mockImplementation(
@@ -182,9 +182,9 @@ describe('useGitBranchName', () => {
       rerender();
     });
 
-    expect(result.current).toBe('main'); // Branch name should still be fetched initially
+    expect(result.current).toBe('main'); // 分支名称仍应被初始获取
 
-    // Try to trigger a change that would normally be caught by the watcher
+    // 尝试触发一个通常会被监视器捕获的变更
     (mockExec as MockedFunction<typeof mockExec>).mockImplementationOnce(
       (_command, _options, callback) => {
         callback?.(null, 'develop\n', '');
@@ -192,9 +192,9 @@ describe('useGitBranchName', () => {
       },
     );
 
-    // This write would trigger the watcher if it was set up
-    // but since it failed, the branch name should not update
-    // We need to create the file again for writeFileSync to not throw
+    // 此写入会触发监视器（如果已设置）
+    // 但由于失败，分支名称不应更新
+    // 我们需要重新创建文件以便 writeFileSync 不抛出异常
     vol.fromJSON({
       [GIT_HEAD_PATH]: 'ref: refs/heads/develop',
     });
@@ -205,12 +205,12 @@ describe('useGitBranchName', () => {
       rerender();
     });
 
-    // Branch name should not change because watcher setup failed
+    // 分支名称不应变更，因为监视器设置失败
     expect(result.current).toBe('main');
   });
 
-  it('should cleanup watcher on unmount', async ({ skip }) => {
-    skip(); // TODO: fix
+  it('应在卸载时清理监视器', async ({ skip }) => {
+    skip(); // TODO: 修复
     const closeMock = vi.fn();
     const watchMock = vi.spyOn(fs, 'watch').mockReturnValue({
       close: closeMock,

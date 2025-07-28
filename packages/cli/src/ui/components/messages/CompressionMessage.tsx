@@ -15,16 +15,16 @@ export interface CompressionDisplayProps {
 }
 
 /*
- * Compression messages appear when the /compress command is run, and show a loading spinner
- * while compression is in progress, followed up by some compression stats.
+ * 压缩消息在运行 /compress 命令时显示，展示加载旋转动画
+ * 在压缩进行中时显示，随后显示一些压缩统计信息。
  */
 export const CompressionMessage: React.FC<CompressionDisplayProps> = ({
   compression,
 }) => {
   const text = compression.isPending
-    ? 'Compressing chat history'
-    : `Chat history compressed from ${compression.originalTokenCount ?? 'unknown'}` +
-      ` to ${compression.newTokenCount ?? 'unknown'} tokens.`;
+    ? '正在压缩聊天历史记录'
+    : `聊天历史记录已从 ${compression.originalTokenCount ?? 'unknown'}` +
+      ` 个 token 压缩至 ${compression.newTokenCount ?? 'unknown'} 个 token。`;
 
   return (
     <Box flexDirection="row">

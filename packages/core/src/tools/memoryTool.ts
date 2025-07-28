@@ -13,14 +13,14 @@ import { homedir } from 'os';
 const memoryToolSchemaData: FunctionDeclaration = {
   name: 'save_memory',
   description:
-    'Saves a specific piece of information or fact to your long-term memory. Use this when the user explicitly asks you to remember something, or when they state a clear, concise fact that seems important to retain for future interactions.',
+    '将特定信息或事实保存到你的长期记忆中。当用户明确要求你记住某些内容，或当他们陈述一个清晰、简洁且似乎对将来互动很重要的事实时，请使用此工具。',
   parameters: {
     type: Type.OBJECT,
     properties: {
       fact: {
         type: Type.STRING,
         description:
-          'The specific fact or piece of information to remember. Should be a clear, self-contained statement.',
+          '需要记住的特定事实或信息。应该是一个清晰、独立的陈述。',
       },
     },
     required: ['fact'],
@@ -28,30 +28,30 @@ const memoryToolSchemaData: FunctionDeclaration = {
 };
 
 const memoryToolDescription = `
-Saves a specific piece of information or fact to your long-term memory.
+将特定信息或事实保存到你的长期记忆中。
 
-Use this tool:
+使用此工具：
 
-- When the user explicitly asks you to remember something (e.g., "Remember that I like pineapple on pizza", "Please save this: my cat's name is Whiskers").
-- When the user states a clear, concise fact about themselves, their preferences, or their environment that seems important for you to retain for future interactions to provide a more personalized and effective assistance.
+- 当用户明确要求你记住某些内容时（例如，"记住我喜欢菠萝披萨"，"请保存这个：我猫的名字叫Whiskers"）。
+- 当用户陈述一个关于他们自己、他们的偏好或环境的清晰、简洁的事实，并且这些信息对将来提供更个性化和有效的帮助很重要时。
 
-Do NOT use this tool:
+不要使用此工具：
 
-- To remember conversational context that is only relevant for the current session.
-- To save long, complex, or rambling pieces of text. The fact should be relatively short and to the point.
-- If you are unsure whether the information is a fact worth remembering long-term. If in doubt, you can ask the user, "Should I remember that for you?"
+- 记住仅与当前会话相关的对话上下文。
+- 保存长篇、复杂或冗长的文本。事实应该是相对简短和切题的。
+- 如果你不确定信息是否是值得长期记住的事实。如有疑问，可以询问用户："我应该为你记住这个吗？"
 
-## Parameters
+## 参数
 
-- \`fact\` (string, required): The specific fact or piece of information to remember. This should be a clear, self-contained statement. For example, if the user says "My favorite color is blue", the fact would be "My favorite color is blue".
+- \`fact\` (string, 必需): 需要记住的特定事实或信息。这应该是一个清晰、独立的陈述。例如，如果用户说"My favorite color is blue"，那么事实就是"My favorite color is blue"。
 `;
 
 export const GEMINI_CONFIG_DIR = '.iflycode';
 export const DEFAULT_CONTEXT_FILENAME = 'IFLYCODE.md';
-export const MEMORY_SECTION_HEADER = '## iFlyCode Added Memories';
+export const MEMORY_SECTION_HEADER = '## iFlyCode 添加的记忆';
 
-// This variable will hold the currently configured filename for GEMINI.md context files.
-// It defaults to DEFAULT_CONTEXT_FILENAME but can be overridden by setGeminiMdFilename.
+// 此变量将保存当前配置的GEMINI.md上下文文件名。
+// 它默认为DEFAULT_CONTEXT_FILENAME，但可以通过setGeminiMdFilename覆盖。
 let currentGeminiMdFilename: string | string[] = DEFAULT_CONTEXT_FILENAME;
 
 export function setGeminiMdFilename(newFilename: string | string[]): void {
@@ -87,7 +87,7 @@ function getGlobalMemoryFilePath(): string {
 }
 
 /**
- * Ensures proper newline separation before appending content.
+ * 确保在追加内容前有适当的换行分隔。
  */
 function ensureNewlineSeparation(currentContent: string): string {
   if (currentContent.length === 0) return '';
@@ -103,7 +103,7 @@ export class MemoryTool extends BaseTool<SaveMemoryParams, ToolResult> {
   constructor() {
     super(
       MemoryTool.Name,
-      'Save Memory',
+      '保存记忆',
       memoryToolDescription,
       memoryToolSchemaData.parameters as Record<string, unknown>,
     );
@@ -126,7 +126,7 @@ export class MemoryTool extends BaseTool<SaveMemoryParams, ToolResult> {
     },
   ): Promise<void> {
     let processedText = text.trim();
-    // Remove leading hyphens and spaces that might be misinterpreted as markdown list items
+    // 移除可能被误解为markdown列表项的前导连字符和空格
     processedText = processedText.replace(/^(-+\s*)+/, '').trim();
     const newMemoryItem = `- ${processedText}`;
 
@@ -136,22 +136,22 @@ export class MemoryTool extends BaseTool<SaveMemoryParams, ToolResult> {
       try {
         content = await fsAdapter.readFile(memoryFilePath, 'utf-8');
       } catch (_e) {
-        // File doesn't exist, will be created with header and item.
+        // 文件不存在，将使用标题和条目创建。
       }
 
       const headerIndex = content.indexOf(MEMORY_SECTION_HEADER);
 
       if (headerIndex === -1) {
-        // Header not found, append header and then the entry
+        // 未找到标题，追加标题然后是条目
         const separator = ensureNewlineSeparation(content);
         content += `${separator}${MEMORY_SECTION_HEADER}\n${newMemoryItem}\n`;
       } else {
-        // Header found, find where to insert the new memory entry
+        // 找到标题，确定在哪里插入新的记忆条目
         const startOfSectionContent =
           headerIndex + MEMORY_SECTION_HEADER.length;
         let endOfSectionIndex = content.indexOf('\n## ', startOfSectionContent);
         if (endOfSectionIndex === -1) {
-          endOfSectionIndex = content.length; // End of file
+          endOfSectionIndex = content.length; // 文件结尾
         }
 
         const beforeSectionMarker = content
@@ -170,11 +170,11 @@ export class MemoryTool extends BaseTool<SaveMemoryParams, ToolResult> {
       await fsAdapter.writeFile(memoryFilePath, content, 'utf-8');
     } catch (error) {
       console.error(
-        `[MemoryTool] Error adding memory entry to ${memoryFilePath}:`,
+        `[MemoryTool] 向 ${memoryFilePath} 添加记忆条目时出错:`,
         error,
       );
       throw new Error(
-        `[MemoryTool] Failed to add memory entry: ${error instanceof Error ? error.message : String(error)}`,
+        `[MemoryTool] 添加记忆条目失败: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -186,21 +186,21 @@ export class MemoryTool extends BaseTool<SaveMemoryParams, ToolResult> {
     const { fact } = params;
 
     if (!fact || typeof fact !== 'string' || fact.trim() === '') {
-      const errorMessage = 'Parameter "fact" must be a non-empty string.';
+      const errorMessage = '参数 "fact" 必须是非空字符串。';
       return {
         llmContent: JSON.stringify({ success: false, error: errorMessage }),
-        returnDisplay: `Error: ${errorMessage}`,
+        returnDisplay: `错误: ${errorMessage}`,
       };
     }
 
     try {
-      // Use the static method with actual fs promises
+      // 使用静态方法和实际的fs promises
       await MemoryTool.performAddMemoryEntry(fact, getGlobalMemoryFilePath(), {
         readFile: fs.readFile,
         writeFile: fs.writeFile,
         mkdir: fs.mkdir,
       });
-      const successMessage = `Okay, I've remembered that: "${fact}"`;
+      const successMessage = `好的，我已经记住了："${fact}"`;
       return {
         llmContent: JSON.stringify({ success: true, message: successMessage }),
         returnDisplay: successMessage,
@@ -209,14 +209,14 @@ export class MemoryTool extends BaseTool<SaveMemoryParams, ToolResult> {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       console.error(
-        `[MemoryTool] Error executing save_memory for fact "${fact}": ${errorMessage}`,
+        `[MemoryTool] 执行保存记忆操作时出错，事实 "${fact}": ${errorMessage}`,
       );
       return {
         llmContent: JSON.stringify({
           success: false,
-          error: `Failed to save memory. Detail: ${errorMessage}`,
+          error: `保存记忆失败。详情: ${errorMessage}`,
         }),
-        returnDisplay: `Error saving memory: ${errorMessage}`,
+        returnDisplay: `保存记忆时出错: ${errorMessage}`,
       };
     }
   }

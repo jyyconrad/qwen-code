@@ -28,7 +28,7 @@ export class GitService {
     const gitAvailable = await this.verifyGitAvailability();
     if (!gitAvailable) {
       throw new Error(
-        'Checkpointing is enabled, but Git is not installed. Please install Git or disable checkpointing to continue.',
+        '检查点已启用，但未安装 Git。请安装 Git 或禁用检查点以继续。',
       );
     }
     this.setupShadowGitRepository();
@@ -47,8 +47,8 @@ export class GitService {
   }
 
   /**
-   * Creates a hidden git repository in the project root.
-   * The Git repository is used to support checkpointing.
+   * 在项目根目录中创建一个隐藏的 Git 仓库。
+   * 该 Git 仓库用于支持检查点功能。
    */
   async setupShadowGitRepository() {
     const repoDir = this.getHistoryDir();
@@ -56,8 +56,8 @@ export class GitService {
 
     await fs.mkdir(repoDir, { recursive: true });
 
-    // We don't want to inherit the user's name, email, or gpg signing
-    // preferences for the shadow repository, so we create a dedicated gitconfig.
+    // 我们不希望继承用户的姓名、邮箱或 GPG 签名
+    // 偏好设置用于影子仓库，因此我们创建一个专用的 gitconfig。
     const gitConfigContent =
       '[user]\n  name = Gemini CLI\n  email = gemini-cli@google.com\n[commit]\n  gpgsign = false\n';
     await fs.writeFile(gitConfigPath, gitConfigContent);
@@ -70,7 +70,7 @@ export class GitService {
         '--initial-branch': 'main',
       });
 
-      await repo.commit('Initial commit', { '--allow-empty': null });
+      await repo.commit('初始提交', { '--allow-empty': null });
     }
 
     const userGitIgnorePath = path.join(this.projectRoot, '.gitignore');
@@ -93,7 +93,7 @@ export class GitService {
     return simpleGit(this.projectRoot).env({
       GIT_DIR: path.join(repoDir, '.git'),
       GIT_WORK_TREE: this.projectRoot,
-      // Prevent git from using the user's global git config.
+      // 防止 git 使用用户的全局 git 配置。
       HOME: repoDir,
       XDG_CONFIG_HOME: repoDir,
     });
@@ -114,7 +114,7 @@ export class GitService {
   async restoreProjectFromSnapshot(commitHash: string): Promise<void> {
     const repo = this.shadowGitRepository;
     await repo.raw(['restore', '--source', commitHash, '.']);
-    // Removes any untracked files that were introduced post snapshot.
+    // 删除快照后引入的任何未跟踪文件。
     await repo.clean('f', ['-d']);
   }
 }

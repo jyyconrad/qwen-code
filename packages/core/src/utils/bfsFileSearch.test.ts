@@ -23,7 +23,7 @@ const createMockDirent = (name: string, isFile: boolean): fs.Dirent => {
   return dirent;
 };
 
-// Type for the specific overload we're using
+// 用于我们正在使用的特定重载的类型
 type ReaddirWithFileTypes = (
   path: fs.PathLike,
   options: { withFileTypes: true },
@@ -34,7 +34,7 @@ describe('bfsFileSearch', () => {
     vi.resetAllMocks();
   });
 
-  it('should find a file in the root directory', async () => {
+  it('应在根目录中找到文件', async () => {
     const mockFs = vi.mocked(fsPromises);
     const mockReaddir = mockFs.readdir as unknown as ReaddirWithFileTypes;
     vi.mocked(mockReaddir).mockResolvedValue([
@@ -46,7 +46,7 @@ describe('bfsFileSearch', () => {
     expect(result).toEqual(['/test/file1.txt']);
   });
 
-  it('should find a file in a subdirectory', async () => {
+  it('应在子目录中找到文件', async () => {
     const mockFs = vi.mocked(fsPromises);
     const mockReaddir = mockFs.readdir as unknown as ReaddirWithFileTypes;
     vi.mocked(mockReaddir).mockImplementation(async (dir) => {
@@ -63,7 +63,7 @@ describe('bfsFileSearch', () => {
     expect(result).toEqual(['/test/subdir/file1.txt']);
   });
 
-  it('should ignore specified directories', async () => {
+  it('应忽略指定的目录', async () => {
     const mockFs = vi.mocked(fsPromises);
     const mockReaddir = mockFs.readdir as unknown as ReaddirWithFileTypes;
     vi.mocked(mockReaddir).mockImplementation(async (dir) => {
@@ -89,7 +89,7 @@ describe('bfsFileSearch', () => {
     expect(result).toEqual(['/test/subdir1/file1.txt']);
   });
 
-  it('should respect maxDirs limit', async () => {
+  it('应遵守 maxDirs 限制', async () => {
     const mockFs = vi.mocked(fsPromises);
     const mockReaddir = mockFs.readdir as unknown as ReaddirWithFileTypes;
     vi.mocked(mockReaddir).mockImplementation(async (dir) => {
@@ -115,7 +115,7 @@ describe('bfsFileSearch', () => {
     expect(result).toEqual(['/test/subdir1/file1.txt']);
   });
 
-  it('should respect .gitignore files', async () => {
+  it('应遵守 .gitignore 文件', async () => {
     const mockFs = vi.mocked(fsPromises);
     const mockGitUtils = vi.mocked(gitUtils);
     mockGitUtils.isGitRepository.mockReturnValue(true);

@@ -146,7 +146,7 @@ index 1234567..1234567 100644
         />
       </OverflowProvider>,
     );
-    expect(lastFrame()).toContain('No changes detected');
+    expect(lastFrame()).toContain('未检测到更改');
     expect(mockColorizeCode).not.toHaveBeenCalled();
   });
 
@@ -156,7 +156,7 @@ index 1234567..1234567 100644
         <DiffRenderer diffContent="" terminalWidth={80} />
       </OverflowProvider>,
     );
-    expect(lastFrame()).toContain('No diff content');
+    expect(lastFrame()).toContain('无 diff 内容');
     expect(mockColorizeCode).not.toHaveBeenCalled();
   });
 
@@ -263,7 +263,7 @@ index 123..789 100644
       {
         terminalWidth: 80,
         height: 6,
-        expected: `... first 4 lines hidden ...
+        expected: `... 前 4 行已隐藏 ...
 ════════════════════════════════════════════════════════════════════════════════
 20     console.log('second hunk');
 21   - const anotherOld = 'test';
@@ -273,7 +273,7 @@ index 123..789 100644
       {
         terminalWidth: 30,
         height: 6,
-        expected: `... first 10 lines hidden ...
+        expected: `... 前 10 行已隐藏 ...
        'test';
 21   + const anotherNew =
        'test';

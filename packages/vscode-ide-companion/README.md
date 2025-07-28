@@ -1,9 +1,9 @@
-# IDE Companion
+# IDE 配套工具
 
-## Local Development
+## 本地开发
 
-To test the extension locally, follow these steps:
+要在本地测试该扩展，请按照以下步骤操作：
 
-1. Open the `packages/vscode-ide-companion` directory in VS Code.
-2. Run `npm install`.
-3. Run the extension development host via Run + Debug -> Extension
+1. 在 VS Code 中打开 `packages/vscode-ide-companion` 目录。
+2. 运行 `npm install`。
+3. 通过 运行 + 调试 -> 扩展 来运行扩展开发主机

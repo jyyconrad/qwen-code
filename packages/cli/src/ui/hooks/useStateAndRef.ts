@@ -6,11 +6,10 @@
 
 import React from 'react';
 
-// Hook to return state, state setter, and ref to most up-to-date value of state.
-// We need this in order to setState and reference the updated state multiple
-// times in the same function.
+// 用于返回状态、状态设置器和指向状态最新值的 ref 的 Hook。
+// 我们需要这个 Hook 以便在同一个函数中多次设置状态和引用更新后的状态。
 export const useStateAndRef = <
-  // Everything but function.
+  // 除函数外的所有类型。
   T extends object | null | undefined | number | string,
 >(
   initialValue: T,

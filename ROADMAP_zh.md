@@ -1,3 +1,4 @@
+```markdown
 # Gemini CLI 路线图
 
 [官方 Gemini CLI 路线图](https://github.com/orgs/google-gemini/projects/11/)
@@ -60,3 +61,4 @@ Gemini CLI 是一个开源项目，我们欢迎社区的贡献！无论你是开
 - **编写文档：** 帮助我们改进文档、教程和示例。
 
 我们对 Gemini CLI 的未来充满期待，并期待与你共同构建它！
+```

@@ -9,6 +9,7 @@ import { Text, Box } from 'ink';
 import { Colors } from '../../colors.js';
 
 interface UserMessageProps {
+  /** 用户消息文本 */
   text: string;
 }
 

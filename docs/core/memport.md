@@ -1,62 +1,62 @@
-# Memory Import Processor
+# 内存导入处理器
 
-The Memory Import Processor is a feature that allows you to modularize your GEMINI.md files by importing content from other markdown files using the `@file.md` syntax.
+内存导入处理器是一项功能，它允许你通过使用 `@file.md` 语法导入其他 Markdown 文件的内容，从而将你的 GEMINI.md 文件模块化。
 
-## Overview
+## 概述
 
-This feature enables you to break down large GEMINI.md files into smaller, more manageable components that can be reused across different contexts. The import processor supports both relative and absolute paths, with built-in safety features to prevent circular imports and ensure file access security.
+该功能使你可以将大型 GEMINI.md 文件拆分为更小、更易管理的组件，这些组件可以在不同的上下文中重复使用。导入处理器支持相对路径和绝对路径，并内置了安全功能以防止循环导入并确保文件访问安全。
 
-## Important Limitations
+## 重要限制
 
-**This feature only supports `.md` (markdown) files.** Attempting to import files with other extensions (like `.txt`, `.json`, etc.) will result in a warning and the import will fail.
+**此功能仅支持 `.md`（Markdown）文件。** 尝试导入其他扩展名的文件（如 `.txt`、`.json` 等）将导致警告，并且导入会失败。
 
-## Syntax
+## 语法
 
-Use the `@` symbol followed by the path to the markdown file you want to import:
+使用 `@` 符号后接你想要导入的 Markdown 文件路径：
 
 ```markdown
-# Main GEMINI.md file
+# 主 GEMINI.md 文件
 
-This is the main content.
+这是主要内容。
 
 @./components/instructions.md
 
-More content here.
+更多内容。
 
 @./shared/configuration.md
 ```
 
-## Supported Path Formats
+## 支持的路径格式
 
-### Relative Paths
+### 相对路径
 
-- `@./file.md` - Import from the same directory
-- `@../file.md` - Import from parent directory
-- `@./components/file.md` - Import from subdirectory
+- `@./file.md` - 从当前目录导入
+- `@../file.md` - 从父目录导入
+- `@./components/file.md` - 从子目录导入
 
-### Absolute Paths
+### 绝对路径
 
-- `@/absolute/path/to/file.md` - Import using absolute path
+- `@/absolute/path/to/file.md` - 使用绝对路径导入
 
-## Examples
+## 示例
 
-### Basic Import
+### 基本导入
 
 ```markdown
-# My GEMINI.md
+# 我的 GEMINI.md
 
-Welcome to my project!
+欢迎来到我的项目！
 
 @./getting-started.md
 
-## Features
+## 特性
 
 @./features/overview.md
 ```
 
-### Nested Imports
+### 嵌套导入
 
-The imported files can themselves contain imports, creating a nested structure:
+导入的文件本身也可以包含导入，从而创建嵌套结构：
 
 ```markdown
 # main.md
@@ -69,16 +69,16 @@ The imported files can themselves contain imports, creating a nested structure:
 ```markdown
 # header.md
 
-# Project Header
+# 项目标题
 
 @./shared/title.md
 ```
 
-## Safety Features
+## 安全特性
 
-### Circular Import Detection
+### 循环导入检测
 
-The processor automatically detects and prevents circular imports:
+处理器会自动检测并阻止循环导入：
 
 ```markdown
 # file-a.md
@@ -87,88 +87,88 @@ The processor automatically detects and prevents circular imports:
 
 # file-b.md
 
-@./file-a.md <!-- This will be detected and prevented -->
+@./file-a.md <!-- 此处将被检测到并阻止 -->
 ```
 
-### File Access Security
+### 文件访问安全
 
-The `validateImportPath` function ensures that imports are only allowed from specified directories, preventing access to sensitive files outside the allowed scope.
+`validateImportPath` 函数确保仅允许从指定目录中导入文件，防止访问允许范围之外的敏感文件。
 
-### Maximum Import Depth
+### 最大导入深度
 
-To prevent infinite recursion, there's a configurable maximum import depth (default: 10 levels).
+为防止无限递归，可配置最大导入深度（默认：10 层）。
 
-## Error Handling
+## 错误处理
 
-### Non-MD File Attempts
+### 非 Markdown 文件尝试导入
 
-If you try to import a non-markdown file, you'll see a warning:
+如果你尝试导入非 Markdown 文件，你将看到警告：
 
 ```markdown
-@./instructions.txt <!-- This will show a warning and fail -->
+@./instructions.txt <!-- 此处将显示警告并失败 -->
 ```
 
-Console output:
+控制台输出：
 
 ```
-[WARN] [ImportProcessor] Import processor only supports .md files. Attempting to import non-md file: ./instructions.txt. This will fail.
+[WARN] [ImportProcessor] 导入处理器仅支持 .md 文件。尝试导入非 .md 文件：./instructions.txt。这将失败。
 ```
 
-### Missing Files
+### 缺失文件
 
-If a referenced file doesn't exist, the import will fail gracefully with an error comment in the output.
+如果引用的文件不存在，导入将优雅失败，并在输出中显示错误注释。
 
-### File Access Errors
+### 文件访问错误
 
-Permission issues or other file system errors are handled gracefully with appropriate error messages.
+权限问题或其他文件系统错误将通过适当的错误消息优雅处理。
 
-## API Reference
+## API 参考
 
 ### `processImports(content, basePath, debugMode?, importState?)`
 
-Processes import statements in GEMINI.md content.
+处理 GEMINI.md 内容中的导入语句。
 
-**Parameters:**
+**参数：**
 
-- `content` (string): The content to process for imports
-- `basePath` (string): The directory path where the current file is located
-- `debugMode` (boolean, optional): Whether to enable debug logging (default: false)
-- `importState` (ImportState, optional): State tracking for circular import prevention
+- `content`（字符串）：需要处理导入的内容
+- `basePath`（字符串）：当前文件所在的目录路径
+- `debugMode`（布尔值，可选）：是否启用调试日志（默认：false）
+- `importState`（ImportState，可选）：用于防止循环导入的状态跟踪
 
-**Returns:** Promise<string> - Processed content with imports resolved
+**返回：** Promise<string> - 包含已解析导入的内容
 
 ### `validateImportPath(importPath, basePath, allowedDirectories)`
 
-Validates import paths to ensure they are safe and within allowed directories.
+验证导入路径以确保其安全并在允许的目录范围内。
 
-**Parameters:**
+**参数：**
 
-- `importPath` (string): The import path to validate
-- `basePath` (string): The base directory for resolving relative paths
-- `allowedDirectories` (string[]): Array of allowed directory paths
+- `importPath`（字符串）：要验证的导入路径
+- `basePath`（字符串）：用于解析相对路径的基础目录
+- `allowedDirectories`（字符串数组）：允许的目录路径数组
 
-**Returns:** boolean - Whether the import path is valid
+**返回：** 布尔值 - 表示导入路径是否有效
 
-## Best Practices
+## 最佳实践
 
-1. **Use descriptive file names** for imported components
-2. **Keep imports shallow** - avoid deeply nested import chains
-3. **Document your structure** - maintain a clear hierarchy of imported files
-4. **Test your imports** - ensure all referenced files exist and are accessible
-5. **Use relative paths** when possible for better portability
+1. **使用描述性文件名** 用于导入的组件
+2. **保持导入层级浅** - 避免深度嵌套的导入链
+3. **记录你的结构** - 维护一个清晰的导入文件层级结构
+4. **测试你的导入** - 确保所有引用的文件都存在且可访问
+5. **尽可能使用相对路径** 以提高可移植性
 
-## Troubleshooting
+## 故障排除
 
-### Common Issues
+### 常见问题
 
-1. **Import not working**: Check that the file exists and has a `.md` extension
-2. **Circular import warnings**: Review your import structure for circular references
-3. **Permission errors**: Ensure the files are readable and within allowed directories
-4. **Path resolution issues**: Use absolute paths if relative paths aren't resolving correctly
+1. **导入不起作用**：检查文件是否存在且具有 `.md` 扩展名
+2. **循环导入警告**：检查导入结构是否存在循环引用
+3. **权限错误**：确保文件可读且位于允许的目录中
+4. **路径解析问题**：如果相对路径无法正确解析，请使用绝对路径
 
-### Debug Mode
+### 调试模式
 
-Enable debug mode to see detailed logging of the import process:
+启用调试模式以查看导入过程的详细日志：
 
 ```typescript
 const result = await processImports(content, basePath, true);

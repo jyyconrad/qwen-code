@@ -116,6 +116,7 @@ describe('CodeAssistServer', () => {
     const server = new CodeAssistServer(client, 'test-project');
     const mockResponse = {
       // TODO: Add mock response
+      // TODO：添加模拟响应
     };
     vi.spyOn(server, 'requestPost').mockResolvedValue(mockResponse);
 

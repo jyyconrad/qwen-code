@@ -42,7 +42,7 @@ vi.mock('../utils/generateContentResponseUtilities', () => ({
 
 describe('Turn', () => {
   let turn: Turn;
-  // Define a type for the mocked Chat instance for clarity
+  // 为清晰起见，定义模拟 Chat 实例的类型
   type MockedChatInstance = {
     sendMessageStream: typeof mockSendMessageStream;
     getHistory: typeof mockGetHistory;
@@ -65,14 +65,14 @@ describe('Turn', () => {
   });
 
   describe('constructor', () => {
-    it('should initialize pendingToolCalls and debugResponses', () => {
+    it('应初始化 pendingToolCalls 和 debugResponses', () => {
       expect(turn.pendingToolCalls).toEqual([]);
       expect(turn.getDebugResponses()).toEqual([]);
     });
   });
 
   describe('run', () => {
-    it('should yield content events for text parts', async () => {
+    it('应为文本部分生成内容事件', async () => {
       const mockResponseStream = (async function* () {
         yield {
           candidates: [{ content: { parts: [{ text: 'Hello' }] } }],
@@ -107,7 +107,7 @@ describe('Turn', () => {
       expect(turn.getDebugResponses().length).toBe(2);
     });
 
-    it('should yield tool_call_request events for function calls', async () => {
+    it('应为函数调用生成 tool_call_request 事件', async () => {
       const mockResponseStream = (async function* () {
         yield {
           functionCalls: [
@@ -117,7 +117,7 @@ describe('Turn', () => {
               args: { arg1: 'val1' },
               isClientInitiated: false,
             },
-            { name: 'tool2', args: { arg2: 'val2' }, isClientInitiated: false }, // No ID
+            { name: 'tool2', args: { arg2: 'val2' }, isClientInitiated: false }, // 无 ID
           ],
         } as unknown as GenerateContentResponse;
       })();
@@ -161,7 +161,7 @@ describe('Turn', () => {
       expect(turn.getDebugResponses().length).toBe(1);
     });
 
-    it('should yield UserCancelled event if signal is aborted', async () => {
+    it('如果信号被中止，应生成 UserCancelled 事件', async () => {
       const abortController = new AbortController();
       const mockResponseStream = (async function* () {
         yield {
@@ -192,7 +192,7 @@ describe('Turn', () => {
       expect(turn.getDebugResponses().length).toBe(1);
     });
 
-    it('should yield Error event and report if sendMessageStream throws', async () => {
+    it('如果 sendMessageStream 抛出异常，应生成 Error 事件并报告', async () => {
       const error = new Error('API Error');
       mockSendMessageStream.mockRejectedValue(error);
       const reqParts: Part[] = [{ text: 'Trigger error' }];
@@ -224,7 +224,7 @@ describe('Turn', () => {
       );
     });
 
-    it('should handle function calls with undefined name or args', async () => {
+    it('应处理名称或参数未定义的函数调用', async () => {
       const mockResponseStream = (async function* () {
         yield {
           functionCalls: [
@@ -285,7 +285,7 @@ describe('Turn', () => {
   });
 
   describe('getDebugResponses', () => {
-    it('should return collected debug responses', async () => {
+    it('应返回收集的调试响应', async () => {
       const resp1 = {
         candidates: [{ content: { parts: [{ text: 'Debug 1' }] } }],
       } as unknown as GenerateContentResponse;
@@ -299,7 +299,7 @@ describe('Turn', () => {
       mockSendMessageStream.mockResolvedValue(mockResponseStream);
       const reqParts: Part[] = [{ text: 'Hi' }];
       for await (const _ of turn.run(reqParts, new AbortController().signal)) {
-        // consume stream
+        // 消费流
       }
       expect(turn.getDebugResponses()).toEqual([resp1, resp2]);
     });

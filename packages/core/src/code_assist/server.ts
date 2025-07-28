@@ -50,9 +50,9 @@ interface StreamError extends Error {
   response?: GaxiosResponse;
 }
 
-/** HTTP options to be used in each of the requests. */
+/** 在每个请求中使用的 HTTP 选项。 */
 export interface HttpOptions {
-  /** Additional HTTP headers to be sent with the request. */
+  /** 要随请求发送的附加 HTTP 头。 */
   headers?: Record<string, string>;
 }
 
@@ -196,27 +196,27 @@ export class CodeAssistServer implements ContentGenerator {
     });
 
     return (async function* (): AsyncGenerator<T> {
-      // Convert ReadableStream to Node.js stream if needed
+      // 如果需要，将 ReadableStream 转换为 Node.js 流
       let nodeStream: NodeJS.ReadableStream;
 
       if (res.data instanceof ReadableStream) {
-        // Convert Web ReadableStream to Node.js Readable stream
+        // 将 Web ReadableStream 转换为 Node.js Readable 流
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         nodeStream = Readable.fromWeb(res.data as any);
       } else if (
         res.data &&
         typeof (res.data as NodeJS.ReadableStream).on === 'function'
       ) {
-        // Already a Node.js stream
+        // 已经是 Node.js 流
         nodeStream = res.data as NodeJS.ReadableStream;
       } else {
-        // If res.data is not a stream, it might be an error response
-        // Try to extract error information from the response
+        // 如果 res.data 不是流，可能是错误响应
+        // 尝试从响应中提取错误信息
         let errorMessage =
-          'Response data is not a readable stream. This may indicate a server error or quota issue.';
+          '响应数据不是可读流。这可能表示服务器错误或配额问题。';
 
         if (res.data && typeof res.data === 'object') {
-          // Check if this is an error response with error details
+          // 检查这是否是包含错误详情的错误响应
           const errorData = res.data as ErrorData;
           if (errorData.error?.message) {
             errorMessage = errorData.error.message;
@@ -225,9 +225,9 @@ export class CodeAssistServer implements ContentGenerator {
           }
         }
 
-        // Create an error that looks like a quota error if it contains quota information
+        // 创建一个看起来像配额错误的错误，如果它包含配额信息
         const error: StreamError = new Error(errorMessage);
-        // Add status and response properties so it can be properly handled by retry logic
+        // 添加状态和响应属性，以便重试逻辑可以正确处理
         error.status = res.status;
         error.response = res;
         throw error;
@@ -235,22 +235,22 @@ export class CodeAssistServer implements ContentGenerator {
 
       const rl = readline.createInterface({
         input: nodeStream,
-        crlfDelay: Infinity, // Recognizes '\r\n' and '\n' as line breaks
+        crlfDelay: Infinity, // 识别 '\r\n' 和 '\n' 作为换行符
       });
 
       let bufferedLines: string[] = [];
       for await (const line of rl) {
-        // blank lines are used to separate JSON objects in the stream
+        // 空行用于分隔流中的 JSON 对象
         if (line === '') {
           if (bufferedLines.length === 0) {
-            continue; // no data to yield
+            continue; // 没有数据可产出
           }
           yield JSON.parse(bufferedLines.join('\n')) as T;
-          bufferedLines = []; // Reset the buffer after yielding
+          bufferedLines = []; // 产出后重置缓冲区
         } else if (line.startsWith('data: ')) {
           bufferedLines.push(line.slice(6).trim());
         } else {
-          throw new Error(`Unexpected line format in response: ${line}`);
+          throw new Error(`响应中意外的行格式: ${line}`);
         }
       }
     })();
@@ -265,10 +265,10 @@ export class CodeAssistServer implements ContentGenerator {
 
   private async detectUserTier(): Promise<void> {
     try {
-      // Reset user tier when detection runs
+      // 检测运行时重置用户层级
       this.userTier = undefined;
 
-      // Only attempt tier detection if we have a project ID
+      // 仅在我们有项目 ID 时尝试层级检测
       if (this.projectId) {
         const loadRes = await this.loadCodeAssist({
           cloudaicompanionProject: this.projectId,
@@ -284,9 +284,9 @@ export class CodeAssistServer implements ContentGenerator {
         }
       }
     } catch (error) {
-      // Silently fail - this is not critical functionality
-      // We'll default to FREE tier behavior if tier detection fails
-      console.debug('User tier detection failed:', error);
+      // 静默失败 - 这不是关键功能
+      // 如果层级检测失败，我们将默认为 FREE 层级行为
+      console.debug('用户层级检测失败:', error);
     }
   }
 

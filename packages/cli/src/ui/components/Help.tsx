@@ -1,3 +1,4 @@
+
 /**
  * @license
  * Copyright 2025 Google LLC
@@ -21,48 +22,48 @@ export const Help: React.FC<Help> = ({ commands }) => (
     borderStyle="round"
     padding={1}
   >
-    {/* Basics */}
+    {/* 基础用法 */}
     <Text bold color={Colors.Foreground}>
-      Basics:
+      基础用法:
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
-        Add context
+        添加上下文
       </Text>
-      : Use{' '}
+      : 使用{' '}
       <Text bold color={Colors.AccentPurple}>
         @
       </Text>{' '}
-      to specify files for context (e.g.,{' '}
+      指定文件作为上下文（例如，{' '}
       <Text bold color={Colors.AccentPurple}>
         @src/myFile.ts
       </Text>
-      ) to target specific files or folders.
+      ）以针对特定文件或文件夹。
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
-        Shell mode
+        Shell 模式
       </Text>
-      : Execute shell commands via{' '}
+      : 通过{' '}
       <Text bold color={Colors.AccentPurple}>
         !
       </Text>{' '}
-      (e.g.,{' '}
+      执行 shell 命令（例如，{' '}
       <Text bold color={Colors.AccentPurple}>
         !npm run start
       </Text>
-      ) or use natural language (e.g.{' '}
+      ）或使用自然语言（例如{' '}
       <Text bold color={Colors.AccentPurple}>
         start server
       </Text>
-      ).
+      ）。
     </Text>
 
     <Box height={1} />
 
-    {/* Commands */}
+    {/* 命令 */}
     <Text bold color={Colors.Foreground}>
-      Commands:
+      命令:
     </Text>
     {commands
       .filter((command) => command.description)
@@ -92,64 +93,64 @@ export const Help: React.FC<Help> = ({ commands }) => (
         {' '}
         !{' '}
       </Text>
-      - shell command
+      - shell 命令
     </Text>
 
     <Box height={1} />
 
-    {/* Shortcuts */}
+    {/* 快捷键 */}
     <Text bold color={Colors.Foreground}>
-      Keyboard Shortcuts:
+      键盘快捷键:
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
         Enter
       </Text>{' '}
-      - Send message
+      - 发送消息
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
         {process.platform === 'win32' ? 'Ctrl+Enter' : 'Ctrl+J'}
       </Text>{' '}
       {process.platform === 'linux'
-        ? '- New line (Alt+Enter works for certain linux distros)'
-        : '- New line'}
+        ? '- 换行（Alt+Enter 在某些 Linux 发行版上有效）'
+        : '- 换行'}
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
-        Up/Down
+        上/下方向键
       </Text>{' '}
-      - Cycle through your prompt history
+      - 在提示历史记录中循环
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
-        Alt+Left/Right
+        Alt+左/右方向键
       </Text>{' '}
-      - Jump through words in the input
+      - 在输入中跳转单词
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
         Shift+Tab
       </Text>{' '}
-      - Toggle auto-accepting edits
+      - 切换自动接受编辑
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
         Ctrl+Y
       </Text>{' '}
-      - Toggle YOLO mode
+      - 切换 YOLO 模式
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
         Esc
       </Text>{' '}
-      - Cancel operation
+      - 取消操作
     </Text>
     <Text color={Colors.Foreground}>
       <Text bold color={Colors.AccentPurple}>
         Ctrl+C
       </Text>{' '}
-      - Quit application
+      - 退出应用程序
     </Text>
   </Box>
 );

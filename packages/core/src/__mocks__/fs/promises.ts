@@ -9,12 +9,12 @@ import * as actualFsPromises from 'node:fs/promises';
 
 const readFileMock = vi.fn();
 
-// Export a control object so tests can access and manipulate the mock
+// 导出一个控制对象，以便测试可以访问和操作模拟函数
 export const mockControl = {
   mockReadFile: readFileMock,
 };
 
-// Export all other functions from the actual fs/promises module
+// 从实际的 fs/promises 模块导出所有其他函数
 export const {
   access,
   appendFile,
@@ -44,5 +44,5 @@ export const {
   writeFile,
 } = actualFsPromises;
 
-// Override readFile with our mock
+// 用我们的模拟函数覆盖 readFile
 export const readFile = readFileMock;

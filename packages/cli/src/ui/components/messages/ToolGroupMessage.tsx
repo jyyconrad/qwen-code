@@ -21,7 +21,7 @@ interface ToolGroupMessageProps {
   isFocused?: boolean;
 }
 
-// Main component renders the border and maps the tools using ToolMessage
+// 主组件渲染边框并使用 ToolMessage 映射工具
 export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
   toolCalls,
   availableTerminalHeight,
@@ -34,13 +34,13 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
   );
   const borderColor = hasPending ? Colors.AccentYellow : Colors.Gray;
 
-  const staticHeight = /* border */ 2 + /* marginBottom */ 1;
-  // This is a bit of a magic number, but it accounts for the border and
-  // marginLeft.
+  const staticHeight = /* 边框 */ 2 + /* marginBottom */ 1;
+  // 这是一个魔法数字，但它考虑了边框和
+  // marginLeft。
   const innerWidth = terminalWidth - 4;
 
-  // only prompt for tool approval on the first 'confirming' tool in the list
-  // note, after the CTA, this automatically moves over to the next 'confirming' tool
+  // 仅在列表中第一个 'confirming' 工具上提示工具批准
+  // 注意，CTA 之后，这会自动移动到下一个 'confirming' 工具
   const toolAwaitingApproval = useMemo(
     () => toolCalls.find((tc) => tc.status === ToolCallStatus.Confirming),
     [toolCalls],
@@ -68,10 +68,10 @@ export const ToolGroupMessage: React.FC<ToolGroupMessageProps> = ({
       flexDirection="column"
       borderStyle="round"
       /*
-        This width constraint is highly important and protects us from an Ink rendering bug.
-        Since the ToolGroup can typically change rendering states frequently, it can cause
-        Ink to render the border of the box incorrectly and span multiple lines and even
-        cause tearing.
+        此宽度约束非常重要，它保护我们免受 Ink 渲染错误的影响。
+        由于 ToolGroup 通常会频繁更改渲染状态，它可能导致
+        Ink 错误地渲染框的边框，跨越多行甚至
+        导致撕裂。
       */
       width="100%"
       marginLeft={1}

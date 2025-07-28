@@ -14,12 +14,12 @@ import { GeminiRespondingSpinner } from '../GeminiRespondingSpinner.js';
 import { MaxSizedBox } from '../shared/MaxSizedBox.js';
 
 const STATIC_HEIGHT = 1;
-const RESERVED_LINE_COUNT = 5; // for tool name, status, padding etc.
+const RESERVED_LINE_COUNT = 5; // 用于工具名称、状态、填充等。
 const STATUS_INDICATOR_WIDTH = 3;
-const MIN_LINES_SHOWN = 2; // show at least this many lines
+const MIN_LINES_SHOWN = 2; // 至少显示这么多行
 
-// Large threshold to ensure we don't cause performance issues for very large
-// outputs that will get truncated further MaxSizedBox anyway.
+// 较大的阈值以确保我们不会因为非常大的输出而导致性能问题，
+// 这些输出无论如何都会在 MaxSizedBox 中被截断。
 const MAXIMUM_RESULT_DISPLAY_CHARACTERS = 1000000;
 export type TextEmphasis = 'high' | 'medium' | 'low';
 
@@ -43,21 +43,21 @@ export const ToolMessage: React.FC<ToolMessageProps> = ({
   const availableHeight = availableTerminalHeight
     ? Math.max(
         availableTerminalHeight - STATIC_HEIGHT - RESERVED_LINE_COUNT,
-        MIN_LINES_SHOWN + 1, // enforce minimum lines shown
+        MIN_LINES_SHOWN + 1, // 强制显示最小行数
       )
     : undefined;
 
-  // Long tool call response in MarkdownDisplay doesn't respect availableTerminalHeight properly,
-  // we're forcing it to not render as markdown when the response is too long, it will fallback
-  // to render as plain text, which is contained within the terminal using MaxSizedBox
+  // 长工具调用响应在 MarkdownDisplay 中无法正确遵守 availableTerminalHeight，
+  // 当响应过长时，我们强制不以 markdown 渲染，它将回退到纯文本渲染，
+  // 并通过 MaxSizedBox 限制在终端内显示。
   if (availableHeight) {
     renderOutputAsMarkdown = false;
   }
 
-  const childWidth = terminalWidth - 3; // account for padding.
+  const childWidth = terminalWidth - 3; // 考虑填充。
   if (typeof resultDisplay === 'string') {
     if (resultDisplay.length > MAXIMUM_RESULT_DISPLAY_CHARACTERS) {
-      // Truncate the result display to fit within the available width.
+      // 截断结果显示以适应可用宽度。
       resultDisplay =
         '...' + resultDisplay.slice(-MAXIMUM_RESULT_DISPLAY_CHARACTERS);
     }

@@ -5,43 +5,43 @@
  */
 
 /**
- * Shades of Purple Theme — for Highlightjs.
+ * Shades of Purple 主题 — 用于 Highlightjs。
  * @author Ahmad Awais <https://twitter.com/mrahmadawais/>
  */
 import { type ColorsTheme, Theme } from './theme.js';
 
 const shadesOfPurpleColors: ColorsTheme = {
   type: 'dark',
-  // Required colors for ColorsTheme interface
-  Background: '#2d2b57', // Main background
-  Foreground: '#e3dfff', // Default text color (hljs, hljs-subst)
-  LightBlue: '#847ace', // Light blue/purple accent
-  AccentBlue: '#a599e9', // Borders, secondary blue
-  AccentPurple: '#ac65ff', // Comments (main purple)
-  AccentCyan: '#a1feff', // Names
-  AccentGreen: '#A5FF90', // Strings and many others
-  AccentYellow: '#fad000', // Title, main yellow
-  AccentRed: '#ff628c', // Error/deletion accent
-  Comment: '#B362FF', // Comment color (same as AccentPurple)
-  Gray: '#726c86', // Gray color
+  // ColorsTheme 接口所需的配色
+  Background: '#2d2b57', // 主背景色
+  Foreground: '#e3dfff', // 默认文本颜色（hljs, hljs-subst）
+  LightBlue: '#847ace', // 浅蓝/紫色强调色
+  AccentBlue: '#a599e9', // 边框、次级蓝色
+  AccentPurple: '#ac65ff', // 注释（主紫色）
+  AccentCyan: '#a1feff', // 名称
+  AccentGreen: '#A5FF90', // 字符串及其他多项
+  AccentYellow: '#fad000', // 标题、主黄色
+  AccentRed: '#ff628c', // 错误/删除强调色
+  Comment: '#B362FF', // 注释颜色（与 AccentPurple 相同）
+  Gray: '#726c86', // 灰色
   GradientColors: ['#4d21fc', '#847ace', '#ff628c'],
 };
 
-// Additional colors from CSS that don't fit in the ColorsTheme interface
+// CSS 中额外的颜色，不适用于 ColorsTheme 接口
 const additionalColors = {
-  AccentYellowAlt: '#f8d000', // Attr yellow (slightly different)
-  AccentOrange: '#fb9e00', // Keywords, built_in, meta
-  AccentPink: '#fa658d', // Numbers, literals
-  AccentLightPurple: '#c991ff', // For params and properties
-  AccentDarkPurple: '#6943ff', // For operators
-  AccentTeal: '#2ee2fa', // For special constructs
+  AccentYellowAlt: '#f8d000', // 属性黄色（略有不同）
+  AccentOrange: '#fb9e00', // 关键字、built_in、meta
+  AccentPink: '#fa658d', // 数字、字面量
+  AccentLightPurple: '#c991ff', // 用于参数和属性
+  AccentDarkPurple: '#6943ff', // 用于操作符
+  AccentTeal: '#2ee2fa', // 用于特殊结构
 };
 
 export const ShadesOfPurple = new Theme(
   'Shades Of Purple',
   'dark',
   {
-    // Base styles
+    // 基础样式
     hljs: {
       display: 'block',
       overflowX: 'auto',
@@ -49,30 +49,30 @@ export const ShadesOfPurple = new Theme(
       color: shadesOfPurpleColors.Foreground,
     },
 
-    // Title elements
+    // 标题元素
     'hljs-title': {
       color: shadesOfPurpleColors.AccentYellow,
       fontWeight: 'normal',
     },
 
-    // Names
+    // 名称
     'hljs-name': {
       color: shadesOfPurpleColors.AccentCyan,
       fontWeight: 'normal',
     },
 
-    // Tags
+    // 标签
     'hljs-tag': {
       color: shadesOfPurpleColors.Foreground,
     },
 
-    // Attributes
+    // 属性
     'hljs-attr': {
       color: additionalColors.AccentYellowAlt,
       fontStyle: 'italic',
     },
 
-    // Built-ins, selector tags, sections
+    // 内置元素、选择器标签、章节
     'hljs-built_in': {
       color: additionalColors.AccentOrange,
     },
@@ -84,18 +84,18 @@ export const ShadesOfPurple = new Theme(
       color: additionalColors.AccentOrange,
     },
 
-    // Keywords
+    // 关键字
     'hljs-keyword': {
       color: additionalColors.AccentOrange,
       fontWeight: 'normal',
     },
 
-    // Default text and substitutions
+    // 默认文本和替换
     'hljs-subst': {
       color: shadesOfPurpleColors.Foreground,
     },
 
-    // Strings and related elements (all green)
+    // 字符串及相关元素（均为绿色）
     'hljs-string': {
       color: shadesOfPurpleColors.AccentGreen,
     },
@@ -136,7 +136,7 @@ export const ShadesOfPurple = new Theme(
       color: shadesOfPurpleColors.AccentRed,
     },
 
-    // Meta elements
+    // 元数据元素
     'hljs-meta': {
       color: additionalColors.AccentOrange,
     },
@@ -144,12 +144,12 @@ export const ShadesOfPurple = new Theme(
       color: additionalColors.AccentOrange,
     },
 
-    // Comments
+    // 注释
     'hljs-comment': {
       color: shadesOfPurpleColors.AccentPurple,
     },
 
-    // Literals and numbers
+    // 字面量和数字
     'hljs-literal': {
       color: additionalColors.AccentPink,
       fontWeight: 'normal',
@@ -158,7 +158,7 @@ export const ShadesOfPurple = new Theme(
       color: additionalColors.AccentPink,
     },
 
-    // Emphasis and strong
+    // 强调和加粗
     'hljs-emphasis': {
       fontStyle: 'italic',
     },
@@ -166,7 +166,7 @@ export const ShadesOfPurple = new Theme(
       fontWeight: 'bold',
     },
 
-    // Diff-specific classes
+    // 差异类（diff-specific）
     'hljs-diff': {
       color: shadesOfPurpleColors.Foreground,
     },
@@ -177,7 +177,7 @@ export const ShadesOfPurple = new Theme(
       color: shadesOfPurpleColors.Gray,
     },
 
-    // Additional elements that might be needed
+    // 可能需要的额外元素
     'hljs-type': {
       color: shadesOfPurpleColors.AccentYellow,
       fontWeight: 'normal',
@@ -198,118 +198,118 @@ export const ShadesOfPurple = new Theme(
       fontWeight: 'bold',
     },
 
-    // Function parameters
+    // 函数参数
     'hljs-params': {
       color: additionalColors.AccentLightPurple,
       fontStyle: 'italic',
     },
 
-    // Class definitions
+    // 类定义
     'hljs-class': {
       color: shadesOfPurpleColors.AccentCyan,
       fontWeight: 'bold',
     },
 
-    // Function definitions
+    // 函数定义
     'hljs-function': {
       color: shadesOfPurpleColors.AccentCyan,
     },
 
-    // Object properties
+    // 对象属性
     'hljs-property': {
       color: shadesOfPurpleColors.AccentBlue,
     },
 
-    // Operators
+    // 操作符
     'hljs-operator': {
       color: additionalColors.AccentDarkPurple,
     },
 
-    // Punctuation (if supported by the parser)
+    // 标点符号（如解析器支持）
     'hljs-punctuation': {
       color: shadesOfPurpleColors.Gray,
     },
 
-    // CSS ID selectors
+    // CSS ID 选择器
     'hljs-selector-id': {
       color: shadesOfPurpleColors.AccentYellow,
       fontWeight: 'bold',
     },
 
-    // Character literals
+    // 字符字面量
     'hljs-char': {
       color: shadesOfPurpleColors.AccentGreen,
     },
 
-    // Escape sequences
+    // 转义序列
     'hljs-escape': {
       color: additionalColors.AccentPink,
       fontWeight: 'bold',
     },
 
-    // Meta keywords
+    // 元关键字
     'hljs-meta-keyword': {
       color: additionalColors.AccentOrange,
       fontWeight: 'bold',
     },
 
-    // Built-in names
+    // 内置名称
     'hljs-builtin-name': {
       color: additionalColors.AccentTeal,
     },
 
-    // Modules
+    // 模块
     'hljs-module': {
       color: shadesOfPurpleColors.AccentCyan,
     },
 
-    // Namespaces
+    // 命名空间
     'hljs-namespace': {
       color: shadesOfPurpleColors.LightBlue,
     },
 
-    // Important annotations
+    // 重要注解
     'hljs-important': {
       color: shadesOfPurpleColors.AccentRed,
       fontWeight: 'bold',
     },
 
-    // Formulas (for LaTeX, etc.)
+    // 公式（用于 LaTeX 等）
     'hljs-formula': {
       color: shadesOfPurpleColors.AccentCyan,
       fontStyle: 'italic',
     },
 
-    // Language-specific additions
-    // Python decorators
+    // 特定语言的扩展
+    // Python 装饰器
     'hljs-decorator': {
       color: additionalColors.AccentTeal,
       fontWeight: 'bold',
     },
 
-    // Ruby symbols
+    // Ruby 符号
     'hljs-symbol.ruby': {
       color: additionalColors.AccentPink,
     },
 
-    // SQL keywords
+    // SQL 关键字
     'hljs-keyword.sql': {
       color: additionalColors.AccentOrange,
       textTransform: 'uppercase',
     },
 
-    // Markdown specific
+    // Markdown 特定样式
     'hljs-section.markdown': {
       color: shadesOfPurpleColors.AccentYellow,
       fontWeight: 'bold',
     },
 
-    // JSON keys
+    // JSON 键
     'hljs-attr.json': {
       color: shadesOfPurpleColors.AccentCyan,
     },
 
-    // XML/HTML specific
+    // XML/HTML 特定样式
     'hljs-tag .hljs-name': {
       color: shadesOfPurpleColors.AccentRed,
     },
@@ -317,7 +317,7 @@ export const ShadesOfPurple = new Theme(
       color: additionalColors.AccentYellowAlt,
     },
 
-    // Line highlighting (if line numbers are enabled)
+    // 行高亮（启用行号时）
     'hljs.hljs-line-numbers': {
       borderRight: `1px solid ${shadesOfPurpleColors.Gray}`,
     },
@@ -329,17 +329,17 @@ export const ShadesOfPurple = new Theme(
       paddingLeft: '1em',
     },
 
-    // Selection styling
+    // 选中样式
     'hljs::selection': {
-      background: shadesOfPurpleColors.AccentBlue + '40', // 40 = 25% opacity
+      background: shadesOfPurpleColors.AccentBlue + '40', // 40 = 25% 不透明度
     },
     'hljs ::-moz-selection': {
       background: shadesOfPurpleColors.AccentBlue + '40',
     },
 
-    // Highlighted lines (for emphasis)
+    // 高亮行（用于强调）
     'hljs .hljs-highlight': {
-      background: shadesOfPurpleColors.AccentPurple + '20', // 20 = 12.5% opacity
+      background: shadesOfPurpleColors.AccentPurple + '20', // 20 = 12.5% 不透明度
       display: 'block',
       width: '100%',
     },

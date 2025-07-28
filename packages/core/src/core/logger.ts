@@ -27,9 +27,9 @@ export class Logger {
   private iflycodeDir: string | undefined;
   private logFilePath: string | undefined;
   private sessionId: string | undefined;
-  private messageId = 0; // Instance-specific counter for the next messageId
+  private messageId = 0; // 实例特定的计数器，用于下一个 messageId
   private initialized = false;
-  private logs: LogEntry[] = []; // In-memory cache, ideally reflects the last known state of the file
+  private logs: LogEntry[] = []; // 内存缓存，理想情况下反映文件的最后已知状态
 
   constructor(sessionId: string) {
     this.sessionId = sessionId;
@@ -37,14 +37,14 @@ export class Logger {
 
   private async _readLogFile(): Promise<LogEntry[]> {
     if (!this.logFilePath) {
-      throw new Error('Log file path not set during read attempt.');
+      throw new Error('尝试读取时日志文件路径未设置。');
     }
     try {
       const fileContent = await fs.readFile(this.logFilePath, 'utf-8');
       const parsedLogs = JSON.parse(fileContent);
       if (!Array.isArray(parsedLogs)) {
         console.debug(
-          `Log file at ${this.logFilePath} is not a valid JSON array. Starting with empty logs.`,
+          `路径 ${this.logFilePath} 处的日志文件不是有效的 JSON 数组。从空日志开始。`,
         );
         await this._backupCorruptedLogFile('malformed_array');
         return [];
@@ -64,14 +64,14 @@ export class Logger {
       }
       if (error instanceof SyntaxError) {
         console.debug(
-          `Invalid JSON in log file ${this.logFilePath}. Backing up and starting fresh.`,
+          `日志文件 ${this.logFilePath} 中存在无效 JSON。备份并重新开始。`,
           error,
         );
         await this._backupCorruptedLogFile('invalid_json');
         return [];
       }
       console.debug(
-        `Failed to read or parse log file ${this.logFilePath}:`,
+        `读取或解析日志文件 ${this.logFilePath} 失败：`,
         error,
       );
       throw error;
@@ -83,9 +83,9 @@ export class Logger {
     const backupPath = `${this.logFilePath}.${reason}.${Date.now()}.bak`;
     try {
       await fs.rename(this.logFilePath, backupPath);
-      console.debug(`Backed up corrupted log file to ${backupPath}`);
+      console.debug(`已将损坏的日志文件备份到 ${backupPath}`);
     } catch (_backupError) {
-      // If rename fails (e.g. file doesn't exist), no need to log an error here as the primary error (e.g. invalid JSON) is already handled.
+      // 如果重命名失败（例如文件不存在），此处无需记录错误，因为主要错误（例如无效 JSON）已经处理。
     }
   }
 
@@ -118,7 +118,7 @@ export class Logger {
           : 0;
       this.initialized = true;
     } catch (err) {
-      console.error('Failed to initialize logger:', err);
+      console.error('初始化日志记录器失败：', err);
       this.initialized = false;
     }
   }
@@ -127,8 +127,8 @@ export class Logger {
     entryToAppend: LogEntry,
   ): Promise<LogEntry | null> {
     if (!this.logFilePath) {
-      console.debug('Log file path not set. Cannot persist log entry.');
-      throw new Error('Log file path not set during update attempt.');
+      console.debug('日志文件路径未设置。无法持久化日志条目。');
+      throw new Error('尝试更新时日志文件路径未设置。');
     }
 
     let currentLogsOnDisk: LogEntry[];
@@ -136,13 +136,13 @@ export class Logger {
       currentLogsOnDisk = await this._readLogFile();
     } catch (readError) {
       console.debug(
-        'Critical error reading log file before append:',
+        '追加前读取日志文件时发生严重错误：',
         readError,
       );
       throw readError;
     }
 
-    // Determine the correct messageId for the new entry based on current disk state for its session
+    // 根据当前磁盘状态为其会话确定新条目的正确 messageId
     const sessionLogsOnDisk = currentLogsOnDisk.filter(
       (e) => e.sessionId === entryToAppend.sessionId,
     );
@@ -151,26 +151,26 @@ export class Logger {
         ? Math.max(...sessionLogsOnDisk.map((e) => e.messageId)) + 1
         : 0;
 
-    // Update the messageId of the entry we are about to append
+    // 更新即将追加的条目的 messageId
     entryToAppend.messageId = nextMessageIdForSession;
 
-    // Check if this entry (same session, same *recalculated* messageId, same content) might already exist
-    // This is a stricter check for true duplicates if multiple instances try to log the exact same thing
-    // at the exact same calculated messageId slot.
+    // 检查此条目（相同会话，相同 *重新计算的* messageId，相同内容）是否可能已存在
+    // 如果多个实例尝试在完全相同的计算 messageId 插槽中记录完全相同的内容，
+    // 这是一个更严格的真正重复项检查。
     const entryExists = currentLogsOnDisk.some(
       (e) =>
         e.sessionId === entryToAppend.sessionId &&
         e.messageId === entryToAppend.messageId &&
-        e.timestamp === entryToAppend.timestamp && // Timestamps are good for distinguishing
+        e.timestamp === entryToAppend.timestamp && // 时间戳有助于区分
         e.message === entryToAppend.message,
     );
 
     if (entryExists) {
       console.debug(
-        `Duplicate log entry detected and skipped: session ${entryToAppend.sessionId}, messageId ${entryToAppend.messageId}`,
+        `检测到重复的日志条目并跳过：会话 ${entryToAppend.sessionId}，messageId ${entryToAppend.messageId}`,
       );
-      this.logs = currentLogsOnDisk; // Ensure in-memory is synced with disk
-      return null; // Indicate that no new entry was actually added
+      this.logs = currentLogsOnDisk; // 确保内存与磁盘同步
+      return null; // 表示实际上没有添加新条目
     }
 
     currentLogsOnDisk.push(entryToAppend);
@@ -182,9 +182,9 @@ export class Logger {
         'utf-8',
       );
       this.logs = currentLogsOnDisk;
-      return entryToAppend; // Return the successfully appended entry
+      return entryToAppend; // 返回成功追加的条目
     } catch (error) {
-      console.debug('Error writing to log file:', error);
+      console.debug('写入日志文件时出错：', error);
       throw error;
     }
   }
@@ -204,16 +204,16 @@ export class Logger {
   async logMessage(type: MessageSenderType, message: string): Promise<void> {
     if (!this.initialized || this.sessionId === undefined) {
       console.debug(
-        'Logger not initialized or session ID missing. Cannot log message.',
+        '日志记录器未初始化或缺少会话 ID。无法记录消息。',
       );
       return;
     }
 
-    // The messageId used here is the instance's idea of the next ID.
-    // _updateLogFile will verify and potentially recalculate based on the file's actual state.
+    // 此处使用的 messageId 是实例对下一个 ID 的理解。
+    // _updateLogFile 将根据文件的实际状态验证并可能重新计算。
     const newEntryObject: LogEntry = {
       sessionId: this.sessionId,
-      messageId: this.messageId, // This will be recalculated in _updateLogFile
+      messageId: this.messageId, // 这将在 _updateLogFile 中重新计算
       type,
       message,
       timestamp: new Date().toISOString(),
@@ -222,21 +222,21 @@ export class Logger {
     try {
       const writtenEntry = await this._updateLogFile(newEntryObject);
       if (writtenEntry) {
-        // If an entry was actually written (not a duplicate skip),
-        // then this instance can increment its idea of the next messageId for this session.
+        // 如果实际写入了一个条目（不是重复跳过），
+        // 那么此实例可以递增其对此会话的下一个 messageId 的理解。
         this.messageId = writtenEntry.messageId + 1;
       }
     } catch (_error) {
-      // Error already logged by _updateLogFile or _readLogFile
+      // 错误已由 _updateLogFile 或 _readLogFile 记录
     }
   }
 
   _checkpointPath(tag: string): string {
     if (!tag.length) {
-      throw new Error('No checkpoint tag specified.');
+      throw new Error('未指定检查点标签。');
     }
     if (!this.iflycodeDir) {
-      throw new Error('Checkpoint file path not set.');
+      throw new Error('检查点文件路径未设置。');
     }
     return path.join(this.iflycodeDir, `checkpoint-${tag}.json`);
   }
@@ -244,7 +244,7 @@ export class Logger {
   async saveCheckpoint(conversation: Content[], tag: string): Promise<void> {
     if (!this.initialized) {
       console.error(
-        'Logger not initialized or checkpoint file path not set. Cannot save a checkpoint.',
+        '日志记录器未初始化或检查点文件路径未设置。无法保存检查点。',
       );
       return;
     }
@@ -252,14 +252,14 @@ export class Logger {
     try {
       await fs.writeFile(path, JSON.stringify(conversation, null, 2), 'utf-8');
     } catch (error) {
-      console.error('Error writing to checkpoint file:', error);
+      console.error('写入检查点文件时出错：', error);
     }
   }
 
   async loadCheckpoint(tag: string): Promise<Content[]> {
     if (!this.initialized) {
       console.error(
-        'Logger not initialized or checkpoint file path not set. Cannot load checkpoint.',
+        '日志记录器未初始化或检查点文件路径未设置。无法加载检查点。',
       );
       return [];
     }
@@ -270,16 +270,16 @@ export class Logger {
       const parsedContent = JSON.parse(fileContent);
       if (!Array.isArray(parsedContent)) {
         console.warn(
-          `Checkpoint file at ${path} is not a valid JSON array. Returning empty checkpoint.`,
+          `路径 ${path} 处的检查点文件不是有效的 JSON 数组。返回空检查点。`,
         );
         return [];
       }
       return parsedContent as Content[];
     } catch (error) {
-      console.error(`Failed to read or parse checkpoint file ${path}:`, error);
+      console.error(`读取或解析检查点文件 ${path} 失败：`, error);
       const nodeError = error as NodeJS.ErrnoException;
       if (nodeError.code === 'ENOENT') {
-        // File doesn't exist, which is fine. Return empty array.
+        // 文件不存在，这是正常的。返回空数组。
         return [];
       }
       return [];

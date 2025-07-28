@@ -15,11 +15,11 @@ import {
 
 describe('parseAndFormatApiError', () => {
   const _enterpriseMessage =
-    'upgrade to a Gemini Code Assist Standard or Enterprise plan with higher limits';
-  const vertexMessage = 'request a quota increase through Vertex';
-  const geminiMessage = 'request a quota increase through AI Studio';
+    '升级到具有更高限制的 Gemini Code Assist Standard 或 Enterprise 计划';
+  const vertexMessage = '通过 Vertex 申请配额增加';
+  const geminiMessage = '通过 AI Studio 申请配额增加';
 
-  it('should format a valid API error JSON', () => {
+  it('应格式化有效的 API 错误 JSON', () => {
     const errorMessage =
       'got status: 400 Bad Request. {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT"}}';
     const expected =
@@ -27,7 +27,7 @@ describe('parseAndFormatApiError', () => {
     expect(parseAndFormatApiError(errorMessage)).toBe(expected);
   });
 
-  it('should format a 429 API error with the default message', () => {
+  it('应使用默认消息格式化 429 API 错误', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Rate limit exceeded","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -39,11 +39,11 @@ describe('parseAndFormatApiError', () => {
     );
     expect(result).toContain('[API Error: Rate limit exceeded');
     expect(result).toContain(
-      'Possible quota limitations in place or slow response times detected. Switching to the gemini-2.5-flash model',
+      '检测到可能的配额限制或响应时间缓慢。正在切换到 gemini-2.5-flash 模型',
     );
   });
 
-  it('should format a 429 API error with the personal message', () => {
+  it('应使用个人消息格式化 429 API 错误', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Rate limit exceeded","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -55,11 +55,11 @@ describe('parseAndFormatApiError', () => {
     );
     expect(result).toContain('[API Error: Rate limit exceeded');
     expect(result).toContain(
-      'Possible quota limitations in place or slow response times detected. Switching to the gemini-2.5-flash model',
+      '检测到可能的配额限制或响应时间缓慢。正在切换到 gemini-2.5-flash 模型',
     );
   });
 
-  it('should format a 429 API error with the vertex message', () => {
+  it('应使用 vertex 消息格式化 429 API 错误', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Rate limit exceeded","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(errorMessage, AuthType.USE_VERTEX_AI);
@@ -67,28 +67,28 @@ describe('parseAndFormatApiError', () => {
     expect(result).toContain(vertexMessage);
   });
 
-  it('should return the original message if it is not a JSON error', () => {
-    const errorMessage = 'This is a plain old error message';
+  it('如果消息不是 JSON 错误，则应返回原始消息', () => {
+    const errorMessage = '这是一个普通的旧错误消息';
     expect(parseAndFormatApiError(errorMessage)).toBe(
       `[API Error: ${errorMessage}]`,
     );
   });
 
-  it('should return the original message for malformed JSON', () => {
+  it('对于格式错误的 JSON 应返回原始消息', () => {
     const errorMessage = '[Stream Error: {"error": "malformed}';
     expect(parseAndFormatApiError(errorMessage)).toBe(
       `[API Error: ${errorMessage}]`,
     );
   });
 
-  it('should handle JSON that does not match the ApiError structure', () => {
+  it('应处理不匹配 ApiError 结构的 JSON', () => {
     const errorMessage = '[Stream Error: {"not_an_error": "some other json"}]';
     expect(parseAndFormatApiError(errorMessage)).toBe(
       `[API Error: ${errorMessage}]`,
     );
   });
 
-  it('should format a nested API error', () => {
+  it('应格式化嵌套的 API 错误', () => {
     const nestedErrorMessage = JSON.stringify({
       error: {
         code: 429,
@@ -111,16 +111,16 @@ describe('parseAndFormatApiError', () => {
     expect(result).toContain(geminiMessage);
   });
 
-  it('should format a StructuredError', () => {
+  it('应格式化 StructuredError', () => {
     const error: StructuredError = {
-      message: 'A structured error occurred',
+      message: '发生了一个结构化错误',
       status: 500,
     };
-    const expected = '[API Error: A structured error occurred]';
+    const expected = '[API Error: 发生了一个结构化错误]';
     expect(parseAndFormatApiError(error)).toBe(expected);
   });
 
-  it('should format a 429 StructuredError with the vertex message', () => {
+  it('应使用 vertex 消息格式化 429 StructuredError', () => {
     const error: StructuredError = {
       message: 'Rate limit exceeded',
       status: 429,
@@ -130,13 +130,13 @@ describe('parseAndFormatApiError', () => {
     expect(result).toContain(vertexMessage);
   });
 
-  it('should handle an unknown error type', () => {
+  it('应处理未知错误类型', () => {
     const error = 12345;
-    const expected = '[API Error: An unknown error occurred.]';
+    const expected = '[API Error: 发生了未知错误。]';
     expect(parseAndFormatApiError(error)).toBe(expected);
   });
 
-  it('should format a 429 API error with Pro quota exceeded message for Google auth (Free tier)', () => {
+  it('应为 Google 认证（免费层级）格式化 429 API 错误与 Pro 配额超限消息', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Quota exceeded for quota metric \'Gemini 2.5 Pro Requests\' and limit \'RequestsPerDay\' of service \'generativelanguage.googleapis.com\' for consumer \'project_number:123456789\'.","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -150,14 +150,14 @@ describe('parseAndFormatApiError', () => {
       "[API Error: Quota exceeded for quota metric 'Gemini 2.5 Pro Requests'",
     );
     expect(result).toContain(
-      'You have reached your daily gemini-2.5-pro quota limit',
+      '您已达到每日 gemini-2.5-pro 配额限制',
     );
     expect(result).toContain(
-      'upgrade to a Gemini Code Assist Standard or Enterprise plan',
+      '升级到 Gemini Code Assist Standard 或 Enterprise 计划',
     );
   });
 
-  it('should format a regular 429 API error with standard message for Google auth', () => {
+  it('应为 Google 认证格式化常规 429 API 错误与标准消息', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Rate limit exceeded","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -169,14 +169,14 @@ describe('parseAndFormatApiError', () => {
     );
     expect(result).toContain('[API Error: Rate limit exceeded');
     expect(result).toContain(
-      'Possible quota limitations in place or slow response times detected. Switching to the gemini-2.5-flash model',
+      '检测到可能的配额限制或响应时间缓慢。正在切换到 gemini-2.5-flash 模型',
     );
     expect(result).not.toContain(
-      'You have reached your daily gemini-2.5-pro quota limit',
+      '您已达到每日 gemini-2.5-pro 配额限制',
     );
   });
 
-  it('should format a 429 API error with generic quota exceeded message for Google auth', () => {
+  it('应为 Google 认证格式化 429 API 错误与通用配额超限消息', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Quota exceeded for quota metric \'GenerationRequests\' and limit \'RequestsPerDay\' of service \'generativelanguage.googleapis.com\' for consumer \'project_number:123456789\'.","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -189,13 +189,13 @@ describe('parseAndFormatApiError', () => {
     expect(result).toContain(
       "[API Error: Quota exceeded for quota metric 'GenerationRequests'",
     );
-    expect(result).toContain('You have reached your daily quota limit');
+    expect(result).toContain('您已达到每日配额限制');
     expect(result).not.toContain(
-      'You have reached your daily Gemini 2.5 Pro quota limit',
+      '您已达到每日 Gemini 2.5 Pro 配额限制',
     );
   });
 
-  it('should prioritize Pro quota message over generic quota message for Google auth', () => {
+  it('应优先处理 Google 认证的 Pro 配额消息而非通用配额消息', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Quota exceeded for quota metric \'Gemini 2.5 Pro Requests\' and limit \'RequestsPerDay\' of service \'generativelanguage.googleapis.com\' for consumer \'project_number:123456789\'.","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -209,12 +209,12 @@ describe('parseAndFormatApiError', () => {
       "[API Error: Quota exceeded for quota metric 'Gemini 2.5 Pro Requests'",
     );
     expect(result).toContain(
-      'You have reached your daily gemini-2.5-pro quota limit',
+      '您已达到每日 gemini-2.5-pro 配额限制',
     );
-    expect(result).not.toContain('You have reached your daily quota limit');
+    expect(result).not.toContain('您已达到每日配额限制');
   });
 
-  it('should format a 429 API error with Pro quota exceeded message for Google auth (Standard tier)', () => {
+  it('应为 Google 认证（标准层级）格式化 429 API 错误与 Pro 配额超限消息', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Quota exceeded for quota metric \'Gemini 2.5 Pro Requests\' and limit \'RequestsPerDay\' of service \'generativelanguage.googleapis.com\' for consumer \'project_number:123456789\'.","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -228,17 +228,17 @@ describe('parseAndFormatApiError', () => {
       "[API Error: Quota exceeded for quota metric 'Gemini 2.5 Pro Requests'",
     );
     expect(result).toContain(
-      'You have reached your daily gemini-2.5-pro quota limit',
+      '您已达到每日 gemini-2.5-pro 配额限制',
     );
     expect(result).toContain(
-      'We appreciate you for choosing Gemini Code Assist and the Gemini CLI',
+      '感谢您选择 Gemini Code Assist 和 Gemini CLI',
     );
     expect(result).not.toContain(
-      'upgrade to a Gemini Code Assist Standard or Enterprise plan',
+      '升级到 Gemini Code Assist Standard 或 Enterprise 计划',
     );
   });
 
-  it('should format a 429 API error with Pro quota exceeded message for Google auth (Legacy tier)', () => {
+  it('应为 Google 认证（旧版层级）格式化 429 API 错误与 Pro 配额超限消息', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Quota exceeded for quota metric \'Gemini 2.5 Pro Requests\' and limit \'RequestsPerDay\' of service \'generativelanguage.googleapis.com\' for consumer \'project_number:123456789\'.","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -252,17 +252,17 @@ describe('parseAndFormatApiError', () => {
       "[API Error: Quota exceeded for quota metric 'Gemini 2.5 Pro Requests'",
     );
     expect(result).toContain(
-      'You have reached your daily gemini-2.5-pro quota limit',
+      '您已达到每日 gemini-2.5-pro 配额限制',
     );
     expect(result).toContain(
-      'We appreciate you for choosing Gemini Code Assist and the Gemini CLI',
+      '感谢您选择 Gemini Code Assist 和 Gemini CLI',
     );
     expect(result).not.toContain(
-      'upgrade to a Gemini Code Assist Standard or Enterprise plan',
+      '升级到 Gemini Code Assist Standard 或 Enterprise 计划',
     );
   });
 
-  it('should handle different Gemini 2.5 version strings in Pro quota exceeded errors', () => {
+  it('应处理 Pro 配额超限错误中不同的 Gemini 2.5 版本字符串', () => {
     const errorMessage25 =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Quota exceeded for quota metric \'Gemini 2.5 Pro Requests\' and limit \'RequestsPerDay\' of service \'generativelanguage.googleapis.com\' for consumer \'project_number:123456789\'.","status":"RESOURCE_EXHAUSTED"}}';
     const errorMessagePreview =
@@ -284,21 +284,21 @@ describe('parseAndFormatApiError', () => {
     );
 
     expect(result25).toContain(
-      'You have reached your daily gemini-2.5-pro quota limit',
+      '您已达到每日 gemini-2.5-pro 配额限制',
     );
     expect(resultPreview).toContain(
-      'You have reached your daily gemini-2.5-preview-pro quota limit',
+      '您已达到每日 gemini-2.5-preview-pro 配额限制',
     );
     expect(result25).toContain(
-      'upgrade to a Gemini Code Assist Standard or Enterprise plan',
+      '升级到 Gemini Code Assist Standard 或 Enterprise 计划',
     );
     expect(resultPreview).toContain(
-      'upgrade to a Gemini Code Assist Standard or Enterprise plan',
+      '升级到 Gemini Code Assist Standard 或 Enterprise 计划',
     );
   });
 
-  it('should not match non-Pro models with similar version strings', () => {
-    // Test that Flash models with similar version strings don't match
+  it('不应匹配具有相似版本字符串的非 Pro 模型', () => {
+    // 测试 Flash 模型是否不匹配相似版本字符串
     expect(
       isProQuotaExceededError(
         "Quota exceeded for quota metric 'Gemini 2.5 Flash Requests' and limit",
@@ -310,7 +310,7 @@ describe('parseAndFormatApiError', () => {
       ),
     ).toBe(false);
 
-    // Test other model types
+    // 测试其他模型类型
     expect(
       isProQuotaExceededError(
         "Quota exceeded for quota metric 'Gemini 2.5 Ultra Requests' and limit",
@@ -322,7 +322,7 @@ describe('parseAndFormatApiError', () => {
       ),
     ).toBe(false);
 
-    // Test generic quota messages
+    // 测试通用配额消息
     expect(
       isProQuotaExceededError(
         "Quota exceeded for quota metric 'GenerationRequests' and limit",
@@ -335,7 +335,7 @@ describe('parseAndFormatApiError', () => {
     ).toBe(false);
   });
 
-  it('should format a generic quota exceeded message for Google auth (Standard tier)', () => {
+  it('应为 Google 认证（标准层级）格式化通用配额超限消息', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Quota exceeded for quota metric \'GenerationRequests\' and limit \'RequestsPerDay\' of service \'generativelanguage.googleapis.com\' for consumer \'project_number:123456789\'.","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -348,16 +348,16 @@ describe('parseAndFormatApiError', () => {
     expect(result).toContain(
       "[API Error: Quota exceeded for quota metric 'GenerationRequests'",
     );
-    expect(result).toContain('You have reached your daily quota limit');
+    expect(result).toContain('您已达到每日配额限制');
     expect(result).toContain(
-      'We appreciate you for choosing Gemini Code Assist and the Gemini CLI',
+      '感谢您选择 Gemini Code Assist 和 Gemini CLI',
     );
     expect(result).not.toContain(
-      'upgrade to a Gemini Code Assist Standard or Enterprise plan',
+      '升级到 Gemini Code Assist Standard 或 Enterprise 计划',
     );
   });
 
-  it('should format a regular 429 API error with standard message for Google auth (Standard tier)', () => {
+  it('应为 Google 认证（标准层级）格式化常规 429 API 错误与标准消息', () => {
     const errorMessage =
       'got status: 429 Too Many Requests. {"error":{"code":429,"message":"Rate limit exceeded","status":"RESOURCE_EXHAUSTED"}}';
     const result = parseAndFormatApiError(
@@ -369,10 +369,10 @@ describe('parseAndFormatApiError', () => {
     );
     expect(result).toContain('[API Error: Rate limit exceeded');
     expect(result).toContain(
-      'We appreciate you for choosing Gemini Code Assist and the Gemini CLI',
+      '感谢您选择 Gemini Code Assist 和 Gemini CLI',
     );
     expect(result).not.toContain(
-      'upgrade to a Gemini Code Assist Standard or Enterprise plan',
+      '升级到 Gemini Code Assist Standard 或 Enterprise 计划',
     );
   });
 });

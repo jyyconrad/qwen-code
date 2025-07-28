@@ -19,9 +19,9 @@ export async function checkForUpdates(): Promise<string | null> {
         name: packageJson.name,
         version: packageJson.version,
       },
-      // check every time
+      // 每次都检查
       updateCheckInterval: 0,
-      // allow notifier to run in scripts
+      // 允许在脚本中运行通知器
       shouldNotifyInNpmScript: true,
     });
 
@@ -29,12 +29,12 @@ export async function checkForUpdates(): Promise<string | null> {
       notifier.update &&
       semver.gt(notifier.update.latest, notifier.update.current)
     ) {
-      return `Gemini CLI update available! ${notifier.update.current} → ${notifier.update.latest}\nRun npm install -g ${packageJson.name} to update`;
+      return `Gemini CLI 有新版本可用！${notifier.update.current} → ${notifier.update.latest}\n运行 npm install -g ${packageJson.name} 进行更新`;
     }
 
     return null;
   } catch (e) {
-    console.warn('Failed to check for updates: ' + e);
+    console.warn('检查更新失败：' + e);
     return null;
   }
 }

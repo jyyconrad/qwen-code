@@ -17,7 +17,7 @@ export function createShowMemoryAction(
     if (!config) {
       addMessage({
         type: MessageType.ERROR,
-        content: 'Configuration not available. Cannot show memory.',
+        content: '配置不可用。无法显示内存。',
         timestamp: new Date(),
       });
       return;
@@ -26,7 +26,7 @@ export function createShowMemoryAction(
     const debugMode = config.getDebugMode();
 
     if (debugMode) {
-      console.log('[DEBUG] Show Memory command invoked.');
+      console.log('[DEBUG] 显示内存命令已调用。');
     }
 
     const currentMemory = config.getUserMemory();
@@ -38,9 +38,9 @@ export function createShowMemoryAction(
 
     if (debugMode) {
       console.log(
-        `[DEBUG] Showing memory. Content from config.getUserMemory() (first 200 chars): ${currentMemory.substring(0, 200)}...`,
+        `[DEBUG] 正在显示内存。来自 config.getUserMemory() 的内容（前200个字符）: ${currentMemory.substring(0, 200)}...`,
       );
-      console.log(`[DEBUG] Number of context files loaded: ${fileCount}`);
+      console.log(`[DEBUG] 已加载的上下文文件数量: ${fileCount}`);
     }
 
     if (fileCount > 0) {
@@ -48,9 +48,9 @@ export function createShowMemoryAction(
       const name = allNamesTheSame ? contextFileNames[0] : 'context';
       addMessage({
         type: MessageType.INFO,
-        content: `Loaded memory from ${fileCount} ${name} file${
+        content: `已从 ${fileCount} 个 ${name} 文件加载内存${
           fileCount > 1 ? 's' : ''
-        }.`,
+        }。`,
         timestamp: new Date(),
       });
     }
@@ -58,7 +58,7 @@ export function createShowMemoryAction(
     if (currentMemory && currentMemory.trim().length > 0) {
       addMessage({
         type: MessageType.INFO,
-        content: `Current combined memory content:\n\`\`\`markdown\n${currentMemory}\n\`\`\``,
+        content: `当前合并的内存内容:\n\`\`\`markdown\n${currentMemory}\n\`\`\``,
         timestamp: new Date(),
       });
     } else {
@@ -66,8 +66,8 @@ export function createShowMemoryAction(
         type: MessageType.INFO,
         content:
           fileCount > 0
-            ? 'Hierarchical memory (GEMINI.md or other context files) is loaded but content is empty.'
-            : 'No hierarchical memory (GEMINI.md or other context files) is currently loaded.',
+            ? '已加载分层内存（GEMINI.md 或其他上下文文件）但内容为空。'
+            : '当前未加载分层内存（GEMINI.md 或其他上下文文件）。',
         timestamp: new Date(),
       });
     }

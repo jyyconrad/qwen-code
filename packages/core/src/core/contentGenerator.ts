@@ -20,7 +20,7 @@ import { getEffectiveModel } from './modelCheck.js';
 import { UserTierId } from '../code_assist/types.js';
 
 /**
- * Interface abstracting the core functionalities for generating content and counting tokens.
+ * 接口抽象了生成内容和计算令牌的核心功能。
  */
 export interface ContentGenerator {
   generateContent(
@@ -52,9 +52,9 @@ export type ContentGeneratorConfig = {
   vertexai?: boolean;
   authType?: AuthType | undefined;
   enableOpenAILogging?: boolean;
-  // Timeout configuration in milliseconds
+  // 超时配置（毫秒）
   timeout?: number;
-  // Maximum retries for failed requests
+  // 请求失败的最大重试次数
   maxRetries?: number;
   samplingParams?: {
     top_p?: number;
@@ -77,7 +77,7 @@ export async function createContentGeneratorConfig(
   const googleCloudLocation = process.env.GOOGLE_CLOUD_LOCATION || undefined;
   const openaiApiKey = process.env.OPENAI_API_KEY;
 
-  // Use runtime model from config if available, otherwise fallback to parameter or default
+  // 如果可用，使用配置中的运行时模型，否则回退到参数或默认值
   const effectiveModel = model || DEFAULT_GEMINI_MODEL;
 
   const contentGeneratorConfig: ContentGeneratorConfig = {
@@ -85,7 +85,7 @@ export async function createContentGeneratorConfig(
     authType,
   };
 
-  // If we are using Google auth or we are in Cloud Shell, there is nothing else to validate for now
+  // 如果我们使用 Google 身份验证或在 Cloud Shell 中，则目前无需进一步验证
   if (
     authType === AuthType.LOGIN_WITH_GOOGLE ||
     authType === AuthType.CLOUD_SHELL
@@ -162,19 +162,19 @@ export async function createContentGenerator(
 
   if (config.authType === AuthType.USE_OPENAI) {
     if (!config.apiKey) {
-      throw new Error('OpenAI API key is required');
+      throw new Error('OpenAI API 密钥是必需的');
     }
 
-    // Import OpenAIContentGenerator dynamically to avoid circular dependencies
+    // 动态导入 OpenAIContentGenerator 以避免循环依赖
     const { OpenAIContentGenerator } = await import(
       './openaiContentGenerator.js'
     );
 
-    // Always use OpenAIContentGenerator, logging is controlled by enableOpenAILogging flag
+    // 始终使用 OpenAIContentGenerator，日志记录由 enableOpenAILogging 标志控制
     return new OpenAIContentGenerator(config.apiKey, config.model, gcConfig);
   }
 
   throw new Error(
-    `Error creating contentGenerator: Unsupported authType: ${config.authType}`,
+    `创建 contentGenerator 时出错：不支持的 authType：${config.authType}`,
   );
 }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -56,10 +56,10 @@ class ThemeManager {
   }
 
   /**
-   * Returns a list of available theme names.
+   * 返回可用主题名称列表。
    */
   getAvailableThemes(): ThemeDisplay[] {
-    // Separate iFlyCode themes
+    // 分离 iFlyCode 主题
     const iflycodeThemes = this.availableThemes.filter(
       (theme) => theme.name === iFlyCodeLight.name || theme.name === iFlyCodeDark.name,
     );
@@ -67,7 +67,7 @@ class ThemeManager {
       (theme) => theme.name !== iFlyCodeLight.name && theme.name !== iFlyCodeDark.name,
     );
 
-    // Sort other themes by type and then name
+    // 按类型和名称对其他主题进行排序
     const sortedOtherThemes = otherThemes.sort((a, b) => {
       const typeOrder = (type: ThemeType): number => {
         switch (type) {
@@ -87,7 +87,7 @@ class ThemeManager {
       return a.name.localeCompare(b.name);
     });
 
-    // Combine iFlyCode themes first, then sorted others
+    // 将 iFlyCode 主题放在前面，然后是排序后的其他主题
     const sortedThemes = [...iflycodeThemes, ...sortedOtherThemes];
 
     return sortedThemes.map((theme) => ({
@@ -97,9 +97,9 @@ class ThemeManager {
   }
 
   /**
-   * Sets the active theme.
-   * @param themeName The name of the theme to activate.
-   * @returns True if the theme was successfully set, false otherwise.
+   * 设置活动主题。
+   * @param themeName 要激活的主题名称。
+   * @returns 如果主题设置成功则返回 true，否则返回 false。
    */
   setActiveTheme(themeName: string | undefined): boolean {
     const foundTheme = this.findThemeByName(themeName);
@@ -108,9 +108,9 @@ class ThemeManager {
       this.activeTheme = foundTheme;
       return true;
     } else {
-      // If themeName is undefined, it means we want to set the default theme.
-      // If findThemeByName returns undefined (e.g. default theme is also not found for some reason)
-      // then this will return false.
+      // 如果 themeName 为 undefined，表示我们想要设置默认主题。
+      // 如果 findThemeByName 返回 undefined（例如由于某种原因默认主题也未找到）
+      // 那么这将返回 false。
       if (themeName === undefined) {
         this.activeTheme = DEFAULT_THEME;
         return true;
@@ -127,7 +127,7 @@ class ThemeManager {
   }
 
   /**
-   * Returns the currently active theme object.
+   * 返回当前活动的主题对象。
    */
   getActiveTheme(): Theme {
     if (process.env.NO_COLOR) {
@@ -137,5 +137,5 @@ class ThemeManager {
   }
 }
 
-// Export an instance of the ThemeManager
+// 导出 ThemeManager 的实例
 export const themeManager = new ThemeManager();

@@ -6,5 +6,5 @@
 
 import { setSimulate429 } from './src/utils/testUtils.js';
 
-// Disable 429 simulation globally for all tests
+// 全局禁用所有测试的 429 模拟
 setSimulate429(false);

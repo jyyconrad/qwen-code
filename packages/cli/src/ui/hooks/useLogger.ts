@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { sessionId, Logger } from '@iflytek/iflycode-core';
 
 /**
- * Hook to manage the logger instance.
+ * 用于管理日志记录器实例的 Hook。
  */
 export const useLogger = () => {
   const [logger, setLogger] = useState<Logger | null>(null);
@@ -16,9 +16,9 @@ export const useLogger = () => {
   useEffect(() => {
     const newLogger = new Logger(sessionId);
     /**
-     * Start async initialization, no need to await. Using await slows down the
-     * time from launch to see the gemini-cli prompt and it's better to not save
-     * messages than for the cli to hanging waiting for the logger to loading.
+     * 开始异步初始化，无需等待。使用 await 会减慢
+     * 从启动到看到 gemini-cli 提示符的时间，最好不保存
+     * 消息也比 CLI 挂起等待日志记录器加载要好。
      */
     newLogger
       .initialize()

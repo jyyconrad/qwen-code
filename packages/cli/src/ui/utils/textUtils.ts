@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
- * Calculates the maximum width of a multi-line ASCII art string.
- * @param asciiArt The ASCII art string.
- * @returns The length of the longest line in the ASCII art.
+ * 计算多行 ASCII 艺术字符串的最大宽度。
+ * @param asciiArt ASCII 艺术字符串。
+ * @returns ASCII 艺术中最长行的长度。
  */
 export const getAsciiArtWidth = (asciiArt: string): number => {
   if (!asciiArt) {
@@ -18,11 +18,11 @@ export const getAsciiArtWidth = (asciiArt: string): number => {
 };
 
 /**
- * Checks if a Buffer is likely binary by testing for the presence of a NULL byte.
- * The presence of a NULL byte is a strong indicator that the data is not plain text.
- * @param data The Buffer to check.
- * @param sampleSize The number of bytes from the start of the buffer to test.
- * @returns True if a NULL byte is found, false otherwise.
+ * 通过检测是否存在 NULL 字节来判断 Buffer 是否可能为二进制数据。
+ * NULL 字节的存在是数据不是纯文本的强烈指示。
+ * @param data 要检查的 Buffer。
+ * @param sampleSize 从缓冲区开始处测试的字节数。
+ * @returns 如果找到 NULL 字节则返回 true，否则返回 false。
  */
 export function isBinary(
   data: Buffer | null | undefined,
@@ -35,26 +35,26 @@ export function isBinary(
   const sample = data.length > sampleSize ? data.subarray(0, sampleSize) : data;
 
   for (const byte of sample) {
-    // The presence of a NULL byte (0x00) is one of the most reliable
-    // indicators of a binary file. Text files should not contain them.
+    // NULL 字节 (0x00) 的存在是判断二进制文件最可靠的指标之一。
+    // 文本文件不应包含 NULL 字节。
     if (byte === 0) {
       return true;
     }
   }
 
-  // If no NULL bytes were found in the sample, we assume it's text.
+  // 如果在样本中未找到 NULL 字节，则假设它是文本。
   return false;
 }
 
 /*
  * -------------------------------------------------------------------------
- *  Unicode‑aware helpers (work at the code‑point level rather than UTF‑16
- *  code units so that surrogate‑pair emoji count as one "column".)
+ *  Unicode 感知辅助函数（在代码点级别而非 UTF-16 代码单元上工作，
+ *  因此代理对 emoji 计为一个"列"。）
  * ---------------------------------------------------------------------- */
 
 export function toCodePoints(str: string): string[] {
-  // [...str] or Array.from both iterate by UTF‑32 code point, handling
-  // surrogate pairs correctly.
+  // [...str] 或 Array.from 都会按 UTF-32 代码点进行迭代，
+  // 正确处理代理对。
   return Array.from(str);
 }
 
@@ -63,7 +63,7 @@ export function cpLen(str: string): number {
 }
 
 export function cpSlice(str: string, start: number, end?: number): string {
-  // Slice by code‑point indices and re‑join.
+  // 按代码点索引进行切片并重新连接。
   const arr = toCodePoints(str).slice(start, end);
   return arr.join('');
 }

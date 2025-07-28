@@ -13,7 +13,7 @@ interface UserShellMessageProps {
 }
 
 export const UserShellMessage: React.FC<UserShellMessageProps> = ({ text }) => {
-  // Remove leading '!' if present, as App.tsx adds it for the processor.
+  // 如果存在，移除开头的 '!'，因为 App.tsx 会为处理器添加它。
   const commandToDisplay = text.startsWith('!') ? text.substring(1) : text;
 
   return (

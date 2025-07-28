@@ -16,12 +16,12 @@ async function main() {
   const integrationTestsDir = join(rootDir, '.integration-tests');
 
   if (process.env.GEMINI_SANDBOX === 'docker' && !process.env.IS_DOCKER) {
-    console.log('Building sandbox for Docker...');
+    console.log('正在为 Docker 构建沙箱...');
     const buildResult = spawnSync('npm', ['run', 'build:all'], {
       stdio: 'inherit',
     });
     if (buildResult.status !== 0) {
-      console.error('Sandbox build failed.');
+      console.error('沙箱构建失败。');
       process.exit(1);
     }
   }
@@ -39,7 +39,7 @@ async function main() {
     if (keepOutputIndex > -1) {
       args.splice(keepOutputIndex, 1);
     }
-    console.log(`Keeping output for test run in: ${runDir}`);
+    console.log(`保留测试运行的输出到: ${runDir}`);
   }
 
   const verbose = args.includes('--verbose');
@@ -58,7 +58,7 @@ async function main() {
 
   for (const testFile of testFiles) {
     const testFileName = basename(testFile);
-    console.log(`\tFound test file: ${testFileName}`);
+    console.log(`\t找到测试文件: ${testFileName}`);
   }
 
   let allTestsPassed = true;
@@ -69,7 +69,7 @@ async function main() {
     mkdirSync(testFileDir, { recursive: true });
 
     console.log(
-      `------------- Running test file: ${testFileName} ------------------------------`,
+      `------------- 运行测试文件: ${testFileName} ------------------------------`,
     );
 
     const nodeArgs = ['--test'];
@@ -94,7 +94,7 @@ async function main() {
     if (keepOutput) {
       const outputFile = join(testFileDir, 'output.log');
       outputStream = createWriteStream(outputFile);
-      console.log(`Output for ${testFileName} written to: ${outputFile}`);
+      console.log(`输出写入到 ${testFileName}: ${outputFile}`);
     }
 
     child.stdout.on('data', (data) => {
@@ -128,7 +128,7 @@ async function main() {
     });
 
     if (exitCode !== 0) {
-      console.error(`Test file failed: ${testFileName}`);
+      console.error(`测试文件失败: ${testFileName}`);
       allTestsPassed = false;
     }
   }
@@ -138,7 +138,7 @@ async function main() {
   }
 
   if (!allTestsPassed) {
-    console.error('One or more test files failed.');
+    console.error('一个或多个测试文件失败。');
     process.exit(1);
   }
 }

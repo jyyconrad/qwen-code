@@ -14,7 +14,7 @@ import {
   type Mock,
 } from 'vitest';
 
-import * as actualNodeFs from 'node:fs'; // For setup/teardown
+import * as actualNodeFs from 'node:fs'; // 用于设置/清理
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
@@ -46,12 +46,12 @@ describe('fileUtils', () => {
   let directoryPath: string;
 
   beforeEach(() => {
-    vi.resetAllMocks(); // Reset all mocks, including mime.lookup
+    vi.resetAllMocks(); // 重置所有模拟，包括 mime.lookup
 
     tempRootDir = actualNodeFs.mkdtempSync(
       path.join(os.tmpdir(), 'fileUtils-test-'),
     );
-    process.cwd = vi.fn(() => tempRootDir); // Mock cwd if necessary for relative path logic within tests
+    process.cwd = vi.fn(() => tempRootDir); // 如果测试中需要相对路径逻辑，则模拟 cwd
 
     testTextFilePath = path.join(tempRootDir, 'test.txt');
     testImageFilePath = path.join(tempRootDir, 'image.png');
@@ -60,7 +60,7 @@ describe('fileUtils', () => {
     nonExistentFilePath = path.join(tempRootDir, 'notfound.txt');
     directoryPath = path.join(tempRootDir, 'subdir');
 
-    actualNodeFs.mkdirSync(directoryPath, { recursive: true }); // Ensure subdir exists
+    actualNodeFs.mkdirSync(directoryPath, { recursive: true }); // 确保子目录存在
   });
 
   afterEach(() => {
@@ -68,24 +68,24 @@ describe('fileUtils', () => {
       actualNodeFs.rmSync(tempRootDir, { recursive: true, force: true });
     }
     process.cwd = originalProcessCwd;
-    vi.restoreAllMocks(); // Restore any spies
+    vi.restoreAllMocks(); // 恢复所有监视
   });
 
   describe('isWithinRoot', () => {
     const root = path.resolve('/project/root');
 
-    it('should return true for paths directly within the root', () => {
+    it('应返回 true 对于直接在根目录内的路径', () => {
       expect(isWithinRoot(path.join(root, 'file.txt'), root)).toBe(true);
       expect(isWithinRoot(path.join(root, 'subdir', 'file.txt'), root)).toBe(
         true,
       );
     });
 
-    it('should return true for the root path itself', () => {
+    it('应返回 true 对于根路径本身', () => {
       expect(isWithinRoot(root, root)).toBe(true);
     });
 
-    it('should return false for paths outside the root', () => {
+    it('应返回 false 对于根目录外的路径', () => {
       expect(
         isWithinRoot(path.resolve('/project/other', 'file.txt'), root),
       ).toBe(false);
@@ -94,7 +94,7 @@ describe('fileUtils', () => {
       );
     });
 
-    it('should return false for paths that only partially match the root prefix', () => {
+    it('应返回 false 对于仅部分匹配根前缀的路径', () => {
       expect(
         isWithinRoot(
           path.resolve('/project/root-but-actually-different'),
@@ -103,14 +103,14 @@ describe('fileUtils', () => {
       ).toBe(false);
     });
 
-    it('should handle paths with trailing slashes correctly', () => {
+    it('应正确处理带尾部斜杠的路径', () => {
       expect(isWithinRoot(path.join(root, 'file.txt') + path.sep, root)).toBe(
         true,
       );
       expect(isWithinRoot(root + path.sep, root)).toBe(true);
     });
 
-    it('should handle different path separators (POSIX vs Windows)', () => {
+    it('应处理不同的路径分隔符（POSIX vs Windows）', () => {
       const posixRoot = '/project/root';
       const posixPathInside = '/project/root/file.txt';
       const posixPathOutside = '/project/other/file.txt';
@@ -118,7 +118,7 @@ describe('fileUtils', () => {
       expect(isWithinRoot(posixPathOutside, posixRoot)).toBe(false);
     });
 
-    it('should return false for a root path that is a sub-path of the path to check', () => {
+    it('应返回 false 对于根路径是待检查路径子路径的情况', () => {
       const pathToCheck = path.resolve('/project/root/sub');
       const rootSub = path.resolve('/project/root');
       expect(isWithinRoot(pathToCheck, rootSub)).toBe(true);
@@ -142,12 +142,12 @@ describe('fileUtils', () => {
       }
     });
 
-    it('should return false for an empty file', () => {
+    it('应返回 false 对于空文件', () => {
       actualNodeFs.writeFileSync(filePathForBinaryTest, '');
       expect(isBinaryFile(filePathForBinaryTest)).toBe(false);
     });
 
-    it('should return false for a typical text file', () => {
+    it('应返回 false 对于典型的文本文件', () => {
       actualNodeFs.writeFileSync(
         filePathForBinaryTest,
         'Hello, world!\nThis is a test file with normal text content.',
@@ -155,7 +155,7 @@ describe('fileUtils', () => {
       expect(isBinaryFile(filePathForBinaryTest)).toBe(false);
     });
 
-    it('should return true for a file with many null bytes', () => {
+    it('应返回 true 对于包含许多空字节的文件', () => {
       const binaryContent = Buffer.from([
         0x48, 0x65, 0x00, 0x6c, 0x6f, 0x00, 0x00, 0x00, 0x00, 0x00,
       ]); // "He\0llo\0\0\0\0\0"
@@ -163,7 +163,7 @@ describe('fileUtils', () => {
       expect(isBinaryFile(filePathForBinaryTest)).toBe(true);
     });
 
-    it('should return true for a file with high percentage of non-printable ASCII', () => {
+    it('应返回 true 对于非可打印ASCII字符占比高的文件', () => {
       const binaryContent = Buffer.from([
         0x41, 0x42, 0x01, 0x02, 0x03, 0x04, 0x05, 0x43, 0x44, 0x06,
       ]); // AB\x01\x02\x03\x04\x05CD\x06
@@ -171,8 +171,8 @@ describe('fileUtils', () => {
       expect(isBinaryFile(filePathForBinaryTest)).toBe(true);
     });
 
-    it('should return false if file access fails (e.g., ENOENT)', () => {
-      // Ensure the file does not exist
+    it('如果文件访问失败（例如，ENOENT），应返回 false', () => {
+      // 确保文件不存在
       if (actualNodeFs.existsSync(filePathForBinaryTest)) {
         actualNodeFs.unlinkSync(filePathForBinaryTest);
       }
@@ -185,7 +185,7 @@ describe('fileUtils', () => {
 
     beforeEach(() => {
       filePathForDetectTest = path.join(tempRootDir, 'detectType.tmp');
-      // Default: create as a text file for isBinaryFile fallback
+      // 默认：创建为文本文件以供 isBinaryFile 回退使用
       actualNodeFs.writeFileSync(filePathForDetectTest, 'Plain text content');
     });
 
@@ -193,56 +193,56 @@ describe('fileUtils', () => {
       if (actualNodeFs.existsSync(filePathForDetectTest)) {
         actualNodeFs.unlinkSync(filePathForDetectTest);
       }
-      vi.restoreAllMocks(); // Restore spies on actualNodeFs
+      vi.restoreAllMocks(); // 恢复对 actualNodeFs 的监视
     });
 
-    it('should detect typescript type by extension (ts)', () => {
+    it('应通过扩展名检测 typescript 类型 (ts)', () => {
       expect(detectFileType('file.ts')).toBe('text');
       expect(detectFileType('file.test.ts')).toBe('text');
     });
 
-    it('should detect image type by extension (png)', () => {
+    it('应通过扩展名检测图像类型 (png)', () => {
       mockMimeLookup.mockReturnValueOnce('image/png');
       expect(detectFileType('file.png')).toBe('image');
     });
 
-    it('should detect image type by extension (jpeg)', () => {
+    it('应通过扩展名检测图像类型 (jpeg)', () => {
       mockMimeLookup.mockReturnValueOnce('image/jpeg');
       expect(detectFileType('file.jpg')).toBe('image');
     });
 
-    it('should detect svg type by extension', () => {
+    it('应通过扩展名检测 svg 类型', () => {
       expect(detectFileType('image.svg')).toBe('svg');
       expect(detectFileType('image.icon.svg')).toBe('svg');
     });
 
-    it('should detect pdf type by extension', () => {
+    it('应通过扩展名检测 pdf 类型', () => {
       mockMimeLookup.mockReturnValueOnce('application/pdf');
       expect(detectFileType('file.pdf')).toBe('pdf');
     });
 
-    it('should detect audio type by extension', () => {
+    it('应通过扩展名检测音频类型', () => {
       mockMimeLookup.mockReturnValueOnce('audio/mpeg');
       expect(detectFileType('song.mp3')).toBe('audio');
     });
 
-    it('should detect video type by extension', () => {
+    it('应通过扩展名检测视频类型', () => {
       mockMimeLookup.mockReturnValueOnce('video/mp4');
       expect(detectFileType('movie.mp4')).toBe('video');
     });
 
-    it('should detect known binary extensions as binary (e.g. .zip)', () => {
+    it('应将已知的二进制扩展名检测为二进制（例如 .zip）', () => {
       mockMimeLookup.mockReturnValueOnce('application/zip');
       expect(detectFileType('archive.zip')).toBe('binary');
     });
-    it('should detect known binary extensions as binary (e.g. .exe)', () => {
-      mockMimeLookup.mockReturnValueOnce('application/octet-stream'); // Common for .exe
+    it('应将已知的二进制扩展名检测为二进制（例如 .exe）', () => {
+      mockMimeLookup.mockReturnValueOnce('application/octet-stream'); // .exe 的常见类型
       expect(detectFileType('app.exe')).toBe('binary');
     });
 
-    it('should use isBinaryFile for unknown extensions and detect as binary', () => {
-      mockMimeLookup.mockReturnValueOnce(false); // Unknown mime type
-      // Create a file that isBinaryFile will identify as binary
+    it('对于未知扩展名应使用 isBinaryFile 并检测为二进制', () => {
+      mockMimeLookup.mockReturnValueOnce(false); // 未知的 mime 类型
+      // 创建一个 isBinaryFile 将识别为二进制的文件
       const binaryContent = Buffer.from([
         0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
       ]);
@@ -250,16 +250,16 @@ describe('fileUtils', () => {
       expect(detectFileType(filePathForDetectTest)).toBe('binary');
     });
 
-    it('should default to text if mime type is unknown and content is not binary', () => {
-      mockMimeLookup.mockReturnValueOnce(false); // Unknown mime type
-      // filePathForDetectTest is already a text file by default from beforeEach
+    it('如果 mime 类型未知且内容不是二进制，则默认为文本', () => {
+      mockMimeLookup.mockReturnValueOnce(false); // 未知的 mime 类型
+      // filePathForDetectTest 在 beforeEach 中已默认为文本文件
       expect(detectFileType(filePathForDetectTest)).toBe('text');
     });
   });
 
   describe('processSingleFileContent', () => {
     beforeEach(() => {
-      // Ensure files exist for statSync checks before readFile might be mocked
+      // 确保文件在 readFile 可能被模拟之前存在以供 statSync 检查
       if (actualNodeFs.existsSync(testTextFilePath))
         actualNodeFs.unlinkSync(testTextFilePath);
       if (actualNodeFs.existsSync(testImageFilePath))
@@ -270,7 +270,7 @@ describe('fileUtils', () => {
         actualNodeFs.unlinkSync(testBinaryFilePath);
     });
 
-    it('should read a text file successfully', async () => {
+    it('应成功读取文本文件', async () => {
       const content = 'Line 1\\nLine 2\\nLine 3';
       actualNodeFs.writeFileSync(testTextFilePath, content);
       const result = await processSingleFileContent(
@@ -282,7 +282,7 @@ describe('fileUtils', () => {
       expect(result.error).toBeUndefined();
     });
 
-    it('should handle file not found', async () => {
+    it('应处理文件未找到的情况', async () => {
       const result = await processSingleFileContent(
         nonExistentFilePath,
         tempRootDir,
@@ -291,8 +291,8 @@ describe('fileUtils', () => {
       expect(result.returnDisplay).toContain('File not found');
     });
 
-    it('should handle read errors for text files', async () => {
-      actualNodeFs.writeFileSync(testTextFilePath, 'content'); // File must exist for initial statSync
+    it('应处理文本文件的读取错误', async () => {
+      actualNodeFs.writeFileSync(testTextFilePath, 'content'); // 文件必须存在以供初始 statSync
       const readError = new Error('Simulated read error');
       vi.spyOn(fsPromises, 'readFile').mockRejectedValueOnce(readError);
 
@@ -304,8 +304,8 @@ describe('fileUtils', () => {
       expect(result.returnDisplay).toContain('Simulated read error');
     });
 
-    it('should handle read errors for image/pdf files', async () => {
-      actualNodeFs.writeFileSync(testImageFilePath, 'content'); // File must exist
+    it('应处理图像/pdf 文件的读取错误', async () => {
+      actualNodeFs.writeFileSync(testImageFilePath, 'content'); // 文件必须存在
       mockMimeLookup.mockReturnValue('image/png');
       const readError = new Error('Simulated image read error');
       vi.spyOn(fsPromises, 'readFile').mockRejectedValueOnce(readError);
@@ -318,7 +318,7 @@ describe('fileUtils', () => {
       expect(result.returnDisplay).toContain('Simulated image read error');
     });
 
-    it('should process an image file', async () => {
+    it('应处理图像文件', async () => {
       const fakePngData = Buffer.from('fake png data');
       actualNodeFs.writeFileSync(testImageFilePath, fakePngData);
       mockMimeLookup.mockReturnValue('image/png');
@@ -339,7 +339,7 @@ describe('fileUtils', () => {
       expect(result.returnDisplay).toContain('Read image file: image.png');
     });
 
-    it('should process a PDF file', async () => {
+    it('应处理 PDF 文件', async () => {
       const fakePdfData = Buffer.from('fake pdf data');
       actualNodeFs.writeFileSync(testPdfFilePath, fakePdfData);
       mockMimeLookup.mockReturnValue('application/pdf');
@@ -360,7 +360,7 @@ describe('fileUtils', () => {
       expect(result.returnDisplay).toContain('Read pdf file: document.pdf');
     });
 
-    it('should read an SVG file as text when under 1MB', async () => {
+    it('当 SVG 文件小于 1MB 时应作为文本读取', async () => {
       const svgContent = `
     <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
       <rect width="100" height="100" fill="blue" />
@@ -380,13 +380,13 @@ describe('fileUtils', () => {
       expect(result.returnDisplay).toContain('Read SVG as text');
     });
 
-    it('should skip binary files', async () => {
+    it('应跳过二进制文件', async () => {
       actualNodeFs.writeFileSync(
         testBinaryFilePath,
         Buffer.from([0x00, 0x01, 0x02]),
       );
       mockMimeLookup.mockReturnValueOnce('application/octet-stream');
-      // isBinaryFile will operate on the real file.
+      // isBinaryFile 将对真实文件进行操作。
 
       const result = await processSingleFileContent(
         testBinaryFilePath,
@@ -398,13 +398,13 @@ describe('fileUtils', () => {
       expect(result.returnDisplay).toContain('Skipped binary file: app.exe');
     });
 
-    it('should handle path being a directory', async () => {
+    it('应处理路径为目录的情况', async () => {
       const result = await processSingleFileContent(directoryPath, tempRootDir);
       expect(result.error).toContain('Path is a directory');
       expect(result.returnDisplay).toContain('Path is a directory');
     });
 
-    it('should paginate text files correctly (offset and limit)', async () => {
+    it('应正确分页文本文件（偏移量和限制）', async () => {
       const lines = Array.from({ length: 20 }, (_, i) => `Line ${i + 1}`);
       actualNodeFs.writeFileSync(testTextFilePath, lines.join('\n'));
 
@@ -413,7 +413,7 @@ describe('fileUtils', () => {
         tempRootDir,
         5,
         5,
-      ); // Read lines 6-10
+      ); // 读取第 6-10 行
       const expectedContent = lines.slice(5, 10).join('\n');
 
       expect(result.llmContent).toContain(expectedContent);
@@ -426,7 +426,7 @@ describe('fileUtils', () => {
       expect(result.linesShown).toEqual([6, 10]);
     });
 
-    it('should handle limit exceeding file length', async () => {
+    it('应处理限制超出文件长度的情况', async () => {
       const lines = ['Line 1', 'Line 2'];
       actualNodeFs.writeFileSync(testTextFilePath, lines.join('\n'));
 
@@ -445,7 +445,7 @@ describe('fileUtils', () => {
       expect(result.linesShown).toEqual([1, 2]);
     });
 
-    it('should truncate long lines in text files', async () => {
+    it('应截断文本文件中的长行', async () => {
       const longLine = 'a'.repeat(2500);
       actualNodeFs.writeFileSync(
         testTextFilePath,
@@ -468,10 +468,10 @@ describe('fileUtils', () => {
       expect(result.isTruncated).toBe(true);
     });
 
-    it('should return an error if the file size exceeds 20MB', async () => {
-      // Create a file just over 20MB
+    it('如果文件大小超过 20MB，应返回错误', async () => {
+      // 创建一个刚好超过 20MB 的文件
       const twentyOneMB = 21 * 1024 * 1024;
-      const buffer = Buffer.alloc(twentyOneMB, 0x61); // Fill with 'a'
+      const buffer = Buffer.alloc(twentyOneMB, 0x61); // 用 'a' 填充
       actualNodeFs.writeFileSync(testTextFilePath, buffer);
 
       const result = await processSingleFileContent(

@@ -48,7 +48,7 @@ export async function fetchWithTimeout(
     return response;
   } catch (error) {
     if (isNodeError(error) && error.code === 'ABORT_ERR') {
-      throw new FetchError(`Request timed out after ${timeout}ms`, 'ETIMEDOUT');
+      throw new FetchError(`请求在 ${timeout}ms 后超时`, 'ETIMEDOUT');
     }
     throw new FetchError(getErrorMessage(error));
   } finally {

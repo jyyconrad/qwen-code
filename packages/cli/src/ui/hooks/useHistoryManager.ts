@@ -7,14 +7,14 @@
 import { useState, useRef, useCallback } from 'react';
 import { HistoryItem } from '../types.js';
 
-// Type for the updater function passed to updateHistoryItem
+// 用于传递给 updateHistoryItem 的更新器函数类型
 type HistoryItemUpdater = (
   prevItem: HistoryItem,
 ) => Partial<Omit<HistoryItem, 'id'>>;
 
 export interface UseHistoryManagerReturn {
   history: HistoryItem[];
-  addItem: (itemData: Omit<HistoryItem, 'id'>, baseTimestamp: number) => number; // Returns the generated ID
+  addItem: (itemData: Omit<HistoryItem, 'id'>, baseTimestamp: number) => number; // 返回生成的 ID
   updateItem: (
     id: number,
     updates: Partial<Omit<HistoryItem, 'id'>> | HistoryItemUpdater,
@@ -24,16 +24,16 @@ export interface UseHistoryManagerReturn {
 }
 
 /**
- * Custom hook to manage the chat history state.
+ * 用于管理聊天历史状态的自定义 Hook。
  *
- * Encapsulates the history array, message ID generation, adding items,
- * updating items, and clearing the history.
+ * 封装了历史数组、消息 ID 生成、添加项目、
+ * 更新项目和清除历史的功能。
  */
 export function useHistory(): UseHistoryManagerReturn {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const messageIdCounterRef = useRef(0);
 
-  // Generates a unique message ID based on a timestamp and a counter.
+  // 根据时间戳和计数器生成唯一的 message ID。
   const getNextMessageId = useCallback((baseTimestamp: number): number => {
     messageIdCounterRef.current += 1;
     return baseTimestamp + messageIdCounterRef.current;
@@ -43,7 +43,7 @@ export function useHistory(): UseHistoryManagerReturn {
     setHistory(newHistory);
   }, []);
 
-  // Adds a new item to the history state with a unique ID.
+  // 添加一个具有唯一 ID 的新项目到历史状态中。
   const addItem = useCallback(
     (itemData: Omit<HistoryItem, 'id'>, baseTimestamp: number): number => {
       const id = getNextMessageId(baseTimestamp);
@@ -52,27 +52,27 @@ export function useHistory(): UseHistoryManagerReturn {
       setHistory((prevHistory) => {
         if (prevHistory.length > 0) {
           const lastItem = prevHistory[prevHistory.length - 1];
-          // Prevent adding duplicate consecutive user messages
+          // 防止添加重复的连续用户消息
           if (
             lastItem.type === 'user' &&
             newItem.type === 'user' &&
             lastItem.text === newItem.text
           ) {
-            return prevHistory; // Don't add the duplicate
+            return prevHistory; // 不添加重复项
           }
         }
         return [...prevHistory, newItem];
       });
-      return id; // Return the generated ID (even if not added, to keep signature)
+      return id; // 返回生成的 ID（即使未添加，也保持签名一致性）
     },
     [getNextMessageId],
   );
 
   /**
-   * Updates an existing history item identified by its ID.
-   * @deprecated Prefer not to update history item directly as we are currently
-   * rendering all history items in <Static /> for performance reasons. Only use
-   * if ABSOLUTELY NECESSARY
+   * 根据其 ID 更新现有的历史项目。
+   * @deprecated 建议不要直接更新历史项目，因为我们目前
+   * 为了性能原因在 <Static /> 中渲染所有历史项目。仅在
+   * 绝对必要时使用
    */
   //
   const updateItem = useCallback(
@@ -83,7 +83,7 @@ export function useHistory(): UseHistoryManagerReturn {
       setHistory((prevHistory) =>
         prevHistory.map((item) => {
           if (item.id === id) {
-            // Apply updates based on whether it's an object or a function
+            // 根据是对象还是函数来应用更新
             const newUpdates =
               typeof updates === 'function' ? updates(item) : updates;
             return { ...item, ...newUpdates } as HistoryItem;
@@ -95,7 +95,7 @@ export function useHistory(): UseHistoryManagerReturn {
     [],
   );
 
-  // Clears the entire history state and resets the ID counter.
+  // 清除整个历史状态并重置 ID 计数器。
   const clearItems = useCallback(() => {
     setHistory([]);
     messageIdCounterRef.current = 0;

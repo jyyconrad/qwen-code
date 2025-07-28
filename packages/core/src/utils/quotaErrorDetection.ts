@@ -38,11 +38,11 @@ export function isStructuredError(error: unknown): error is StructuredError {
 }
 
 export function isProQuotaExceededError(error: unknown): boolean {
-  // Check for Pro quota exceeded errors by looking for the specific pattern
-  // This will match patterns like:
+  // 通过查找特定模式来检查 Pro 配额超限错误
+  // 这将匹配如下模式：
   // - "Quota exceeded for quota metric 'Gemini 2.5 Pro Requests'"
   // - "Quota exceeded for quota metric 'Gemini 2.5-preview Pro Requests'"
-  // We use string methods instead of regex to avoid ReDoS vulnerabilities
+  // 我们使用字符串方法而非正则表达式以避免 ReDoS 漏洞
 
   const checkMessage = (message: string): boolean =>
     message.includes("Quota exceeded for quota metric 'Gemini") &&
@@ -60,7 +60,7 @@ export function isProQuotaExceededError(error: unknown): boolean {
     return checkMessage(error.error.message);
   }
 
-  // Check if it's a Gaxios error with response data
+  // 检查是否为带有响应数据的 Gaxios 错误
   if (error && typeof error === 'object' && 'response' in error) {
     const gaxiosError = error as {
       response?: {
@@ -69,7 +69,7 @@ export function isProQuotaExceededError(error: unknown): boolean {
     };
     if (gaxiosError.response && gaxiosError.response.data) {
       console.log(
-        '[DEBUG] isProQuotaExceededError - checking response data:',
+        '[DEBUG] isProQuotaExceededError - 正在检查响应数据：',
         gaxiosError.response.data,
       );
       if (typeof gaxiosError.response.data === 'string') {
@@ -89,7 +89,7 @@ export function isProQuotaExceededError(error: unknown): boolean {
   }
 
   console.log(
-    '[DEBUG] isProQuotaExceededError - no matching error format for:',
+    '[DEBUG] isProQuotaExceededError - 无匹配的错误格式：',
     error,
   );
   return false;

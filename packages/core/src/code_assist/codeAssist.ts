@@ -25,5 +25,5 @@ export async function createCodeAssistContentGenerator(
     return new CodeAssistServer(authClient, projectId, httpOptions, sessionId);
   }
 
-  throw new Error(`Unsupported authType: ${authType}`);
+  throw new Error(`不支持的认证类型: ${authType}`);
 }

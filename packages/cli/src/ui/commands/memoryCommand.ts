@@ -10,19 +10,19 @@ import { SlashCommand, SlashCommandActionReturn } from './types.js';
 
 export const memoryCommand: SlashCommand = {
   name: 'memory',
-  description: 'Commands for interacting with memory.',
+  description: '用于与记忆交互的命令。',
   subCommands: [
     {
       name: 'show',
-      description: 'Show the current memory contents.',
+      description: '显示当前记忆内容。',
       action: async (context) => {
         const memoryContent = context.services.config?.getUserMemory() || '';
         const fileCount = context.services.config?.getGeminiMdFileCount() || 0;
 
         const messageContent =
           memoryContent.length > 0
-            ? `Current memory content from ${fileCount} file(s):\n\n---\n${memoryContent}\n---`
-            : 'Memory is currently empty.';
+            ? `来自 ${fileCount} 个文件的当前记忆内容：\n\n---\n${memoryContent}\n---`
+            : '记忆当前为空。';
 
         context.ui.addItem(
           {
@@ -35,20 +35,20 @@ export const memoryCommand: SlashCommand = {
     },
     {
       name: 'add',
-      description: 'Add content to the memory.',
+      description: '向记忆中添加内容。',
       action: (context, args): SlashCommandActionReturn | void => {
         if (!args || args.trim() === '') {
           return {
             type: 'message',
             messageType: 'error',
-            content: 'Usage: /memory add <text to remember>',
+            content: '用法：/memory add <要记住的文本>',
           };
         }
 
         context.ui.addItem(
           {
             type: MessageType.INFO,
-            text: `Attempting to save to memory: "${args.trim()}"`,
+            text: `正在尝试保存到记忆："${args.trim()}"`,
           },
           Date.now(),
         );
@@ -62,12 +62,12 @@ export const memoryCommand: SlashCommand = {
     },
     {
       name: 'refresh',
-      description: 'Refresh the memory from the source.',
+      description: '从源刷新记忆。',
       action: async (context) => {
         context.ui.addItem(
           {
             type: MessageType.INFO,
-            text: 'Refreshing memory from source files...',
+            text: '正在从源文件刷新记忆...',
           },
           Date.now(),
         );
@@ -79,8 +79,8 @@ export const memoryCommand: SlashCommand = {
             const { memoryContent, fileCount } = result;
             const successMessage =
               memoryContent.length > 0
-                ? `Memory refreshed successfully. Loaded ${memoryContent.length} characters from ${fileCount} file(s).`
-                : 'Memory refreshed successfully. No memory content found.';
+                ? `记忆刷新成功。从 ${fileCount} 个文件加载了 ${memoryContent.length} 个字符。`
+                : '记忆刷新成功。未找到记忆内容。';
 
             context.ui.addItem(
               {
@@ -95,7 +95,7 @@ export const memoryCommand: SlashCommand = {
           context.ui.addItem(
             {
               type: MessageType.ERROR,
-              text: `Error refreshing memory: ${errorMessage}`,
+              text: `刷新记忆时出错：${errorMessage}`,
             },
             Date.now(),
           );

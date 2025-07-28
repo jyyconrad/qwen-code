@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,20 +13,20 @@ import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 import licenseHeader from 'eslint-plugin-license-header';
 import noRelativeCrossPackageImports from './eslint-rules/no-relative-cross-package-imports.js';
-import path from 'node:path'; // Use node: prefix for built-ins
+import path from 'node:path'; // 使用 node: 前缀表示内置模块
 import url from 'node:url';
 
-// --- ESM way to get __dirname ---
+// --- ESM 方式获取 __dirname ---
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // --- ---
 
-// Determine the monorepo root (assuming eslint.config.js is at the root)
+// 确定 monorepo 根目录（假设 eslint.config.js 位于根目录）
 const projectRoot = __dirname;
 
 export default tseslint.config(
   {
-    // Global ignores
+    // 全局忽略
     ignores: [
       'node_modules/*',
       'eslint.config.js',
@@ -42,9 +42,9 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   reactHooks.configs['recommended-latest'],
   reactPlugin.configs.flat.recommended,
-  reactPlugin.configs.flat['jsx-runtime'], // Add this if you are using React 17+
+  reactPlugin.configs.flat['jsx-runtime'], // 如果你使用 React 17+，请添加此项
   {
-    // Settings for eslint-plugin-react
+    // eslint-plugin-react 的设置
     settings: {
       react: {
         version: 'detect',
@@ -52,8 +52,8 @@ export default tseslint.config(
     },
   },
   {
-    // Import specific config
-    files: ['packages/cli/src/**/*.{ts,tsx}'], // Target only TS/TSX in the cli package
+    // 导入特定配置
+    files: ['packages/cli/src/**/*.{ts,tsx}'], // 仅针对 cli 包中的 TS/TSX 文件
     plugins: {
       import: importPlugin,
     },
@@ -66,12 +66,12 @@ export default tseslint.config(
       ...importPlugin.configs.recommended.rules,
       ...importPlugin.configs.typescript.rules,
       'import/no-default-export': 'warn',
-      'import/no-unresolved': 'off', // Disable for now, can be noisy with monorepos/paths
+      'import/no-unresolved': 'off', // 暂时禁用，在 monorepo/paths 中可能会产生干扰
     },
   },
   {
-    // General overrides and rules for the project (TS/TSX files)
-    files: ['packages/*/src/**/*.{ts,tsx}'], // Target only TS/TSX in the cli package
+    // 项目的通用覆盖和规则（TS/TSX 文件）
+    files: ['packages/*/src/**/*.{ts,tsx}'], // 仅针对 cli 包中的 TS/TSX 文件
     languageOptions: {
       globals: {
         ...globals.node,
@@ -79,7 +79,7 @@ export default tseslint.config(
       },
     },
     rules: {
-      // General Best Practice Rules (subset adapted for flat config)
+      // 通用最佳实践规则（为 flat config 调整的子集）
       '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
       'arrow-body-style': ['error', 'as-needed'],
       curly: ['error', 'multi-line'],
@@ -113,18 +113,18 @@ export default tseslint.config(
         'error',
         {
           selector: 'CallExpression[callee.name="require"]',
-          message: 'Avoid using require(). Use ES6 imports instead.',
+          message: '避免使用 require()。请改用 ES6 导入。',
         },
         {
           selector: 'ThrowStatement > Literal:not([value=/^\\w+Error:/])',
           message:
-            'Do not throw string literals or non-Error objects. Throw new Error("...") instead.',
+            '不要抛出字符串字面量或非 Error 对象。请改用 throw new Error("...")。',
         },
       ],
       'no-unsafe-finally': 'error',
-      'no-unused-expressions': 'off', // Disable base rule
+      'no-unused-expressions': 'off', // 禁用基础规则
       '@typescript-eslint/no-unused-expressions': [
-        // Enable TS version
+        // 启用 TS 版本
         'error',
         { allowShortCircuit: true, allowTernary: true },
       ],
@@ -148,14 +148,14 @@ export default tseslint.config(
         [
           '/**',
           ' * @license',
-          ' * Copyright 2025 Google LLC',
+          ' * 版权所有 2025 Google LLC',
           ' * SPDX-License-Identifier: Apache-2.0',
           ' */',
         ],
       ],
     },
   },
-  // extra settings for scripts that we run directly with node
+  // 为直接使用 node 运行的脚本添加额外设置
   {
     files: ['./scripts/**/*.js', 'esbuild.config.js'],
     languageOptions: {
@@ -190,9 +190,9 @@ export default tseslint.config(
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
-  // Prettier config must be last
+  // Prettier 配置必须放在最后
   prettierConfig,
-  // extra settings for scripts that we run directly with node
+  // 为直接使用 node 运行的脚本添加额外设置
   {
     files: ['./integration-tests/**/*.js'],
     languageOptions: {
@@ -213,7 +213,7 @@ export default tseslint.config(
       ],
     },
   },
-  // Custom eslint rules for this repo
+  // 此仓库的自定义 eslint 规则
   {
     files: ['packages/**/*.{js,jsx,ts,tsx}'],
     plugins: {
@@ -224,7 +224,7 @@ export default tseslint.config(
       },
     },
     rules: {
-      // Enable and configure your custom rule
+      // 启用并配置你的自定义规则
       'custom/no-relative-cross-package-imports': [
         'error',
         {

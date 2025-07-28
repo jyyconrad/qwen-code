@@ -33,21 +33,21 @@ import {
 } from '../telemetry/metrics.js';
 
 /**
- * Parameters for the WriteFile tool
+ * 写入文件工具的参数
  */
 export interface WriteFileToolParams {
   /**
-   * The absolute path to the file to write to
+   * 要写入的文件的绝对路径
    */
   file_path: string;
 
   /**
-   * The content to write to the file
+   * 要写入文件的内容
    */
   content: string;
 
   /**
-   * Whether the proposed content was modified by the user.
+   * 提议的内容是否被用户修改。
    */
   modified_by_user?: boolean;
 }
@@ -60,7 +60,7 @@ interface GetCorrectedFileContentResult {
 }
 
 /**
- * Implementation of the WriteFile tool logic
+ * 写入文件工具逻辑的实现
  */
 export class WriteFileTool
   extends BaseTool<WriteFileToolParams, ToolResult>
@@ -72,18 +72,18 @@ export class WriteFileTool
     super(
       WriteFileTool.Name,
       'WriteFile',
-      `Writes content to a specified file in the local filesystem. 
+      `将内容写入本地文件系统中的指定文件。
       
-      The user has the ability to modify \`content\`. If modified, this will be stated in the response.`,
+      用户可以修改 \`content\`。如果被修改，将在响应中说明。`,
       {
         properties: {
           file_path: {
             description:
-              "The absolute path to the file to write to (e.g., '/home/user/project/file.txt'). Relative paths are not supported.",
+              "要写入的文件的绝对路径（例如，'/home/user/project/file.txt'）。不支持相对路径。",
             type: Type.STRING,
           },
           content: {
-            description: 'The content to write to the file.',
+            description: '要写入文件的内容。',
             type: Type.STRING,
           },
         },
@@ -101,25 +101,25 @@ export class WriteFileTool
 
     const filePath = params.file_path;
     if (!path.isAbsolute(filePath)) {
-      return `File path must be absolute: ${filePath}`;
+      return `文件路径必须是绝对路径: ${filePath}`;
     }
     if (!isWithinRoot(filePath, this.config.getTargetDir())) {
-      return `File path must be within the root directory (${this.config.getTargetDir()}): ${filePath}`;
+      return `文件路径必须在根目录内 (${this.config.getTargetDir()}): ${filePath}`;
     }
 
     try {
-      // This check should be performed only if the path exists.
-      // If it doesn't exist, it's a new file, which is valid for writing.
+      // 此检查应仅在路径存在时执行。
+      // 如果不存在，则为新文件，写入是有效的。
       if (fs.existsSync(filePath)) {
         const stats = fs.lstatSync(filePath);
         if (stats.isDirectory()) {
-          return `Path is a directory, not a file: ${filePath}`;
+          return `路径是目录，不是文件: ${filePath}`;
         }
       }
     } catch (statError: unknown) {
-      // If fs.existsSync is true but lstatSync fails (e.g., permissions, race condition where file is deleted)
-      // this indicates an issue with accessing the path that should be reported.
-      return `Error accessing path properties for validation: ${filePath}. Reason: ${statError instanceof Error ? statError.message : String(statError)}`;
+      // 如果 fs.existsSync 为 true 但 lstatSync 失败（例如，权限问题，文件被删除的竞争条件）
+      // 这表明访问路径存在问题，应报告。
+      return `验证时访问路径属性出错: ${filePath}。原因: ${statError instanceof Error ? statError.message : String(statError)}`;
     }
 
     return null;
@@ -127,17 +127,17 @@ export class WriteFileTool
 
   getDescription(params: WriteFileToolParams): string {
     if (!params.file_path || !params.content) {
-      return `Model did not provide valid parameters for write file tool`;
+      return `模型未提供有效的写入文件工具参数`;
     }
     const relativePath = makeRelative(
       params.file_path,
       this.config.getTargetDir(),
     );
-    return `Writing to ${shortenPath(relativePath)}`;
+    return `正在写入 ${shortenPath(relativePath)}`;
   }
 
   /**
-   * Handles the confirmation prompt for the WriteFile tool.
+   * 处理写入文件工具的确认提示。
    */
   async shouldConfirmExecute(
     params: WriteFileToolParams,
@@ -159,7 +159,7 @@ export class WriteFileTool
     );
 
     if (correctedContentResult.error) {
-      // If file exists but couldn't be read, we can't show a diff for confirmation.
+      // 如果文件存在但无法读取，我们无法显示差异以供确认。
       return false;
     }
 
@@ -172,16 +172,16 @@ export class WriteFileTool
 
     const fileDiff = Diff.createPatch(
       fileName,
-      originalContent, // Original content (empty if new file or unreadable)
-      correctedContent, // Content after potential correction
-      'Current',
-      'Proposed',
+      originalContent, // 原始内容（如果为新文件或不可读则为空）
+      correctedContent, // 潜在修正后的内容
+      '当前',
+      '提议',
       DEFAULT_DIFF_OPTIONS,
     );
 
     const confirmationDetails: ToolEditConfirmationDetails = {
       type: 'edit',
-      title: `Confirm Write: ${shortenPath(relativePath)}`,
+      title: `确认写入: ${shortenPath(relativePath)}`,
       fileName,
       fileDiff,
       onConfirm: async (outcome: ToolConfirmationOutcome) => {
@@ -200,8 +200,8 @@ export class WriteFileTool
     const validationError = this.validateToolParams(params);
     if (validationError) {
       return {
-        llmContent: `Error: Invalid parameters provided. Reason: ${validationError}`,
-        returnDisplay: `Error: ${validationError}`,
+        llmContent: `错误: 提供了无效参数。原因: ${validationError}`,
+        returnDisplay: `错误: ${validationError}`,
       };
     }
 
@@ -213,9 +213,9 @@ export class WriteFileTool
 
     if (correctedContentResult.error) {
       const errDetails = correctedContentResult.error;
-      const errorMsg = `Error checking existing file: ${errDetails.message}`;
+      const errorMsg = `检查现有文件时出错: ${errDetails.message}`;
       return {
-        llmContent: `Error checking existing file ${params.file_path}: ${errDetails.message}`,
+        llmContent: `检查现有文件 ${params.file_path} 时出错: ${errDetails.message}`,
         returnDisplay: errorMsg,
       };
     }
@@ -225,8 +225,8 @@ export class WriteFileTool
       correctedContent: fileContent,
       fileExists,
     } = correctedContentResult;
-    // fileExists is true if the file existed (and was readable or unreadable but caught by readError).
-    // fileExists is false if the file did not exist (ENOENT).
+    // 如果文件存在（可读或不可读但被 readError 捕获），fileExists 为 true。
+    // 如果文件不存在（ENOENT），fileExists 为 false。
     const isNewFile =
       !fileExists ||
       (correctedContentResult.error !== undefined &&
@@ -240,32 +240,32 @@ export class WriteFileTool
 
       fs.writeFileSync(params.file_path, fileContent, 'utf8');
 
-      // Generate diff for display result
+      // 生成用于显示结果的差异
       const fileName = path.basename(params.file_path);
-      // If there was a readError, originalContent in correctedContentResult is '',
-      // but for the diff, we want to show the original content as it was before the write if possible.
-      // However, if it was unreadable, currentContentForDiff will be empty.
+      // 如果有 readError，correctedContentResult 中的 originalContent 为空，
+      // 但对于差异，我们希望尽可能显示写入前的原始内容。
+      // 然而，如果不可读，currentContentForDiff 将为空。
       const currentContentForDiff = correctedContentResult.error
-        ? '' // Or some indicator of unreadable content
+        ? '' // 或某些不可读内容的指示器
         : originalContent;
 
       const fileDiff = Diff.createPatch(
         fileName,
         currentContentForDiff,
         fileContent,
-        'Original',
-        'Written',
+        '原始',
+        '已写入',
         DEFAULT_DIFF_OPTIONS,
       );
 
       const llmSuccessMessageParts = [
         isNewFile
-          ? `Successfully created and wrote to new file: ${params.file_path}.`
-          : `Successfully overwrote file: ${params.file_path}.`,
+          ? `成功创建并写入新文件: ${params.file_path}。`
+          : `成功覆盖文件: ${params.file_path}。`,
       ];
       if (params.modified_by_user) {
         llmSuccessMessageParts.push(
-          `User modified the \`content\` to be: ${params.content}`,
+          `用户修改了 \`content\` 为: ${params.content}`,
         );
       }
 
@@ -273,7 +273,7 @@ export class WriteFileTool
 
       const lines = fileContent.split('\n').length;
       const mimetype = getSpecificMimeType(params.file_path);
-      const extension = path.extname(params.file_path); // Get extension
+      const extension = path.extname(params.file_path); // 获取扩展名
       if (isNewFile) {
         recordFileOperationMetric(
           this.config,
@@ -297,10 +297,10 @@ export class WriteFileTool
         returnDisplay: displayResult,
       };
     } catch (error) {
-      const errorMsg = `Error writing to file: ${error instanceof Error ? error.message : String(error)}`;
+      const errorMsg = `写入文件时出错: ${error instanceof Error ? error.message : String(error)}`;
       return {
-        llmContent: `Error writing to file ${params.file_path}: ${errorMsg}`,
-        returnDisplay: `Error: ${errorMsg}`,
+        llmContent: `写入文件 ${params.file_path} 时出错: ${errorMsg}`,
+        returnDisplay: `错误: ${errorMsg}`,
       };
     }
   }
@@ -316,35 +316,35 @@ export class WriteFileTool
 
     try {
       originalContent = fs.readFileSync(filePath, 'utf8');
-      fileExists = true; // File exists and was read
+      fileExists = true; // 文件存在且已读取
     } catch (err) {
       if (isNodeError(err) && err.code === 'ENOENT') {
         fileExists = false;
         originalContent = '';
       } else {
-        // File exists but could not be read (permissions, etc.)
-        fileExists = true; // Mark as existing but problematic
-        originalContent = ''; // Can't use its content
+        // 文件存在但无法读取（权限等）
+        fileExists = true; // 标记为存在但有问题
+        originalContent = ''; // 无法使用其内容
         const error = {
           message: getErrorMessage(err),
           code: isNodeError(err) ? err.code : undefined,
         };
-        // Return early as we can't proceed with content correction meaningfully
+        // 提前返回，因为我们无法有意义地继续内容修正
         return { originalContent, correctedContent, fileExists, error };
       }
     }
 
-    // If readError is set, we have returned.
-    // So, file was either read successfully (fileExists=true, originalContent set)
-    // or it was ENOENT (fileExists=false, originalContent='').
+    // 如果设置了 readError，我们已返回。
+    // 因此，文件要么成功读取（fileExists=true，originalContent 已设置）
+    // 要么是 ENOENT（fileExists=false，originalContent=''）。
 
     if (fileExists) {
-      // This implies originalContent is available
+      // 这意味着 originalContent 可用
       const { params: correctedParams } = await ensureCorrectEdit(
         filePath,
         originalContent,
         {
-          old_string: originalContent, // Treat entire current content as old_string
+          old_string: originalContent, // 将整个当前内容视为 old_string
           new_string: proposedContent,
           file_path: filePath,
         },
@@ -353,7 +353,7 @@ export class WriteFileTool
       );
       correctedContent = correctedParams.new_string;
     } else {
-      // This implies new file (ENOENT)
+      // 这意味着新文件（ENOENT）
       correctedContent = await ensureCorrectFileContent(
         proposedContent,
         this.config.getGeminiClient(),

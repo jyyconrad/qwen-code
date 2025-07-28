@@ -19,10 +19,10 @@ export function runExitCleanup() {
     try {
       fn();
     } catch (_) {
-      // Ignore errors during cleanup.
+      // 清理过程中忽略错误。
     }
   }
-  cleanupFunctions.length = 0; // Clear the array
+  cleanupFunctions.length = 0; // 清空数组
 }
 
 export async function cleanupCheckpoints() {
@@ -31,6 +31,6 @@ export async function cleanupCheckpoints() {
   try {
     await fs.rm(checkpointsDir, { recursive: true, force: true });
   } catch {
-    // Ignore errors if the directory doesn't exist or fails to delete.
+    // 如果目录不存在或删除失败则忽略错误。
   }
 }

@@ -21,9 +21,9 @@ import {
   ToolCallConfirmationDetails,
   ToolConfirmationOutcome,
   ToolCallResponseInfo,
-  ToolCall, // Import from core
+  ToolCall, // 从核心导入
   Status as ToolCallStatusType,
-  ApprovalMode, // Import from core
+  ApprovalMode, // 从核心导入
 } from '@iflytek/iflycode-core';
 import {
   HistoryItemWithoutId,
@@ -31,7 +31,7 @@ import {
   HistoryItemToolGroup,
 } from '../types.js';
 
-// Mocks
+// 模拟
 vi.mock('@iflytek/iflycode-core', async () => {
   const actual = await vi.importActual('@iflytek/iflycode-core');
   return {
@@ -100,7 +100,7 @@ describe('useReactToolScheduler in YOLO Mode', () => {
     (mockToolRequiresConfirmation.execute as Mock).mockClear();
     (mockToolRequiresConfirmation.shouldConfirmExecute as Mock).mockClear();
 
-    // IMPORTANT: Enable YOLO mode for this test suite
+    // 重要：为此测试套件启用 YOLO 模式
     (mockConfig.getApprovalMode as Mock).mockReturnValue(ApprovalMode.YOLO);
 
     vi.useFakeTimers();
@@ -109,7 +109,7 @@ describe('useReactToolScheduler in YOLO Mode', () => {
   afterEach(() => {
     vi.clearAllTimers();
     vi.useRealTimers();
-    // IMPORTANT: Disable YOLO mode after this test suite
+    // 重要：在此测试套件后禁用 YOLO 模式
     (mockConfig.getApprovalMode as Mock).mockReturnValue(ApprovalMode.DEFAULT);
   });
 
@@ -144,28 +144,28 @@ describe('useReactToolScheduler in YOLO Mode', () => {
     });
 
     await act(async () => {
-      await vi.runAllTimersAsync(); // Process validation
+      await vi.runAllTimersAsync(); // 处理验证
     });
     await act(async () => {
-      await vi.runAllTimersAsync(); // Process scheduling
+      await vi.runAllTimersAsync(); // 处理调度
     });
     await act(async () => {
-      await vi.runAllTimersAsync(); // Process execution
+      await vi.runAllTimersAsync(); // 处理执行
     });
 
-    // Check that shouldConfirmExecute was NOT called
+    // 检查 shouldConfirmExecute 未被调用
     expect(
       mockToolRequiresConfirmation.shouldConfirmExecute,
     ).not.toHaveBeenCalled();
 
-    // Check that execute WAS called
+    // 检查 execute 被调用
     expect(mockToolRequiresConfirmation.execute).toHaveBeenCalledWith(
       request.args,
       expect.any(AbortSignal),
       undefined,
     );
 
-    // Check that onComplete was called with success
+    // 检查 onComplete 被调用成功
     expect(onComplete).toHaveBeenCalledWith([
       expect.objectContaining({
         status: 'success',
@@ -183,7 +183,7 @@ describe('useReactToolScheduler in YOLO Mode', () => {
       }),
     ]);
 
-    // Ensure no confirmation UI was triggered (setPendingHistoryItem should not have been called with confirmation details)
+    // 确保未触发确认 UI（setPendingHistoryItem 不应使用确认详细信息调用）
     const setPendingHistoryItemCalls = setPendingHistoryItem.mock.calls;
     const confirmationCall = setPendingHistoryItemCalls.find((call) => {
       const item = typeof call[0] === 'function' ? call[0]({}) : call[0];
@@ -194,12 +194,9 @@ describe('useReactToolScheduler in YOLO Mode', () => {
 });
 
 describe('useReactToolScheduler', () => {
-  // TODO(ntaylormullen): The following tests are skipped due to difficulties in
-  // reliably testing the asynchronous state updates and interactions with timers.
-  // These tests involve complex sequences of events, including confirmations,
-  // live output updates, and cancellations, which are challenging to assert
-  // correctly with the current testing setup. Further investigation is needed
-  // to find a robust way to test these scenarios.
+  // TODO(ntaylormullen): 由于难以可靠地测试异步状态更新和与计时器的交互，以下测试被跳过。
+  // 这些测试涉及复杂的事件序列，包括确认、实时输出更新和取消，这些在当前测试设置中难以正确断言。
+  // 需要进一步调查以找到测试这些场景的稳健方法。
   let onComplete: Mock;
   let setPendingHistoryItem: Mock;
   let capturedOnConfirmForTest:
@@ -212,18 +209,18 @@ describe('useReactToolScheduler', () => {
     setPendingHistoryItem = vi.fn((updaterOrValue) => {
       let pendingItem: HistoryItemWithoutId | null = null;
       if (typeof updaterOrValue === 'function') {
-        // Loosen the type for prevState to allow for more flexible updates in tests
+        // 放宽 prevState 的类型以允许在测试中更灵活的更新
         const prevState: Partial<HistoryItemToolGroup> = {
-          type: 'tool_group', // Still default to tool_group for most cases
+          type: 'tool_group', // 仍默认为 tool_group 用于大多数情况
           tools: [],
         };
 
-        pendingItem = updaterOrValue(prevState as any); // Allow any for more flexibility
+        pendingItem = updaterOrValue(prevState as any); // 允许任意类型以获得更大的灵活性
       } else {
         pendingItem = updaterOrValue;
       }
-      // Capture onConfirm if it exists, regardless of the exact type of pendingItem
-      // This is a common pattern in these tests.
+      // 捕获 onConfirm（如果存在），无论 pendingItem 的确切类型是什么
+      // 这是这些测试中的常见模式。
       if (
         (pendingItem as HistoryItemToolGroup)?.tools?.[0]?.confirmationDetails
           ?.onConfirm
@@ -356,7 +353,7 @@ describe('useReactToolScheduler', () => {
         request,
         response: expect.objectContaining({
           error: expect.objectContaining({
-            message: 'Tool "nonExistentTool" not found in registry.',
+            message: '工具 "nonExistentTool" 在注册表中未找到。',
           }),
         }),
       }),
@@ -543,7 +540,7 @@ describe('useReactToolScheduler', () => {
             expect.objectContaining({
               functionResponse: expect.objectContaining({
                 response: expect.objectContaining({
-                  error: `User did not allow tool call ${request.name}. Reason: User cancelled.`,
+                  error: `用户未允许工具调用 ${request.name}。原因：用户已取消。`,
                 }),
               }),
             }),
@@ -772,7 +769,7 @@ describe('useReactToolScheduler', () => {
     });
 
     expect(() => schedule(request2, new AbortController().signal)).toThrow(
-      'Cannot schedule tool calls while other tool calls are running',
+      '无法在其他工具调用运行时调度工具调用',
     );
 
     await act(async () => {
@@ -829,8 +826,8 @@ describe('mapToDisplay', () => {
     error: undefined,
   };
 
-  // Define a more specific type for extraProps for these tests
-  // This helps ensure that tool and confirmationDetails are only accessed when they are expected to exist.
+  // 为这些测试定义 extraProps 的更具体类型
+  // 这有助于确保仅在预期存在时才访问工具和 confirmationDetails。
   type MapToDisplayExtraProps =
     | {
         tool?: Tool;
@@ -953,7 +950,7 @@ describe('mapToDisplay', () => {
       },
       expectedStatus: ToolCallStatus.Error,
       expectedResultDisplay: 'Execution failed display',
-      expectedName: baseTool.displayName, // Changed from baseTool.name
+      expectedName: baseTool.displayName, // 从 baseTool.name 更改
       expectedDescription: baseTool.getDescription(baseRequest.args),
     },
     {

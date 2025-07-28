@@ -34,10 +34,10 @@ vi.mock('../core/client.js', () => ({
     this: any,
     _config: Config,
   ) {
-    this.generateJson = (...params: any[]) => mockGenerateJson(...params); // Corrected: use mockGenerateJson
-    this.startChat = (...params: any[]) => mockStartChat(...params); // Corrected: use mockStartChat
+    this.generateJson = (...params: any[]) => mockGenerateJson(...params); // 已修正：使用 mockGenerateJson
+    this.startChat = (...params: any[]) => mockStartChat(...params); // 已修正：使用 mockStartChat
     this.sendMessageStream = (...params: any[]) =>
-      mockSendMessageStream(...params); // Corrected: use mockSendMessageStream
+      mockSendMessageStream(...params); // 已修正：使用 mockSendMessageStream
     return this;
   }),
 }));
@@ -223,9 +223,9 @@ describe('editCorrector', () => {
       mockGenerateJson = vi
         .fn()
         .mockImplementation((_contents, _schema, signal) => {
-          // Check if the signal is aborted. If so, throw an error or return a specific response.
+          // 检查信号是否已中止。如果是，则抛出错误或返回特定响应。
           if (signal && signal.aborted) {
-            return Promise.reject(new Error('Aborted')); // Or some other specific error/response
+            return Promise.reject(new Error('已中止')); // 或其他特定错误/响应
           }
           const response = mockResponses[callCount];
           callCount++;
@@ -666,7 +666,7 @@ describe('editCorrector', () => {
         .fn()
         .mockImplementation((_contents, _schema, signal) => {
           if (signal && signal.aborted) {
-            return Promise.reject(new Error('Aborted'));
+            return Promise.reject(new Error('已中止'));
           }
           const response = mockResponses[callCount];
           callCount++;

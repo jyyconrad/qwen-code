@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -48,9 +48,9 @@ function isThinkingSupported(model: string) {
 }
 
 /**
- * Returns the index of the content after the fraction of the total characters in the history.
+ * 返回历史记录中总字符数的指定比例之后的内容索引。
  *
- * Exported for testing purposes.
+ * 为测试目的而导出。
  */
 export function findIndexAfterFraction(
   history: Content[],
@@ -91,13 +91,13 @@ export class GeminiClient {
   private sessionTurnCount = 0;
   private readonly MAX_TURNS = 100;
   /**
-   * Threshold for compression token count as a fraction of the model's token limit.
-   * If the chat history exceeds this threshold, it will be compressed.
+   * 压缩令牌计数的阈值，作为模型令牌限制的一个分数。
+   * 如果聊天历史记录超过此阈值，则将被压缩。
    */
   private readonly COMPRESSION_TOKEN_THRESHOLD = 0.7;
   /**
-   * The fraction of the latest chat history to keep. A value of 0.3
-   * means that only the last 30% of the chat history will be kept after compression.
+   * 要保留的最新聊天历史的比例。值为 0.3
+   * 表示压缩后仅保留最后 30% 的聊天历史。
    */
   private readonly COMPRESSION_PRESERVE_THRESHOLD = 0.3;
 
@@ -169,50 +169,50 @@ export class GeminiClient {
       fileService: this.config.getFileService(),
     });
     const context = `
-  This is the iFlyCode. We are setting up the context for our chat.
-  Today's date is ${today}.
-  My operating system is: ${platform}
-  I'm currently working in the directory: ${cwd}
+  这是 iFlyCode。我们正在为聊天设置上下文。
+  今天的日期是 ${today}。
+  我的操作系统是：${platform}
+  我当前的工作目录是：${cwd}
   ${folderStructure}
           `.trim();
 
     const initialParts: Part[] = [{ text: context }];
     const toolRegistry = await this.config.getToolRegistry();
 
-    // Add full file context if the flag is set
+    // 如果设置了标志，则添加完整文件上下文
     if (this.config.getFullContext()) {
       try {
         const readManyFilesTool = toolRegistry.getTool(
           'read_many_files',
         ) as ReadManyFilesTool;
         if (readManyFilesTool) {
-          // Read all files in the target directory
+          // 读取目标目录中的所有文件
           const result = await readManyFilesTool.execute(
             {
-              paths: ['**/*'], // Read everything recursively
-              useDefaultExcludes: true, // Use default excludes
+              paths: ['**/*'], // 递归读取所有内容
+              useDefaultExcludes: true, // 使用默认排除项
             },
             AbortSignal.timeout(30000),
           );
           if (result.llmContent) {
             initialParts.push({
-              text: `\n--- Full File Context ---\n${result.llmContent}`,
+              text: `\n--- 完整文件上下文 ---\n${result.llmContent}`,
             });
           } else {
             console.warn(
-              'Full context requested, but read_many_files returned no content.',
+              '已请求完整上下文，但 read_many_files 未返回内容。',
             );
           }
         } else {
           console.warn(
-            'Full context requested, but read_many_files tool not found.',
+            '已请求完整上下文，但未找到 read_many_files 工具。',
           );
         }
       } catch (error) {
-        // Not using reportError here as it's a startup/config phase, not a chat/generation phase error.
-        console.error('Error reading full file context:', error);
+        // 此处不使用 reportError，因为这是启动/配置阶段的错误，而非聊天/生成阶段的错误。
+        console.error('读取完整文件上下文时出错：', error);
         initialParts.push({
-          text: '\n--- Error reading full file context ---',
+          text: '\n--- 读取完整文件上下文时出错 ---',
         });
       }
     }
@@ -232,7 +232,7 @@ export class GeminiClient {
       },
       {
         role: 'model',
-        parts: [{ text: 'Got it. Thanks for the context!' }],
+        parts: [{ text: '明白了。感谢提供上下文！' }],
       },
       ...(extraHistory ?? []),
     ];
@@ -262,11 +262,11 @@ export class GeminiClient {
     } catch (error) {
       await reportError(
         error,
-        'Error initializing Gemini chat session.',
+        '初始化 Gemini 聊天会话时出错。',
         history,
         'startChat',
       );
-      throw new Error(`Failed to initialize chat: ${getErrorMessage(error)}`);
+      throw new Error(`聊天初始化失败：${getErrorMessage(error)}`);
     }
   }
 
@@ -289,13 +289,13 @@ export class GeminiClient {
       yield { type: GeminiEventType.MaxSessionTurns };
       return new Turn(this.getChat(), prompt_id);
     }
-    // Ensure turns never exceeds MAX_TURNS to prevent infinite loops
+    // 确保 turns 永远不超过 MAX_TURNS，以防止无限循环
     const boundedTurns = Math.min(turns, this.MAX_TURNS);
     if (!boundedTurns) {
       return new Turn(this.getChat(), prompt_id);
     }
 
-    // Track the original model from the first call to detect model switching
+    // 跟踪第一次调用的原始模型，以检测模型切换
     const initialModel = originalModel || this.config.getModel();
 
     const compressed = await this.tryCompressChat(prompt_id);
@@ -313,11 +313,11 @@ export class GeminiClient {
       yield event;
     }
     if (!turn.pendingToolCalls.length && signal && !signal.aborted) {
-      // Check if model was switched during the call (likely due to quota error)
+      // 检查模型是否在调用期间被切换（可能由于配额错误）
       const currentModel = this.config.getModel();
       if (currentModel !== initialModel) {
-        // Model was switched (likely due to quota error fallback)
-        // Don't continue with recursive call to prevent unwanted Flash execution
+        // 模型已被切换（可能由于配额错误回退）
+        // 不继续递归调用，以防止意外执行 Flash 模型
         return turn;
       }
 
@@ -327,9 +327,9 @@ export class GeminiClient {
         signal,
       );
       if (nextSpeakerCheck?.next_speaker === 'model') {
-        const nextRequest = [{ text: 'Please continue.' }];
-        // This recursive call's events will be yielded out, but the final
-        // turn object will be from the top-level call.
+        const nextRequest = [{ text: '请继续。' }];
+        // 此递归调用的事件将被产出，但最终的
+        // turn 对象将来自顶层调用。
         yield* this.sendMessageStream(
           nextRequest,
           signal,
@@ -349,7 +349,7 @@ export class GeminiClient {
     model?: string,
     config: GenerateContentConfig = {},
   ): Promise<Record<string, unknown>> {
-    // Use current model from config instead of hardcoded Flash model
+    // 使用配置中的当前模型，而不是硬编码的 Flash 模型
     const modelToUse =
       model || this.config.getModel() || DEFAULT_GEMINI_FLASH_MODEL;
     try {
@@ -386,20 +386,20 @@ export class GeminiClient {
         );
         await reportError(
           error,
-          'Error in generateJson: API returned an empty response.',
+          'generateJson 中出错：API 返回了空响应。',
           contents,
           'generateJson-empty-response',
         );
         throw error;
       }
       try {
-        // Try to extract JSON from various formats
+        // 尝试从各种格式中提取 JSON
         const extractors = [
-          // Match ```json ... ``` or ``` ... ``` blocks
+          // 匹配 ```json ... ``` 或 ``` ... ``` 块
           /```(?:json)?\s*\n?([\s\S]*?)\n?```/,
-          // Match inline code blocks `{...}`
+          // 匹配内联代码块 `{...}`
           /`(\{[\s\S]*?\})`/,
-          // Match raw JSON objects or arrays
+          // 匹配原始 JSON 对象或数组
           /(\{[\s\S]*\}|\[[\s\S]*\])/,
         ];
 
@@ -409,18 +409,18 @@ export class GeminiClient {
             try {
               return JSON.parse(match[1].trim());
             } catch {
-              // Continue to next pattern if parsing fails
+              // 如果解析失败，继续下一个模式
               continue;
             }
           }
         }
 
-        // If no patterns matched, try parsing the entire text
+        // 如果没有模式匹配，则尝试解析整个文本
         return JSON.parse(text.trim());
       } catch (parseError) {
         await reportError(
           parseError,
-          'Failed to parse JSON response from generateJson.',
+          '无法解析 generateJson 的 JSON 响应。',
           {
             responseTextFailedToParse: text,
             originalRequestContents: contents,
@@ -428,7 +428,7 @@ export class GeminiClient {
           'generateJson-parse',
         );
         throw new Error(
-          `Failed to parse API response as JSON: ${getErrorMessage(parseError)}`,
+          `无法将 API 响应解析为 JSON：${getErrorMessage(parseError)}`,
         );
       }
     } catch (error) {
@@ -436,7 +436,7 @@ export class GeminiClient {
         throw error;
       }
 
-      // Avoid double reporting for the empty response case handled above
+      // 避免对上面处理的空响应情况进行重复报告
       if (
         error instanceof Error &&
         error.message === 'API returned an empty response for generateJson.'
@@ -446,12 +446,12 @@ export class GeminiClient {
 
       await reportError(
         error,
-        'Error generating JSON content via API.',
+        '通过 API 生成 JSON 内容时出错。',
         contents,
         'generateJson-api',
       );
       throw new Error(
-        `Failed to generate JSON content: ${getErrorMessage(error)}`,
+        `生成 JSON 内容失败：${getErrorMessage(error)}`,
       );
     }
   }
@@ -498,7 +498,7 @@ export class GeminiClient {
 
       await reportError(
         error,
-        `Error generating content via API with model ${modelToUse}.`,
+        `通过 API 生成内容时出错，使用模型 ${modelToUse}。`,
         {
           requestContents: contents,
           requestConfig: configToUse,
@@ -506,7 +506,7 @@ export class GeminiClient {
         'generateContent-api',
       );
       throw new Error(
-        `Failed to generate content with model ${modelToUse}: ${getErrorMessage(error)}`,
+        `使用模型 ${modelToUse} 生成内容失败：${getErrorMessage(error)}`,
       );
     }
   }
@@ -526,12 +526,12 @@ export class GeminiClient {
       !embedContentResponse.embeddings ||
       embedContentResponse.embeddings.length === 0
     ) {
-      throw new Error('No embeddings found in API response.');
+      throw new Error('API 响应中未找到嵌入向量。');
     }
 
     if (embedContentResponse.embeddings.length !== texts.length) {
       throw new Error(
-        `API returned a mismatched number of embeddings. Expected ${texts.length}, got ${embedContentResponse.embeddings.length}.`,
+        `API 返回的嵌入向量数量不匹配。期望 ${texts.length}，实际得到 ${embedContentResponse.embeddings.length}。`,
       );
     }
 
@@ -539,7 +539,7 @@ export class GeminiClient {
       const values = embedding.values;
       if (!values || values.length === 0) {
         throw new Error(
-          `API returned an empty embedding for input text at index ${index}: "${texts[index]}"`,
+          `API 为索引 ${index} 处的输入文本返回了空嵌入向量："${texts[index]}"`,
         );
       }
       return values;
@@ -552,7 +552,7 @@ export class GeminiClient {
   ): Promise<ChatCompressionInfo | null> {
     const curatedHistory = this.getChat().getHistory(true);
 
-    // Regardless of `force`, don't do anything if the history is empty.
+    // 无论是否 `force`，如果历史记录为空，则不执行任何操作。
     if (curatedHistory.length === 0) {
       return null;
     }
@@ -565,11 +565,11 @@ export class GeminiClient {
         contents: curatedHistory,
       });
     if (originalTokenCount === undefined) {
-      console.warn(`Could not determine token count for model ${model}.`);
+      console.warn(`无法确定模型 ${model} 的令牌计数。`);
       return null;
     }
 
-    // Don't compress if not forced and we are under the limit.
+    // 如果未强制且我们在限制范围内，则不压缩。
     if (
       !force &&
       originalTokenCount < this.COMPRESSION_TOKEN_THRESHOLD * tokenLimit(model)
@@ -581,7 +581,7 @@ export class GeminiClient {
       curatedHistory,
       1 - this.COMPRESSION_PRESERVE_THRESHOLD,
     );
-    // Find the first user message after the index. This is the start of the next turn.
+    // 找到索引后的第一个用户消息。这是下一轮的开始。
     while (
       compressBeforeIndex < curatedHistory.length &&
       (curatedHistory[compressBeforeIndex]?.role === 'model' ||
@@ -598,7 +598,7 @@ export class GeminiClient {
     const { text: summary } = await this.getChat().sendMessage(
       {
         message: {
-          text: 'First, reason in your scratchpad. Then, generate the <state_snapshot>.',
+          text: '首先，在你的草稿本中进行推理。然后，生成 <state_snapshot>。',
         },
         config: {
           systemInstruction: { text: getCompressionPrompt() },
@@ -613,19 +613,19 @@ export class GeminiClient {
       },
       {
         role: 'model',
-        parts: [{ text: 'Got it. Thanks for the additional context!' }],
+        parts: [{ text: '明白了。感谢提供额外的上下文！' }],
       },
       ...historyToKeep,
     ]);
 
     const { totalTokens: newTokenCount } =
       await this.getContentGenerator().countTokens({
-        // model might change after calling `sendMessage`, so we get the newest value from config
+        // 调用 `sendMessage` 后模型可能发生变化，因此我们从配置中获取最新值
         model: this.config.getModel(),
         contents: this.getChat().getHistory(),
       });
     if (newTokenCount === undefined) {
-      console.warn('Could not determine compressed history token count.');
+      console.warn('无法确定压缩后历史记录的令牌计数。');
       return null;
     }
 
@@ -636,14 +636,14 @@ export class GeminiClient {
   }
 
   /**
-   * Handles fallback to Flash model when persistent 429 errors occur for OAuth users.
-   * Uses a fallback handler if provided by the config, otherwise returns null.
+   * 处理 OAuth 用户持续出现 429 错误时回退到 Flash 模型。
+   * 如果配置提供了回退处理程序，则使用该处理程序，否则返回 null。
    */
   private async handleFlashFallback(
     authType?: string,
     error?: unknown,
   ): Promise<string | null> {
-    // Only handle fallback for OAuth users
+    // 仅处理 OAuth 用户的回退
     if (authType !== AuthType.LOGIN_WITH_GOOGLE) {
       return null;
     }
@@ -651,12 +651,12 @@ export class GeminiClient {
     const currentModel = this.config.getModel();
     const fallbackModel = DEFAULT_GEMINI_FLASH_MODEL;
 
-    // Don't fallback if already using Flash model
+    // 如果已经在使用 Flash 模型，则不回退
     if (currentModel === fallbackModel) {
       return null;
     }
 
-    // Check if config has a fallback handler (set by CLI package)
+    // 检查配置是否有回退处理程序（由 CLI 包设置）
     const fallbackHandler = this.config.flashFallbackHandler;
     if (typeof fallbackHandler === 'function') {
       try {
@@ -669,12 +669,12 @@ export class GeminiClient {
           this.config.setModel(fallbackModel);
           return fallbackModel;
         }
-        // Check if the model was switched manually in the handler
+        // 检查处理程序中是否手动切换了模型
         if (this.config.getModel() === fallbackModel) {
-          return null; // Model was switched but don't continue with current prompt
+          return null; // 模型已切换，但不继续当前提示
         }
       } catch (error) {
-        console.warn('Flash fallback handler failed:', error);
+        console.warn('Flash 回退处理程序失败：', error);
       }
     }
 

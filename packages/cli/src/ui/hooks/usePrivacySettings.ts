@@ -33,8 +33,7 @@ export const usePrivacySettings = (config: Config) => {
         const server = getCodeAssistServer(config);
         const tier = await getTier(server);
         if (tier !== UserTierId.FREE) {
-          // We don't need to fetch opt-out info since non-free tier
-          // data gathering is already worked out some other way.
+          // 我们无需获取退出信息，因为非免费层级的数据收集已通过其他方式解决。
           setPrivacyState({
             isLoading: false,
             isFreeTier: false,
@@ -86,11 +85,11 @@ export const usePrivacySettings = (config: Config) => {
 
 function getCodeAssistServer(config: Config): CodeAssistServer {
   const server = config.getGeminiClient().getContentGenerator();
-  // Neither of these cases should ever happen.
+  // 这两种情况都不应该发生。
   if (!(server instanceof CodeAssistServer)) {
-    throw new Error('Oauth not being used');
+    throw new Error('未使用 OAuth');
   } else if (!server.projectId) {
-    throw new Error('Oauth not being used');
+    throw new Error('未使用 OAuth');
   }
   return server;
 }
@@ -106,7 +105,7 @@ async function getTier(server: CodeAssistServer): Promise<UserTierId> {
     },
   });
   if (!loadRes.currentTier) {
-    throw new Error('User does not have a current tier');
+    throw new Error('用户没有当前层级');
   }
   return loadRes.currentTier.id;
 }

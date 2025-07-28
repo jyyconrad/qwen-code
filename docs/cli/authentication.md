@@ -1,104 +1,104 @@
-# Authentication Setup
+# 身份验证设置
 
-The iFlyCode CLI supports multiple authentication methods. On initial startup you'll need to configure **one** of the following authentication methods:
+iFlyCode CLI 支持多种身份验证方法。在首次启动时，您需要配置以下 **一种** 身份验证方法：
 
-1.  **Login with Google (Gemini Code Assist):**
-    - Use this option to log in with your google account.
-    - During initial startup, Gemini CLI will direct you to a webpage for authentication. Once authenticated, your credentials will be cached locally so the web login can be skipped on subsequent runs.
-    - Note that the web login must be done in a browser that can communicate with the machine Gemini CLI is being run from. (Specifically, the browser will be redirected to a localhost url that Gemini CLI will be listening on).
-    - <a id="workspace-gca">Users may have to specify a GOOGLE_CLOUD_PROJECT if:</a>
-      1. You have a Google Workspace account. Google Workspace is a paid service for businesses and organizations that provides a suite of productivity tools, including a custom email domain (e.g. your-name@your-company.com), enhanced security features, and administrative controls. These accounts are often managed by an employer or school.
-      1. You have received a free Code Assist license through the [Google Developer Program](https://developers.google.com/program/plans-and-pricing) (including qualified Google Developer Experts)
-      1. You have been assigned a license to a current Gemini Code Assist standard or enterprise subscription.
-      1. You are using the product outside the [supported regions](https://developers.google.com/gemini-code-assist/resources/available-locations) for free individual usage.
-      1. You are a Google account holder under the age of 18
-      - If you fall into one of these categories, you must first configure a Google Cloud Project Id to use, [enable the Gemini for Cloud API](https://cloud.google.com/gemini/docs/discover/set-up-gemini#enable-api) and [configure access permissions](https://cloud.google.com/gemini/docs/discover/set-up-gemini#grant-iam).
+1.  **使用 Google 登录（Gemini Code Assist）：**
+    - 使用此选项通过您的 Google 账户登录。
+    - 在首次启动期间，Gemini CLI 会将您引导到一个网页进行身份验证。身份验证成功后，您的凭据将被缓存在本地，以便后续运行时跳过网页登录。
+    - 请注意，网页登录必须在能够与运行 Gemini CLI 的机器通信的浏览器中完成。（具体来说，浏览器将被重定向到 Gemini CLI 正在监听的 localhost URL）。
+    - <a id="workspace-gca">如果出现以下情况，用户可能需要指定 GOOGLE_CLOUD_PROJECT：</a>
+      1. 您拥有一个 Google Workspace 账户。Google Workspace 是一项面向企业和组织的付费服务，提供一套生产力工具，包括自定义电子邮件域（例如 your-name@your-company.com）、增强的安全功能和管理控制。（例如 your-name@your-company.com）
+      1. 您通过 [Google Developer Program](https://developers.google.com/program/plans-and-pricing)（包括符合条件的 Google Developer Experts）获得了免费的 Code Assist 许可证
+      1. 您获得了当前 Gemini Code Assist 标准版或企业版订阅的许可证
+      1. 您在免费个人使用的 [支持区域](https://developers.google.com/gemini-code-assist/resources/available-locations) 之外使用该产品
+      1. 您是未满 18 周岁的 Google 账户持有者
+      - 如果您属于上述任一类别，您必须首先配置一个 Google Cloud 项目 ID 来使用，[启用 Gemini for Cloud API](https://cloud.google.com/gemini/docs/discover/set-up-gemini#enable-api) 并 [配置访问权限](https://cloud.google.com/gemini/docs/discover/set-up-gemini#grant-iam)。
 
-      You can temporarily set the environment variable in your current shell session using the following command:
+      您可以使用以下命令在当前 shell 会话中临时设置环境变量：
 
       ```bash
       export GOOGLE_CLOUD_PROJECT="YOUR_PROJECT_ID"
       ```
-      - For repeated use, you can add the environment variable to your [.env file](#persisting-environment-variables-with-env-files) or your shell's configuration file (like `~/.bashrc`, `~/.zshrc`, or `~/.profile`). For example, the following command adds the environment variable to a `~/.bashrc` file:
+      - 为了重复使用，您可以将环境变量添加到 [.env 文件](#persisting-environment-variables-with-env-files) 或 shell 的配置文件中（如 `~/.bashrc`、`~/.zshrc` 或 `~/.profile`）。例如，以下命令将环境变量添加到 `~/.bashrc` 文件：
 
       ```bash
       echo 'export GOOGLE_CLOUD_PROJECT="YOUR_PROJECT_ID"' >> ~/.bashrc
       source ~/.bashrc
       ```
 
-2.  **<a id="gemini-api-key"></a>Gemini API key:**
-    - Obtain your API key from Google AI Studio: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
-    - Set the `GEMINI_API_KEY` environment variable. In the following methods, replace `YOUR_GEMINI_API_KEY` with the API key you obtained from Google AI Studio:
-      - You can temporarily set the environment variable in your current shell session using the following command:
+2.  **<a id="gemini-api-key"></a>Gemini API 密钥：**
+    - 从 Google AI Studio 获取您的 API 密钥：[https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+    - 设置 `GEMINI_API_KEY` 环境变量。在以下方法中，将 `YOUR_GEMINI_API_KEY` 替换为您从 Google AI Studio 获取的 API 密钥：
+      - 您可以使用以下命令在当前 shell 会话中临时设置环境变量：
         ```bash
         export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
         ```
-      - For repeated use, you can add the environment variable to your [.env file](#persisting-environment-variables-with-env-files) or your shell's configuration file (like `~/.bashrc`, `~/.zshrc`, or `~/.profile`). For example, the following command adds the environment variable to a `~/.bashrc` file:
+      - 为了重复使用，您可以将环境变量添加到 [.env 文件](#persisting-environment-variables-with-env-files) 或 shell 的配置文件中（如 `~/.bashrc`、`~/.zshrc` 或 `~/.profile`）。例如，以下命令将环境变量添加到 `~/.bashrc` 文件：
         ```bash
         echo 'export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"' >> ~/.bashrc
         source ~/.bashrc
         ```
 
-3.  **Vertex AI:**
-    - Obtain your Google Cloud API key: [Get an API Key](https://cloud.google.com/vertex-ai/generative-ai/docs/start/api-keys?usertype=newuser)
-      - Set the `GOOGLE_API_KEY` environment variable. In the following methods, replace `YOUR_GOOGLE_API_KEY` with your Vertex AI API key:
-        - You can temporarily set these environment variables in your current shell session using the following commands:
+3.  **Vertex AI：**
+    - 获取您的 Google Cloud API 密钥：[获取 API 密钥](https://cloud.google.com/vertex-ai/generative-ai/docs/start/api-keys?usertype=newuser)
+      - 设置 `GOOGLE_API_KEY` 环境变量。在以下方法中，将 `YOUR_GOOGLE_API_KEY` 替换为您从 Vertex AI 获取的 API 密钥：
+        - 您可以使用以下命令在当前 shell 会话中临时设置这些环境变量：
           ```bash
           export GOOGLE_API_KEY="YOUR_GOOGLE_API_KEY"
           ```
-        - For repeated use, you can add the environment variables to your [.env file](#persisting-environment-variables-with-env-files) or your shell's configuration file (like `~/.bashrc`, `~/.zshrc`, or `~/.profile`). For example, the following commands add the environment variables to a `~/.bashrc` file:
+        - 为了重复使用，您可以将环境变量添加到 [.env 文件](#persisting-environment-variables-with-env-files) 或 shell 的配置文件中（如 `~/.bashrc`、`~/.zshrc` 或 `~/.profile`）。例如，以下命令将环境变量添加到 `~/.bashrc` 文件：
           ```bash
           echo 'export GOOGLE_API_KEY="YOUR_GOOGLE_API_KEY"' >> ~/.bashrc
           source ~/.bashrc
           ```
-    - To use Application Default Credentials (ADC), use the following command:
-      - Ensure you have a Google Cloud project and have enabled the Vertex AI API.
+    - 要使用应用程序默认凭据 (ADC)，请使用以下命令：
+      - 确保您有一个 Google Cloud 项目并已启用 Vertex AI API。
         ```bash
         gcloud auth application-default login
         ```
-        For more information, see [Set up Application Default Credentials for Google Cloud](https://cloud.google.com/docs/authentication/provide-credentials-adc).
-      - Set the `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` environment variables. In the following methods, replace `YOUR_PROJECT_ID` and `YOUR_PROJECT_LOCATION` with the relevant values for your project:
-        - You can temporarily set these environment variables in your current shell session using the following commands:
+        有关更多信息，请参阅 [为 Google Cloud 设置应用程序默认凭据](https://cloud.google.com/docs/authentication/provide-credentials-adc)。
+      - 设置 `GOOGLE_CLOUD_PROJECT` 和 `GOOGLE_CLOUD_LOCATION` 环境变量。在以下方法中，将 `YOUR_PROJECT_ID` 和 `YOUR_PROJECT_LOCATION` 替换为您的项目的相关值：
+        - 您可以使用以下命令在当前 shell 会话中临时设置这些环境变量：
           ```bash
           export GOOGLE_CLOUD_PROJECT="YOUR_PROJECT_ID"
-          export GOOGLE_CLOUD_LOCATION="YOUR_PROJECT_LOCATION" # e.g., us-central1
+          export GOOGLE_CLOUD_LOCATION="YOUR_PROJECT_LOCATION" # 例如，us-central1
           ```
-        - For repeated use, you can add the environment variables to your [.env file](#persisting-environment-variables-with-env-files) or your shell's configuration file (like `~/.bashrc`, `~/.zshrc`, or `~/.profile`). For example, the following commands add the environment variables to a `~/.bashrc` file:
+        - 为了重复使用，您可以将环境变量添加到 [.env 文件](#persisting-environment-variables-with-env-files) 或 shell 的配置文件中（如 `~/.bashrc`、`~/.zshrc` 或 `~/.profile`）。例如，以下命令将环境变量添加到 `~/.bashrc` 文件：
           ```bash
           echo 'export GOOGLE_CLOUD_PROJECT="YOUR_PROJECT_ID"' >> ~/.bashrc
           echo 'export GOOGLE_CLOUD_LOCATION="YOUR_PROJECT_LOCATION"' >> ~/.bashrc
           source ~/.bashrc
           ```
-4.  **Cloud Shell:**
-    - This option is only available when running in a Google Cloud Shell environment.
-    - It automatically uses the credentials of the logged-in user in the Cloud Shell environment.
-    - This is the default authentication method when running in Cloud Shell and no other method is configured.
+4.  **Cloud Shell：**
+    - 此选项仅在 Google Cloud Shell 环境中运行时可用。
+    - 它会自动使用 Cloud Shell 环境中登录用户的凭据。
+    - 这是在 Cloud Shell 中运行且未配置其他方法时的默认身份验证方法。
 
-### Persisting Environment Variables with `.env` Files
+### 使用 `.env` 文件持久化环境变量
 
-You can create a **`.iflycode/.env`** file in your project directory or in your home directory. Creating a plain **`.env`** file also works, but `.iflycode/.env` is recommended to keep Gemini variables isolated from other tools.
+您可以在项目目录或主目录中创建一个 **`.iflycode/.env`** 文件。创建一个普通的 **`.env`** 文件也可以，但建议使用 `.iflycode/.env` 以将 Gemini 变量与其他工具隔离开来。
 
-Gemini CLI automatically loads environment variables from the **first** `.env` file it finds, using the following search order:
+Gemini CLI 会自动从 **第一个** 找到的 `.env` 文件加载环境变量，使用以下搜索顺序：
 
-1. Starting in the **current directory** and moving upward toward `/`, for each directory it checks:
+1. 从 **当前目录** 开始，向上查找直到根目录 `/`，在每个目录中检查：
    1. `.iflycode/.env`
    2. `.env`
-2. If no file is found, it falls back to your **home directory**:
+2. 如果未找到文件，则回退到您的 **主目录**：
    - `~/.iflycode/.env`
    - `~/.env`
 
-> **Important:** The search stops at the **first** file encountered—variables are **not merged** across multiple files.
+> **重要：** 搜索在遇到 **第一个** 文件时停止——变量 **不会** 在多个文件之间合并。
 
-#### Examples
+#### 示例
 
-**Project-specific overrides** (take precedence when you are inside the project):
+**项目特定的覆盖**（在项目目录内时优先）：
 
 ```bash
 mkdir -p .gemini
 echo 'GOOGLE_CLOUD_PROJECT="your-project-id"' >> .iflycode/.env
 ```
 
-**User-wide settings** (available in every directory):
+**用户范围的设置**（在每个目录中都可用）：
 
 ```bash
 mkdir -p ~/.gemini
@@ -108,7 +108,7 @@ GEMINI_API_KEY="your-gemini-api-key"
 EOF
 ```
 
-5.  **OpenAI Authentication:**
-    - Use OpenAI models instead of Google's Gemini models
-    - For detailed setup instructions, see [OpenAI Authentication](./openai-auth.md)
-    - Supports interactive setup, command line arguments, and environment variables
+5.  **OpenAI 身份验证：**
+    - 使用 OpenAI 模型而不是 Google 的 Gemini 模型
+    - 有关详细设置说明，请参阅 [OpenAI 身份验证](./openai-auth.md)
+    - 支持交互式设置、命令行参数和环境变量

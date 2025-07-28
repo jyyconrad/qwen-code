@@ -9,17 +9,17 @@ import path from 'path';
 import { PartUnion } from '@google/genai';
 import mime from 'mime-types';
 
-// Constants for text file processing
+// 文本文件处理的常量
 const DEFAULT_MAX_LINES_TEXT_FILE = 2000;
 const MAX_LINE_LENGTH_TEXT_FILE = 2000;
 
-// Default values for encoding and separator format
+// 编码和分隔符格式的默认值
 export const DEFAULT_ENCODING: BufferEncoding = 'utf-8';
 
 /**
- * Looks up the specific MIME type for a file path.
- * @param filePath Path to the file.
- * @returns The specific MIME type string (e.g., 'text/python', 'application/javascript') or undefined if not found or ambiguous.
+ * 查找文件路径的特定 MIME 类型。
+ * @param filePath 文件路径。
+ * @returns 特定的 MIME 类型字符串（例如 'text/python', 'application/javascript'）或 undefined（如果未找到或存在歧义）。
  */
 export function getSpecificMimeType(filePath: string): string | undefined {
   const lookedUpMime = mime.lookup(filePath);
@@ -27,10 +27,10 @@ export function getSpecificMimeType(filePath: string): string | undefined {
 }
 
 /**
- * Checks if a path is within a given root directory.
- * @param pathToCheck The absolute path to check.
- * @param rootDirectory The absolute root directory.
- * @returns True if the path is within the root directory, false otherwise.
+ * 检查路径是否在给定的根目录内。
+ * @param pathToCheck 要检查的绝对路径。
+ * @param rootDirectory 绝对根目录。
+ * @returns 如果路径在根目录内则返回 true，否则返回 false。
  */
 export function isWithinRoot(
   pathToCheck: string,
@@ -39,8 +39,8 @@ export function isWithinRoot(
   const normalizedPathToCheck = path.resolve(pathToCheck);
   const normalizedRootDirectory = path.resolve(rootDirectory);
 
-  // Ensure the rootDirectory path ends with a separator for correct startsWith comparison,
-  // unless it's the root path itself (e.g., '/' or 'C:\').
+  // 确保 rootDirectory 路径以分隔符结尾，以便进行正确的 startsWith 比较，
+  // 除非它是根路径本身（例如 '/' 或 'C:\'）。
   const rootWithSeparator =
     normalizedRootDirectory === path.sep ||
     normalizedRootDirectory.endsWith(path.sep)
@@ -54,17 +54,17 @@ export function isWithinRoot(
 }
 
 /**
- * Determines if a file is likely binary based on content sampling.
- * @param filePath Path to the file.
- * @returns True if the file appears to be binary.
+ * 根据内容采样确定文件是否可能是二进制文件。
+ * @param filePath 文件路径。
+ * @returns 如果文件看起来是二进制文件则返回 true。
  */
 export function isBinaryFile(filePath: string): boolean {
   try {
     const fd = fs.openSync(filePath, 'r');
-    // Read up to 4KB or file size, whichever is smaller
+    // 读取最多 4KB 或文件大小，以较小者为准
     const fileSize = fs.fstatSync(fd).size;
     if (fileSize === 0) {
-      // Empty file is not considered binary for content checking
+      // 空文件在内容检查中不被视为二进制文件
       fs.closeSync(fd);
       return false;
     }
@@ -77,32 +77,32 @@ export function isBinaryFile(filePath: string): boolean {
 
     let nonPrintableCount = 0;
     for (let i = 0; i < bytesRead; i++) {
-      if (buffer[i] === 0) return true; // Null byte is a strong indicator
+      if (buffer[i] === 0) return true; // 空字节是强烈指示符
       if (buffer[i] < 9 || (buffer[i] > 13 && buffer[i] < 32)) {
         nonPrintableCount++;
       }
     }
-    // If >30% non-printable characters, consider it binary
+    // 如果 >30% 的字符是非可打印字符，则认为是二进制文件
     return nonPrintableCount / bytesRead > 0.3;
   } catch {
-    // If any error occurs (e.g. file not found, permissions),
-    // treat as not binary here; let higher-level functions handle existence/access errors.
+    // 如果发生任何错误（例如文件未找到、权限问题），
+    // 在此处视为非二进制文件；让上层函数处理存在性/访问错误。
     return false;
   }
 }
 
 /**
- * Detects the type of file based on extension and content.
- * @param filePath Path to the file.
- * @returns 'text', 'image', 'pdf', 'audio', 'video', or 'binary'.
+ * 根据扩展名和内容检测文件类型。
+ * @param filePath 文件路径。
+ * @returns 'text', 'image', 'pdf', 'audio', 'video', 或 'binary'。
  */
 export function detectFileType(
   filePath: string,
 ): 'text' | 'image' | 'pdf' | 'audio' | 'video' | 'binary' | 'svg' {
   const ext = path.extname(filePath).toLowerCase();
 
-  // The mimetype for "ts" is MPEG transport stream (a video format) but we want
-  // to assume these are typescript files instead.
+  // "ts" 的 mimetype 是 MPEG 传输流（一种视频格式），但我们希望
+  // 假设这些是 typescript 文件。
   if (ext === '.ts') {
     return 'text';
   }
@@ -111,7 +111,7 @@ export function detectFileType(
     return 'svg';
   }
 
-  const lookedUpMimeType = mime.lookup(filePath); // Returns false if not found, or the mime type string
+  const lookedUpMimeType = mime.lookup(filePath); // 如果未找到返回 false，否则返回 mime 类型字符串
   if (lookedUpMimeType) {
     if (lookedUpMimeType.startsWith('image/')) {
       return 'image';
@@ -127,8 +127,8 @@ export function detectFileType(
     }
   }
 
-  // Stricter binary check for common non-text extensions before content check
-  // These are often not well-covered by mime-types or might be misidentified.
+  // 在内容检查之前对常见的非文本扩展名进行更严格的二进制检查
+  // 这些通常不受 mime-types 覆盖，或者可能被错误识别。
   if (
     [
       '.zip',
@@ -164,8 +164,8 @@ export function detectFileType(
     return 'binary';
   }
 
-  // Fallback to content-based check if mime type wasn't conclusive for image/pdf
-  // and it's not a known binary extension.
+  // 如果 mime 类型对图像/PDF 不具有决定性
+  // 且不是已知的二进制扩展名，则回退到基于内容的检查。
   if (isBinaryFile(filePath)) {
     return 'binary';
   }
@@ -174,21 +174,21 @@ export function detectFileType(
 }
 
 export interface ProcessedFileReadResult {
-  llmContent: PartUnion; // string for text, Part for image/pdf/unreadable binary
+  llmContent: PartUnion; // 文本为 string，图像/PDF/不可读二进制文件为 Part
   returnDisplay: string;
-  error?: string; // Optional error message for the LLM if file processing failed
-  isTruncated?: boolean; // For text files, indicates if content was truncated
-  originalLineCount?: number; // For text files
-  linesShown?: [number, number]; // For text files [startLine, endLine] (1-based for display)
+  error?: string; // 如果文件处理失败，提供给 LLM 的可选错误消息
+  isTruncated?: boolean; // 对于文本文件，指示内容是否被截断
+  originalLineCount?: number; // 对于文本文件
+  linesShown?: [number, number]; // 对于文本文件 [startLine, endLine]（显示时为 1-based）
 }
 
 /**
- * Reads and processes a single file, handling text, images, and PDFs.
- * @param filePath Absolute path to the file.
- * @param rootDirectory Absolute path to the project root for relative path display.
- * @param offset Optional offset for text files (0-based line number).
- * @param limit Optional limit for text files (number of lines to read).
- * @returns ProcessedFileReadResult object.
+ * 读取和处理单个文件，处理文本、图像和 PDF。
+ * @param filePath 文件的绝对路径。
+ * @param rootDirectory 项目根目录的绝对路径，用于相对路径显示。
+ * @param offset 文本文件的可选偏移量（0-based 行号）。
+ * @param limit 文本文件的可选限制（要读取的行数）。
+ * @returns ProcessedFileReadResult 对象。
  */
 export async function processSingleFileContent(
   filePath: string,
@@ -198,29 +198,29 @@ export async function processSingleFileContent(
 ): Promise<ProcessedFileReadResult> {
   try {
     if (!fs.existsSync(filePath)) {
-      // Sync check is acceptable before async read
+      // 异步读取前的同步检查是可以接受的
       return {
         llmContent: '',
-        returnDisplay: 'File not found.',
-        error: `File not found: ${filePath}`,
+        returnDisplay: '文件未找到。',
+        error: `文件未找到: ${filePath}`,
       };
     }
     const stats = await fs.promises.stat(filePath);
     if (stats.isDirectory()) {
       return {
         llmContent: '',
-        returnDisplay: 'Path is a directory.',
-        error: `Path is a directory, not a file: ${filePath}`,
+        returnDisplay: '路径是一个目录。',
+        error: `路径是目录，不是文件: ${filePath}`,
       };
     }
 
     const fileSizeInBytes = stats.size;
-    // 20MB limit
+    // 20MB 限制
     const maxFileSize = 20 * 1024 * 1024;
 
     if (fileSizeInBytes > maxFileSize) {
       throw new Error(
-        `File size exceeds the 20MB limit: ${filePath} (${(
+        `文件大小超过 20MB 限制: ${filePath} (${(
           fileSizeInBytes /
           (1024 * 1024)
         ).toFixed(2)}MB)`,
@@ -235,22 +235,22 @@ export async function processSingleFileContent(
     switch (fileType) {
       case 'binary': {
         return {
-          llmContent: `Cannot display content of binary file: ${relativePathForDisplay}`,
-          returnDisplay: `Skipped binary file: ${relativePathForDisplay}`,
+          llmContent: `无法显示二进制文件的内容: ${relativePathForDisplay}`,
+          returnDisplay: `跳过的二进制文件: ${relativePathForDisplay}`,
         };
       }
       case 'svg': {
         const SVG_MAX_SIZE_BYTES = 1 * 1024 * 1024;
         if (stats.size > SVG_MAX_SIZE_BYTES) {
           return {
-            llmContent: `Cannot display content of SVG file larger than 1MB: ${relativePathForDisplay}`,
-            returnDisplay: `Skipped large SVG file (>1MB): ${relativePathForDisplay}`,
+            llmContent: `无法显示大于 1MB 的 SVG 文件内容: ${relativePathForDisplay}`,
+            returnDisplay: `跳过的大 SVG 文件 (>1MB): ${relativePathForDisplay}`,
           };
         }
         const content = await fs.promises.readFile(filePath, 'utf8');
         return {
           llmContent: content,
-          returnDisplay: `Read SVG as text: ${relativePathForDisplay}`,
+          returnDisplay: `将 SVG 作为文本读取: ${relativePathForDisplay}`,
         };
       }
       case 'text': {
@@ -261,9 +261,9 @@ export async function processSingleFileContent(
         const startLine = offset || 0;
         const effectiveLimit =
           limit === undefined ? DEFAULT_MAX_LINES_TEXT_FILE : limit;
-        // Ensure endLine does not exceed originalLineCount
+        // 确保 endLine 不超过 originalLineCount
         const endLine = Math.min(startLine + effectiveLimit, originalLineCount);
-        // Ensure selectedLines doesn't try to slice beyond array bounds if startLine is too high
+        // 确保 selectedLines 不会尝试在 startLine 过高时切片超出数组边界
         const actualStartLine = Math.min(startLine, originalLineCount);
         const selectedLines = lines.slice(actualStartLine, endLine);
 
@@ -272,7 +272,7 @@ export async function processSingleFileContent(
           if (line.length > MAX_LINE_LENGTH_TEXT_FILE) {
             linesWereTruncatedInLength = true;
             return (
-              line.substring(0, MAX_LINE_LENGTH_TEXT_FILE) + '... [truncated]'
+              line.substring(0, MAX_LINE_LENGTH_TEXT_FILE) + '... [已截断]'
             );
           }
           return line;
@@ -283,15 +283,15 @@ export async function processSingleFileContent(
 
         let llmTextContent = '';
         if (contentRangeTruncated) {
-          llmTextContent += `[File content truncated: showing lines ${actualStartLine + 1}-${endLine} of ${originalLineCount} total lines. Use offset/limit parameters to view more.]\n`;
+          llmTextContent += `[文件内容已截断: 显示第 ${actualStartLine + 1}-${endLine} 行，共 ${originalLineCount} 行。使用 offset/limit 参数查看更多。]\n`;
         } else if (linesWereTruncatedInLength) {
-          llmTextContent += `[File content partially truncated: some lines exceeded maximum length of ${MAX_LINE_LENGTH_TEXT_FILE} characters.]\n`;
+          llmTextContent += `[文件内容部分截断: 某些行超过了最大长度 ${MAX_LINE_LENGTH_TEXT_FILE} 字符。]\n`;
         }
         llmTextContent += formattedLines.join('\n');
 
         return {
           llmContent: llmTextContent,
-          returnDisplay: isTruncated ? '(truncated)' : '',
+          returnDisplay: isTruncated ? '(已截断)' : '',
           isTruncated,
           originalLineCount,
           linesShown: [actualStartLine + 1, endLine],
@@ -310,16 +310,16 @@ export async function processSingleFileContent(
               mimeType: mime.lookup(filePath) || 'application/octet-stream',
             },
           },
-          returnDisplay: `Read ${fileType} file: ${relativePathForDisplay}`,
+          returnDisplay: `读取 ${fileType} 文件: ${relativePathForDisplay}`,
         };
       }
       default: {
-        // Should not happen with current detectFileType logic
+        // 使用当前 detectFileType 逻辑不应该发生
         const exhaustiveCheck: never = fileType;
         return {
-          llmContent: `Unhandled file type: ${exhaustiveCheck}`,
-          returnDisplay: `Skipped unhandled file type: ${relativePathForDisplay}`,
-          error: `Unhandled file type for ${filePath}`,
+          llmContent: `未处理的文件类型: ${exhaustiveCheck}`,
+          returnDisplay: `跳过的未处理文件类型: ${relativePathForDisplay}`,
+          error: `未处理的文件类型 ${filePath}`,
         };
       }
     }
@@ -329,9 +329,9 @@ export async function processSingleFileContent(
       .relative(rootDirectory, filePath)
       .replace(/\\/g, '/');
     return {
-      llmContent: `Error reading file ${displayPath}: ${errorMessage}`,
-      returnDisplay: `Error reading file ${displayPath}: ${errorMessage}`,
-      error: `Error reading file ${filePath}: ${errorMessage}`,
+      llmContent: `读取文件 ${displayPath} 时出错: ${errorMessage}`,
+      returnDisplay: `读取文件 ${displayPath} 时出错: ${errorMessage}`,
+      error: `读取文件 ${filePath} 时出错: ${errorMessage}`,
     };
   }
 }

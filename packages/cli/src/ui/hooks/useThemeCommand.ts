@@ -6,7 +6,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { themeManager } from '../themes/theme-manager.js';
-import { LoadedSettings, SettingScope } from '../../config/settings.js'; // Import LoadedSettings, AppSettings, MergedSetting
+import { LoadedSettings, SettingScope } from '../../config/settings.js'; // 导入 LoadedSettings, AppSettings, MergedSetting
 import { type HistoryItem, MessageType } from '../types.js';
 import process from 'node:process';
 
@@ -16,7 +16,7 @@ interface UseThemeCommandReturn {
   handleThemeSelect: (
     themeName: string | undefined,
     scope: SettingScope,
-  ) => void; // Added scope
+  ) => void; // 添加了 scope
   handleThemeHighlight: (themeName: string | undefined) => void;
 }
 
@@ -25,46 +25,46 @@ export const useThemeCommand = (
   setThemeError: (error: string | null) => void,
   addItem: (item: Omit<HistoryItem, 'id'>, timestamp: number) => void,
 ): UseThemeCommandReturn => {
-  // Determine the effective theme
+  // 确定有效的主题
   const effectiveTheme = loadedSettings.merged.theme;
 
-  // Initial state: Open dialog if no theme is set in either user or workspace settings
+  // 初始状态：如果用户或工作区设置中均未设置主题，则打开对话框
   const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(
     effectiveTheme === undefined && !process.env.NO_COLOR,
   );
-  // TODO: refactor how theme's are accessed to avoid requiring a forced render.
+  // TODO: 重构主题访问方式以避免强制重新渲染。
   const [, setForceRender] = useState(0);
 
-  // Apply initial theme on component mount
+  // 在组件挂载时应用初始主题
   useEffect(() => {
     if (effectiveTheme === undefined) {
       if (process.env.NO_COLOR) {
         addItem(
           {
             type: MessageType.INFO,
-            text: 'Theme configuration unavailable due to NO_COLOR env variable.',
+            text: '由于设置了 NO_COLOR 环境变量，主题配置不可用。',
           },
           Date.now(),
         );
       }
-      // If no theme is set and NO_COLOR is not set, the dialog is already open.
+      // 如果未设置主题且未设置 NO_COLOR，则对话框已打开。
       return;
     }
 
     if (!themeManager.setActiveTheme(effectiveTheme)) {
       setIsThemeDialogOpen(true);
-      setThemeError(`Theme "${effectiveTheme}" not found.`);
+      setThemeError(`未找到主题 "${effectiveTheme}"。`);
     } else {
       setThemeError(null);
     }
-  }, [effectiveTheme, setThemeError, addItem]); // Re-run if effectiveTheme or setThemeError changes
+  }, [effectiveTheme, setThemeError, addItem]); // 当 effectiveTheme 或 setThemeError 变化时重新运行
 
   const openThemeDialog = useCallback(() => {
     if (process.env.NO_COLOR) {
       addItem(
         {
           type: MessageType.INFO,
-          text: 'Theme configuration unavailable due to NO_COLOR env variable.',
+          text: '由于设置了 NO_COLOR 环境变量，主题配置不可用。',
         },
         Date.now(),
       );
@@ -76,12 +76,12 @@ export const useThemeCommand = (
   const applyTheme = useCallback(
     (themeName: string | undefined) => {
       if (!themeManager.setActiveTheme(themeName)) {
-        // If theme is not found, open the theme selection dialog and set error message
+        // 如果未找到主题，则打开主题选择对话框并设置错误信息
         setIsThemeDialogOpen(true);
-        setThemeError(`Theme "${themeName}" not found.`);
+        setThemeError(`未找到主题 "${themeName}"。`);
       } else {
-        setForceRender((v) => v + 1); // Trigger potential re-render
-        setThemeError(null); // Clear any previous theme error on success
+        setForceRender((v) => v + 1); // 触发潜在的重新渲染
+        setThemeError(null); // 成功时清除之前的主题错误
       }
     },
     [setForceRender, setThemeError],
@@ -96,12 +96,12 @@ export const useThemeCommand = (
 
   const handleThemeSelect = useCallback(
     (themeName: string | undefined, scope: SettingScope) => {
-      // Added scope parameter
+      // 添加了 scope 参数
       try {
-        loadedSettings.setValue(scope, 'theme', themeName); // Update the merged settings
-        applyTheme(loadedSettings.merged.theme); // Apply the current theme
+        loadedSettings.setValue(scope, 'theme', themeName); // 更新合并后的设置
+        applyTheme(loadedSettings.merged.theme); // 应用当前主题
       } finally {
-        setIsThemeDialogOpen(false); // Close the dialog
+        setIsThemeDialogOpen(false); // 关闭对话框
       }
     },
     [applyTheme, loadedSettings],

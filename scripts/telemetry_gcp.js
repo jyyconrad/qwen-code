@@ -2,7 +2,7 @@
 
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -62,7 +62,7 @@ service:
 `;
 
 async function main() {
-  console.log('✨ Starting Local Telemetry Exporter for Google Cloud ✨');
+  console.log('✨ 正在启动 Google Cloud 的本地遥测导出器 ✨');
 
   let collectorProcess;
   let collectorLogFd;
@@ -73,30 +73,30 @@ async function main() {
     'gcp',
   );
   registerCleanup(
-    () => [collectorProcess].filter((p) => p), // Function to get processes
-    () => [collectorLogFd].filter((fd) => fd), // Function to get FDs
+    () => [collectorProcess].filter((p) => p), // 获取进程的函数
+    () => [collectorLogFd].filter((fd) => fd), // 获取文件描述符的函数
     originalSandboxSetting,
   );
 
   const projectId = process.env.OTLP_GOOGLE_CLOUD_PROJECT;
   if (!projectId) {
     console.error(
-      '🛑 Error: OTLP_GOOGLE_CLOUD_PROJECT environment variable is not exported.',
+      '🛑 错误：未导出 OTLP_GOOGLE_CLOUD_PROJECT 环境变量。',
     );
     console.log(
-      '   Please set it to your Google Cloud Project ID and try again.',
+      '   请将其设置为您的 Google Cloud 项目 ID 并重试。',
     );
     console.log('   `export OTLP_GOOGLE_CLOUD_PROJECT=your-project-id`');
     process.exit(1);
   }
-  console.log(`✅ Using OTLP Google Cloud Project ID: ${projectId}`);
+  console.log(`✅ 使用 OTLP Google Cloud 项目 ID: ${projectId}`);
 
-  console.log('\n🔑 Please ensure you are authenticated with Google Cloud:');
+  console.log('\n🔑 请确保您已通过 Google Cloud 身份验证：');
   console.log(
-    '  - Run `gcloud auth application-default login` OR ensure `GOOGLE_APPLICATION_CREDENTIALS` environment variable points to a valid service account key.',
+    '  - 运行 `gcloud auth application-default login` 或确保 `GOOGLE_APPLICATION_CREDENTIALS` 环境变量指向有效的服务账户密钥。',
   );
   console.log(
-    '  - The account needs "Cloud Trace Agent", "Monitoring Metric Writer", and "Logs Writer" roles.',
+    '  - 该账户需要 "Cloud Trace Agent"、"Monitoring Metric Writer" 和 "Logs Writer" 角色。',
   );
 
   if (!fileExists(BIN_DIR)) fs.mkdirSync(BIN_DIR, { recursive: true });
@@ -109,30 +109,30 @@ async function main() {
     'otelcol-contrib',
     false, // isJaeger = false
   ).catch((e) => {
-    console.error(`🛑 Error getting otelcol-contrib: ${e.message}`);
+    console.error(`🛑 获取 otelcol-contrib 时出错: ${e.message}`);
     return null;
   });
   if (!otelcolPath) process.exit(1);
 
-  console.log('🧹 Cleaning up old processes and logs...');
+  console.log('🧹 正在清理旧进程和日志...');
   try {
     execSync('pkill -f "otelcol-contrib"');
-    console.log('✅ Stopped existing otelcol-contrib process.');
+    console.log('✅ 已停止现有的 otelcol-contrib 进程。');
   } catch (_e) {
-    /* no-op */
+    /* 无操作 */
   }
   try {
     fs.unlinkSync(OTEL_LOG_FILE);
-    console.log('✅ Deleted old GCP collector log.');
+    console.log('✅ 已删除旧的 GCP 收集器日志。');
   } catch (e) {
     if (e.code !== 'ENOENT') console.error(e);
   }
 
   if (!fileExists(OTEL_DIR)) fs.mkdirSync(OTEL_DIR, { recursive: true });
   fs.writeFileSync(OTEL_CONFIG_FILE, getOtelConfigContent(projectId));
-  console.log(`📄 Wrote OTEL collector config to ${OTEL_CONFIG_FILE}`);
+  console.log(`📄 已将 OTEL 收集器配置写入 ${OTEL_CONFIG_FILE}`);
 
-  console.log(`🚀 Starting OTEL collector for GCP... Logs: ${OTEL_LOG_FILE}`);
+  console.log(`🚀 正在启动 GCP 的 OTEL 收集器... 日志: ${OTEL_LOG_FILE}`);
   collectorLogFd = fs.openSync(OTEL_LOG_FILE, 'a');
   collectorProcess = spawn(otelcolPath, ['--config', OTEL_CONFIG_FILE], {
     stdio: ['ignore', collectorLogFd, collectorLogFd],
@@ -140,49 +140,49 @@ async function main() {
   });
 
   console.log(
-    `⏳ Waiting for OTEL collector to start (PID: ${collectorProcess.pid})...`,
+    `⏳ 正在等待 OTEL 收集器启动 (PID: ${collectorProcess.pid})...`,
   );
 
   try {
     await waitForPort(4317);
-    console.log(`✅ OTEL collector started successfully on port 4317.`);
+    console.log(`✅ OTEL 收集器已在端口 4317 上成功启动。`);
   } catch (err) {
-    console.error(`🛑 Error: OTEL collector failed to start on port 4317.`);
+    console.error(`🛑 错误：OTEL 收集器无法在端口 4317 上启动。`);
     console.error(err.message);
     if (collectorProcess && collectorProcess.pid) {
       process.kill(collectorProcess.pid, 'SIGKILL');
     }
     if (fileExists(OTEL_LOG_FILE)) {
-      console.error('📄 OTEL Collector Log Output:');
+      console.error('📄 OTEL 收集器日志输出：');
       console.error(fs.readFileSync(OTEL_LOG_FILE, 'utf-8'));
     }
     process.exit(1);
   }
 
   collectorProcess.on('error', (err) => {
-    console.error(`${collectorProcess.spawnargs[0]} process error:`, err);
+    console.error(`${collectorProcess.spawnargs[0]} 进程错误：`, err);
     process.exit(1);
   });
 
-  console.log(`\n✨ Local OTEL collector for GCP is running.`);
+  console.log(`\n✨ GCP 的本地 OTEL 收集器正在运行。`);
   console.log(
-    '\n🚀 To send telemetry, run the Gemini CLI in a separate terminal window.',
+    '\n🚀 要发送遥测数据，请在单独的终端窗口中运行 Gemini CLI。',
   );
-  console.log(`\n📄 Collector logs are being written to: ${OTEL_LOG_FILE}`);
+  console.log(`\n📄 收集器日志正在写入：${OTEL_LOG_FILE}`);
   console.log(
-    `📄 Tail collector logs in another terminal: tail -f ${OTEL_LOG_FILE}`,
+    `📄 在另一个终端中查看收集器日志：tail -f ${OTEL_LOG_FILE}`,
   );
-  console.log(`\n📊 View your telemetry data in Google Cloud Console:`);
+  console.log(`\n📊 在 Google Cloud Console 中查看您的遥测数据：`);
   console.log(
-    `   - Logs: https://console.cloud.google.com/logs/query;query=logName%3D%22projects%2F${projectId}%2Flogs%2Fgemini_cli%22?project=${projectId}`,
-  );
-  console.log(
-    `   - Metrics: https://console.cloud.google.com/monitoring/metrics-explorer?project=${projectId}`,
+    `   - 日志: https://console.cloud.google.com/logs/query;query=logName%3D%22projects%2F${projectId}%2Flogs%2Fgemini_cli%22?project=${projectId}`,
   );
   console.log(
-    `   - Traces: https://console.cloud.google.com/traces/list?project=${projectId}`,
+    `   - 指标: https://console.cloud.google.com/monitoring/metrics-explorer?project=${projectId}`,
   );
-  console.log(`\nPress Ctrl+C to exit.`);
+  console.log(
+    `   - 跟踪: https://console.cloud.google.com/traces/list?project=${projectId}`,
+  );
+  console.log(`\n按 Ctrl+C 退出。`);
 }
 
 main();

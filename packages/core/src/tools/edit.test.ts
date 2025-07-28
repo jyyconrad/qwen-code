@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -46,7 +46,7 @@ describe('EditTool', () => {
     fs.mkdirSync(rootDir);
 
     geminiClient = {
-      generateJson: mockGenerateJson, // mockGenerateJson is already defined and hoisted
+      generateJson: mockGenerateJson, // mockGenerateJson 已定义并提升
     };
 
     mockConfig = {
@@ -54,9 +54,9 @@ describe('EditTool', () => {
       getTargetDir: () => rootDir,
       getApprovalMode: vi.fn(),
       setApprovalMode: vi.fn(),
-      // getGeminiConfig: () => ({ apiKey: 'test-api-key' }), // This was not a real Config method
-      // Add other properties/methods of Config if EditTool uses them
-      // Minimal other methods to satisfy Config type if needed by EditTool constructor or other direct uses:
+      // getGeminiConfig: () => ({ apiKey: 'test-api-key' }), // 这不是真正的 Config 方法
+      // 如果 EditTool 使用它们，请添加 Config 的其他属性/方法
+      // 如果 EditTool 构造函数或其他直接使用需要，添加最小的其他方法以满足 Config 类型：
       getApiKey: () => 'test-api-key',
       getModel: () => 'test-model',
       getSandbox: () => false,
@@ -72,38 +72,38 @@ describe('EditTool', () => {
       setUserMemory: vi.fn(),
       getGeminiMdFileCount: () => 0,
       setGeminiMdFileCount: vi.fn(),
-      getToolRegistry: () => ({}) as any, // Minimal mock for ToolRegistry
+      getToolRegistry: () => ({}) as any, // ToolRegistry 的最小模拟
     } as unknown as Config;
 
-    // Reset mocks before each test
+    // 在每次测试前重置模拟
     (mockConfig.getApprovalMode as Mock).mockClear();
-    // Default to not skipping confirmation
+    // 默认不跳过确认
     (mockConfig.getApprovalMode as Mock).mockReturnValue(ApprovalMode.DEFAULT);
 
-    // Reset mocks and set default implementation for ensureCorrectEdit
+    // 重置模拟并为 ensureCorrectEdit 设置默认实现
     mockEnsureCorrectEdit.mockReset();
     mockEnsureCorrectEdit.mockImplementation(
       async (_, currentContent, params) => {
         let occurrences = 0;
         if (params.old_string && currentContent) {
-          // Simple string counting for the mock
+          // 简单的字符串计数用于模拟
           let index = currentContent.indexOf(params.old_string);
           while (index !== -1) {
             occurrences++;
             index = currentContent.indexOf(params.old_string, index + 1);
           }
         } else if (params.old_string === '') {
-          occurrences = 0; // Creating a new file
+          occurrences = 0; // 创建新文件
         }
         return Promise.resolve({ params, occurrences });
       },
     );
 
-    // Default mock for generateJson to return the snippet unchanged
+    // 默认模拟 generateJson 以返回未更改的代码片段
     mockGenerateJson.mockReset();
     mockGenerateJson.mockImplementation(
       async (contents: Content[], schema: SchemaUnion) => {
-        // The problematic_snippet is the last part of the user's content
+        // problematic_snippet 是用户内容的最后一部分
         const userContent = contents.find((c: Content) => c.role === 'user');
         let promptText = '';
         if (userContent && userContent.parts) {
@@ -124,8 +124,8 @@ describe('EditTool', () => {
           });
         }
         if (((schema as any).properties as any)?.corrected_new_string) {
-          // For new_string correction, we might need more sophisticated logic,
-          // but for now, returning original is a safe default if not specified by a test.
+          // 对于 new_string 纠正，我们可能需要更复杂的逻辑，
+          // 但目前，如果测试未指定，返回原始值是安全的默认值。
           const originalNewStringMatch = promptText.match(
             /original_new_string \(what was intended to replace original_old_string\):\n```\n([\s\S]*?)\n```/,
           );
@@ -135,7 +135,7 @@ describe('EditTool', () => {
               : '';
           return Promise.resolve({ corrected_new_string: originalNewString });
         }
-        return Promise.resolve({}); // Default empty object if schema doesn't match
+        return Promise.resolve({}); // 如果模式不匹配，返回默认空对象
       },
     );
 
@@ -147,9 +147,9 @@ describe('EditTool', () => {
   });
 
   describe('_applyReplacement', () => {
-    // Access private method for testing
-    // Note: `tool` is initialized in `beforeEach` of the parent describe block
-    it('should return newString if isNewFile is true', () => {
+    // 访问私有方法进行测试
+    // 注意：`tool` 在父 describe 块的 `beforeEach` 中初始化
+    it('如果 isNewFile 为 true，应返回 newString', () => {
       expect((tool as any)._applyReplacement(null, 'old', 'new', true)).toBe(
         'new',
       );
@@ -158,19 +158,19 @@ describe('EditTool', () => {
       ).toBe('new');
     });
 
-    it('should return newString if currentContent is null and oldString is empty (defensive)', () => {
+    it('如果 currentContent 为 null 且 oldString 为空，应返回 newString（防御性）', () => {
       expect((tool as any)._applyReplacement(null, '', 'new', false)).toBe(
         'new',
       );
     });
 
-    it('should return empty string if currentContent is null and oldString is not empty (defensive)', () => {
+    it('如果 currentContent 为 null 且 oldString 不为空，应返回空字符串（防御性）', () => {
       expect((tool as any)._applyReplacement(null, 'old', 'new', false)).toBe(
         '',
       );
     });
 
-    it('should replace oldString with newString in currentContent', () => {
+    it('应在 currentContent 中将 oldString 替换为 newString', () => {
       expect(
         (tool as any)._applyReplacement(
           'hello old world old',
@@ -181,7 +181,7 @@ describe('EditTool', () => {
       ).toBe('hello new world new');
     });
 
-    it('should return currentContent if oldString is empty and not a new file', () => {
+    it('如果 oldString 为空且不是新文件，应返回 currentContent', () => {
       expect(
         (tool as any)._applyReplacement('hello world', '', 'new', false),
       ).toBe('hello world');
@@ -189,7 +189,7 @@ describe('EditTool', () => {
   });
 
   describe('validateToolParams', () => {
-    it('should return null for valid params', () => {
+    it('对于有效参数应返回 null', () => {
       const params: EditToolParams = {
         file_path: path.join(rootDir, 'test.txt'),
         old_string: 'old',
@@ -198,7 +198,7 @@ describe('EditTool', () => {
       expect(tool.validateToolParams(params)).toBeNull();
     });
 
-    it('should return error for relative path', () => {
+    it('对于相对路径应返回错误', () => {
       const params: EditToolParams = {
         file_path: 'test.txt',
         old_string: 'old',
@@ -209,7 +209,7 @@ describe('EditTool', () => {
       );
     });
 
-    it('should return error for path outside root', () => {
+    it('对于根目录外的路径应返回错误', () => {
       const params: EditToolParams = {
         file_path: path.join(tempDir, 'outside-root.txt'),
         old_string: 'old',
@@ -229,7 +229,7 @@ describe('EditTool', () => {
       filePath = path.join(rootDir, testFile);
     });
 
-    it('should return false if params are invalid', async () => {
+    it('如果参数无效应返回 false', async () => {
       const params: EditToolParams = {
         file_path: 'relative.txt',
         old_string: 'old',
@@ -240,14 +240,14 @@ describe('EditTool', () => {
       ).toBe(false);
     });
 
-    it('should request confirmation for valid edit', async () => {
+    it('对于有效编辑应请求确认', async () => {
       fs.writeFileSync(filePath, 'some old content here');
       const params: EditToolParams = {
         file_path: filePath,
         old_string: 'old',
         new_string: 'new',
       };
-      // ensureCorrectEdit will be called by shouldConfirmExecute
+      // ensureCorrectEdit 将由 shouldConfirmExecute 调用
       mockEnsureCorrectEdit.mockResolvedValueOnce({ params, occurrences: 1 });
       const confirmation = await tool.shouldConfirmExecute(
         params,
@@ -262,7 +262,7 @@ describe('EditTool', () => {
       );
     });
 
-    it('should return false if old_string is not found (ensureCorrectEdit returns 0)', async () => {
+    it('如果未找到 old_string 应返回 false（ensureCorrectEdit 返回 0）', async () => {
       fs.writeFileSync(filePath, 'some content here');
       const params: EditToolParams = {
         file_path: filePath,
@@ -275,7 +275,7 @@ describe('EditTool', () => {
       ).toBe(false);
     });
 
-    it('should return false if multiple occurrences of old_string are found (ensureCorrectEdit returns > 1)', async () => {
+    it('如果找到多个 old_string 实例应返回 false（ensureCorrectEdit 返回 > 1）', async () => {
       fs.writeFileSync(filePath, 'old old content here');
       const params: EditToolParams = {
         file_path: filePath,
@@ -288,7 +288,7 @@ describe('EditTool', () => {
       ).toBe(false);
     });
 
-    it('should request confirmation for creating a new file (empty old_string)', async () => {
+    it('对于创建新文件应请求确认（空 old_string）', async () => {
       const newFileName = 'new_file.txt';
       const newFilePath = path.join(rootDir, newFileName);
       const params: EditToolParams = {
@@ -296,9 +296,9 @@ describe('EditTool', () => {
         old_string: '',
         new_string: 'new file content',
       };
-      // ensureCorrectEdit might not be called if old_string is empty,
-      // as shouldConfirmExecute handles this for diff generation.
-      // If it is called, it should return 0 occurrences for a new file.
+      // 如果 old_string 为空，ensureCorrectEdit 可能不会被调用，
+      // 因为 shouldConfirmExecute 处理 diff 生成。
+      // 如果被调用，对于新文件应返回 0 次出现。
       mockEnsureCorrectEdit.mockResolvedValueOnce({ params, occurrences: 0 });
       const confirmation = await tool.shouldConfirmExecute(
         params,
@@ -313,13 +313,13 @@ describe('EditTool', () => {
       );
     });
 
-    it('should use corrected params from ensureCorrectEdit for diff generation', async () => {
+    it('应使用 ensureCorrectEdit 的纠正参数生成 diff', async () => {
       const originalContent = 'This is the original string to be replaced.';
       const originalOldString = 'original string';
       const originalNewString = 'new string';
 
-      const correctedOldString = 'original string to be replaced'; // More specific
-      const correctedNewString = 'completely new string'; // Different replacement
+      const correctedOldString = 'original string to be replaced'; // 更具体
+      const correctedNewString = 'completely new string'; // 不同的替换
       const expectedFinalContent = 'This is the completely new string.';
 
       fs.writeFileSync(filePath, originalContent);
@@ -329,8 +329,8 @@ describe('EditTool', () => {
         new_string: originalNewString,
       };
 
-      // The main beforeEach already calls mockEnsureCorrectEdit.mockReset()
-      // Set a specific mock for this test case
+      // 主 beforeEach 已调用 mockEnsureCorrectEdit.mockReset()
+      // 为此测试用例设置特定模拟
       let mockCalled = false;
       mockEnsureCorrectEdit.mockImplementationOnce(
         async (_, content, p, client) => {
@@ -354,23 +354,23 @@ describe('EditTool', () => {
         new AbortController().signal,
       )) as FileDiff;
 
-      expect(mockCalled).toBe(true); // Check if the mock implementation was run
-      // expect(mockEnsureCorrectEdit).toHaveBeenCalledWith(originalContent, params, expect.anything()); // Keep this commented for now
+      expect(mockCalled).toBe(true); // 检查模拟实现是否运行
+      // expect(mockEnsureCorrectEdit).toHaveBeenCalledWith(originalContent, params, expect.anything()); // 暂时保持注释
       expect(confirmation).toEqual(
         expect.objectContaining({
           title: `Confirm Edit: ${testFile}`,
           fileName: testFile,
         }),
       );
-      // Check that the diff is based on the corrected strings leading to the new state
+      // 检查 diff 是否基于纠正的字符串导致新状态
       expect(confirmation.fileDiff).toContain(`-${originalContent}`);
       expect(confirmation.fileDiff).toContain(`+${expectedFinalContent}`);
 
-      // Verify that applying the correctedOldString and correctedNewString to originalContent
-      // indeed produces the expectedFinalContent, which is what the diff should reflect.
+      // 验证将 correctedOldString 和 correctedNewString 应用于 originalContent
+      // 确实产生 expectedFinalContent，这是 diff 应该反映的内容。
       const patchedContent = originalContent.replace(
-        correctedOldString, // This was the string identified by ensureCorrectEdit for replacement
-        correctedNewString, // This was the string identified by ensureCorrectEdit as the replacement
+        correctedOldString, // 这是 ensureCorrectEdit 识别用于替换的字符串
+        correctedNewString, // 这是 ensureCorrectEdit 识别为替换的字符串
       );
       expect(patchedContent).toBe(expectedFinalContent);
     });
@@ -382,7 +382,7 @@ describe('EditTool', () => {
 
     beforeEach(() => {
       filePath = path.join(rootDir, testFile);
-      // Default for execute tests, can be overridden
+      // execute 测试的默认值，可以覆盖
       mockEnsureCorrectEdit.mockImplementation(async (_, content, params) => {
         let occurrences = 0;
         if (params.old_string && content) {
@@ -398,7 +398,7 @@ describe('EditTool', () => {
       });
     });
 
-    it('should return error if params are invalid', async () => {
+    it('如果参数无效应返回错误', async () => {
       const params: EditToolParams = {
         file_path: 'relative.txt',
         old_string: 'old',
@@ -409,7 +409,7 @@ describe('EditTool', () => {
       expect(result.returnDisplay).toMatch(/Error: File path must be absolute/);
     });
 
-    it('should edit an existing file and return diff with fileName', async () => {
+    it('应编辑现有文件并返回带 fileName 的 diff', async () => {
       const initialContent = 'This is some old text.';
       const newContent = 'This is some new text.'; // old -> new
       fs.writeFileSync(filePath, initialContent, 'utf8');
@@ -419,16 +419,16 @@ describe('EditTool', () => {
         new_string: 'new',
       };
 
-      // Specific mock for this test's execution path in calculateEdit
-      // ensureCorrectEdit is NOT called by calculateEdit, only by shouldConfirmExecute
-      // So, the default mockEnsureCorrectEdit should correctly return 1 occurrence for 'old' in initialContent
+      // 为此测试的执行路径在 calculateEdit 中设置特定模拟
+      // ensureCorrectEdit 不由 calculateEdit 调用，仅由 shouldConfirmExecute 调用
+      // 因此，默认的 mockEnsureCorrectEdit 应正确返回 initialContent 中 'old' 的 1 次出现
 
-      // Simulate confirmation by setting shouldAlwaysEdit
+      // 通过设置 shouldAlwaysEdit 模拟确认
       (tool as any).shouldAlwaysEdit = true;
 
       const result = await tool.execute(params, new AbortController().signal);
 
-      (tool as any).shouldAlwaysEdit = false; // Reset for other tests
+      (tool as any).shouldAlwaysEdit = false; // 为其他测试重置
 
       expect(result.llmContent).toMatch(/Successfully modified file/);
       expect(fs.readFileSync(filePath, 'utf8')).toBe(newContent);
@@ -438,7 +438,7 @@ describe('EditTool', () => {
       expect(display.fileName).toBe(testFile);
     });
 
-    it('should create a new file if old_string is empty and file does not exist, and return created message', async () => {
+    it('如果 old_string 为空且文件不存在，应创建新文件并返回创建消息', async () => {
       const newFileName = 'brand_new_file.txt';
       const newFilePath = path.join(rootDir, newFileName);
       const fileContent = 'Content for the new file.';
@@ -459,14 +459,14 @@ describe('EditTool', () => {
       expect(result.returnDisplay).toBe(`Created ${newFileName}`);
     });
 
-    it('should return error if old_string is not found in file', async () => {
+    it('如果在文件中未找到 old_string 应返回错误', async () => {
       fs.writeFileSync(filePath, 'Some content.', 'utf8');
       const params: EditToolParams = {
         file_path: filePath,
         old_string: 'nonexistent',
         new_string: 'replacement',
       };
-      // The default mockEnsureCorrectEdit will return 0 occurrences for 'nonexistent'
+      // 默认的 mockEnsureCorrectEdit 将返回 'nonexistent' 的 0 次出现
       const result = await tool.execute(params, new AbortController().signal);
       expect(result.llmContent).toMatch(
         /0 occurrences found for old_string in/,
@@ -476,14 +476,14 @@ describe('EditTool', () => {
       );
     });
 
-    it('should return error if multiple occurrences of old_string are found', async () => {
+    it('如果找到多个 old_string 实例应返回错误', async () => {
       fs.writeFileSync(filePath, 'multiple old old strings', 'utf8');
       const params: EditToolParams = {
         file_path: filePath,
         old_string: 'old',
         new_string: 'new',
       };
-      // The default mockEnsureCorrectEdit will return 2 occurrences for 'old'
+      // 默认的 mockEnsureCorrectEdit 将返回 'old' 的 2 次出现
       const result = await tool.execute(params, new AbortController().signal);
       expect(result.llmContent).toMatch(
         /Expected 1 occurrence but found 2 for old_string in file/,
@@ -493,7 +493,7 @@ describe('EditTool', () => {
       );
     });
 
-    it('should successfully replace multiple occurrences when expected_replacements specified', async () => {
+    it('当指定 expected_replacements 时应成功替换多次出现', async () => {
       fs.writeFileSync(filePath, 'old text old text old text', 'utf8');
       const params: EditToolParams = {
         file_path: filePath,
@@ -502,12 +502,12 @@ describe('EditTool', () => {
         expected_replacements: 3,
       };
 
-      // Simulate confirmation by setting shouldAlwaysEdit
+      // 通过设置 shouldAlwaysEdit 模拟确认
       (tool as any).shouldAlwaysEdit = true;
 
       const result = await tool.execute(params, new AbortController().signal);
 
-      (tool as any).shouldAlwaysEdit = false; // Reset for other tests
+      (tool as any).shouldAlwaysEdit = false; // 为其他测试重置
 
       expect(result.llmContent).toMatch(/Successfully modified file/);
       expect(fs.readFileSync(filePath, 'utf8')).toBe(
@@ -519,13 +519,13 @@ describe('EditTool', () => {
       expect(display.fileName).toBe(testFile);
     });
 
-    it('should return error if expected_replacements does not match actual occurrences', async () => {
+    it('如果 expected_replacements 与实际出现次数不匹配应返回错误', async () => {
       fs.writeFileSync(filePath, 'old text old text', 'utf8');
       const params: EditToolParams = {
         file_path: filePath,
         old_string: 'old',
         new_string: 'new',
-        expected_replacements: 3, // Expecting 3 but only 2 exist
+        expected_replacements: 3, // 期望 3 个但只有 2 个存在
       };
       const result = await tool.execute(params, new AbortController().signal);
       expect(result.llmContent).toMatch(
@@ -536,7 +536,7 @@ describe('EditTool', () => {
       );
     });
 
-    it('should return error if trying to create a file that already exists (empty old_string)', async () => {
+    it('如果尝试创建已存在的文件应返回错误（空 old_string）', async () => {
       fs.writeFileSync(filePath, 'Existing content', 'utf8');
       const params: EditToolParams = {
         file_path: filePath,
@@ -550,7 +550,7 @@ describe('EditTool', () => {
       );
     });
 
-    it('should include modification message when proposed content is modified', async () => {
+    it('当提议内容被修改时应包含修改消息', async () => {
       const initialContent = 'This is some old text.';
       fs.writeFileSync(filePath, initialContent, 'utf8');
       const params: EditToolParams = {
@@ -570,7 +570,7 @@ describe('EditTool', () => {
       );
     });
 
-    it('should not include modification message when proposed content is not modified', async () => {
+    it('当提议内容未被修改时不包含修改消息', async () => {
       const initialContent = 'This is some old text.';
       fs.writeFileSync(filePath, initialContent, 'utf8');
       const params: EditToolParams = {
@@ -590,7 +590,7 @@ describe('EditTool', () => {
       );
     });
 
-    it('should not include modification message when modified_by_user is not provided', async () => {
+    it('当未提供 modified_by_user 时不包含修改消息', async () => {
       const initialContent = 'This is some old text.';
       fs.writeFileSync(filePath, initialContent, 'utf8');
       const params: EditToolParams = {
@@ -611,34 +611,34 @@ describe('EditTool', () => {
   });
 
   describe('getDescription', () => {
-    it('should return "No file changes to..." if old_string and new_string are the same', () => {
+    it('如果 old_string 和 new_string 相同，应返回 "No file changes to..."', () => {
       const testFileName = 'test.txt';
       const params: EditToolParams = {
         file_path: path.join(rootDir, testFileName),
         old_string: 'identical_string',
         new_string: 'identical_string',
       };
-      // shortenPath will be called internally, resulting in just the file name
+      // 内部将调用 shortenPath，结果仅为文件名
       expect(tool.getDescription(params)).toBe(
         `No file changes to ${testFileName}`,
       );
     });
 
-    it('should return a snippet of old and new strings if they are different', () => {
+    it('如果字符串不同，应返回 old 和 new 字符串的片段', () => {
       const testFileName = 'test.txt';
       const params: EditToolParams = {
         file_path: path.join(rootDir, testFileName),
         old_string: 'this is the old string value',
         new_string: 'this is the new string value',
       };
-      // shortenPath will be called internally, resulting in just the file name
-      // The snippets are truncated at 30 chars + '...'
+      // 内部将调用 shortenPath，结果仅为文件名
+      // 片段在 30 个字符 + '...' 处截断
       expect(tool.getDescription(params)).toBe(
         `${testFileName}: this is the old string value => this is the new string value`,
       );
     });
 
-    it('should handle very short strings correctly in the description', () => {
+    it('在描述中应正确处理非常短的字符串', () => {
       const testFileName = 'short.txt';
       const params: EditToolParams = {
         file_path: path.join(rootDir, testFileName),
@@ -648,7 +648,7 @@ describe('EditTool', () => {
       expect(tool.getDescription(params)).toBe(`${testFileName}: old => new`);
     });
 
-    it('should truncate long strings in the description', () => {
+    it('在描述中应截断长字符串', () => {
       const testFileName = 'long.txt';
       const params: EditToolParams = {
         file_path: path.join(rootDir, testFileName),

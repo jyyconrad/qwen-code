@@ -35,7 +35,7 @@ export function loadExtensions(workspaceDir: string): Extension[] {
   for (const extension of allExtensions) {
     if (!uniqueExtensions.has(extension.config.name)) {
       console.log(
-        `Loading extension: ${extension.config.name} (version: ${extension.config.version})`,
+        `正在加载扩展: ${extension.config.name} (版本: ${extension.config.version})`,
       );
       uniqueExtensions.set(extension.config.name, extension);
     }
@@ -65,7 +65,7 @@ function loadExtensionsFromDir(dir: string): Extension[] {
 function loadExtension(extensionDir: string): Extension | null {
   if (!fs.statSync(extensionDir).isDirectory()) {
     console.error(
-      `Warning: unexpected file ${extensionDir} in extensions directory.`,
+      `警告: 扩展目录中存在异常文件 ${extensionDir}。`,
     );
     return null;
   }
@@ -73,7 +73,7 @@ function loadExtension(extensionDir: string): Extension | null {
   const configFilePath = path.join(extensionDir, EXTENSIONS_CONFIG_FILENAME);
   if (!fs.existsSync(configFilePath)) {
     console.error(
-      `Warning: extension directory ${extensionDir} does not contain a config file ${configFilePath}.`,
+      `警告: 扩展目录 ${extensionDir} 中未包含配置文件 ${configFilePath}。`,
     );
     return null;
   }
@@ -83,7 +83,7 @@ function loadExtension(extensionDir: string): Extension | null {
     const config = JSON.parse(configContent) as ExtensionConfig;
     if (!config.name || !config.version) {
       console.error(
-        `Invalid extension config in ${configFilePath}: missing name or version.`,
+        `扩展配置 ${configFilePath} 无效: 缺少名称或版本。`,
       );
       return null;
     }
@@ -98,7 +98,7 @@ function loadExtension(extensionDir: string): Extension | null {
     };
   } catch (e) {
     console.error(
-      `Warning: error parsing extension config in ${configFilePath}: ${e}`,
+      `警告: 解析扩展配置文件 ${configFilePath} 时出错: ${e}`,
     );
     return null;
   }
@@ -130,7 +130,7 @@ export function filterActiveExtensions(
     lowerCaseEnabledExtensions.has('none')
   ) {
     if (extensions.length > 0) {
-      console.log('All extensions are disabled.');
+      console.log('所有扩展已禁用。');
     }
     return [];
   }
@@ -142,17 +142,17 @@ export function filterActiveExtensions(
     const lowerCaseName = extension.config.name.toLowerCase();
     if (lowerCaseEnabledExtensions.has(lowerCaseName)) {
       console.log(
-        `Activated extension: ${extension.config.name} (version: ${extension.config.version})`,
+        `已激活扩展: ${extension.config.name} (版本: ${extension.config.version})`,
       );
       activeExtensions.push(extension);
       notFoundNames.delete(lowerCaseName);
     } else {
-      console.log(`Disabled extension: ${extension.config.name}`);
+      console.log(`已禁用扩展: ${extension.config.name}`);
     }
   }
 
   for (const requestedName of notFoundNames) {
-    console.log(`Extension not found: ${requestedName}`);
+    console.log(`未找到扩展: ${requestedName}`);
   }
 
   return activeExtensions;

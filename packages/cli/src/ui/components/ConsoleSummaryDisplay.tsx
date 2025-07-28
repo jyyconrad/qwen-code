@@ -10,7 +10,7 @@ import { Colors } from '../colors.js';
 
 interface ConsoleSummaryDisplayProps {
   errorCount: number;
-  // logCount is not currently in the plan to be displayed in summary
+  // logCount 当前不在计划中显示在摘要里
 }
 
 export const ConsoleSummaryDisplay: React.FC<ConsoleSummaryDisplayProps> = ({
@@ -26,8 +26,8 @@ export const ConsoleSummaryDisplay: React.FC<ConsoleSummaryDisplayProps> = ({
     <Box>
       {errorCount > 0 && (
         <Text color={Colors.AccentRed}>
-          {errorIcon} {errorCount} error{errorCount > 1 ? 's' : ''}{' '}
-          <Text color={Colors.Gray}>(ctrl+o for details)</Text>
+          {errorIcon} {errorCount} 个错误{errorCount > 1 ? 's' : ''}{' '}
+          <Text color={Colors.Gray}>(ctrl+o 查看详情)</Text>
         </Text>
       )}
     </Box>

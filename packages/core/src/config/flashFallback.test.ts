@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { Config } from './config.js';
 import { DEFAULT_GEMINI_MODEL, DEFAULT_GEMINI_FLASH_MODEL } from './models.js';
 
-describe('Flash Model Fallback Configuration', () => {
+describe('Flash 模型降级配置', () => {
   let config: Config;
 
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe('Flash Model Fallback Configuration', () => {
       model: DEFAULT_GEMINI_MODEL,
     });
 
-    // Initialize contentGeneratorConfig for testing
+    // 初始化 contentGeneratorConfig 用于测试
     (
       config as unknown as { contentGeneratorConfig: unknown }
     ).contentGeneratorConfig = {
@@ -30,7 +30,7 @@ describe('Flash Model Fallback Configuration', () => {
   });
 
   describe('setModel', () => {
-    it('should update the model and mark as switched during session', () => {
+    it('应在会话期间更新模型并标记为已切换', () => {
       expect(config.getModel()).toBe(DEFAULT_GEMINI_MODEL);
       expect(config.isModelSwitchedDuringSession()).toBe(false);
 
@@ -40,7 +40,7 @@ describe('Flash Model Fallback Configuration', () => {
       expect(config.isModelSwitchedDuringSession()).toBe(true);
     });
 
-    it('should handle multiple model switches during session', () => {
+    it('应处理会话期间的多次模型切换', () => {
       config.setModel(DEFAULT_GEMINI_FLASH_MODEL);
       expect(config.isModelSwitchedDuringSession()).toBe(true);
 
@@ -49,8 +49,8 @@ describe('Flash Model Fallback Configuration', () => {
       expect(config.isModelSwitchedDuringSession()).toBe(true);
     });
 
-    it('should only mark as switched if contentGeneratorConfig exists', () => {
-      // Create config without initializing contentGeneratorConfig
+    it('仅在 contentGeneratorConfig 存在时才标记为已切换', () => {
+      // 创建未初始化 contentGeneratorConfig 的配置
       const newConfig = new Config({
         sessionId: 'test-session-2',
         targetDir: '/test',
@@ -59,21 +59,21 @@ describe('Flash Model Fallback Configuration', () => {
         model: DEFAULT_GEMINI_MODEL,
       });
 
-      // Should not crash when contentGeneratorConfig is undefined
+      // 当 contentGeneratorConfig 未定义时不应崩溃
       newConfig.setModel(DEFAULT_GEMINI_FLASH_MODEL);
       expect(newConfig.isModelSwitchedDuringSession()).toBe(false);
     });
   });
 
   describe('getModel', () => {
-    it('should return contentGeneratorConfig model if available', () => {
-      // Simulate initialized content generator config
+    it('如果可用，应返回 contentGeneratorConfig 模型', () => {
+      // 模拟已初始化的内容生成器配置
       config.setModel(DEFAULT_GEMINI_FLASH_MODEL);
       expect(config.getModel()).toBe(DEFAULT_GEMINI_FLASH_MODEL);
     });
 
-    it('should fallback to initial model if contentGeneratorConfig is not available', () => {
-      // Test with fresh config where contentGeneratorConfig might not be set
+    it('如果 contentGeneratorConfig 不可用，应回退到初始模型', () => {
+      // 测试 fresh 配置，其中 contentGeneratorConfig 可能未设置
       const newConfig = new Config({
         sessionId: 'test-session-2',
         targetDir: '/test',
@@ -87,42 +87,42 @@ describe('Flash Model Fallback Configuration', () => {
   });
 
   describe('isModelSwitchedDuringSession', () => {
-    it('should start as false for new session', () => {
+    it('新会话应以 false 开始', () => {
       expect(config.isModelSwitchedDuringSession()).toBe(false);
     });
 
-    it('should remain false if no model switch occurs', () => {
-      // Perform other operations that don't involve model switching
+    it('如果没有模型切换发生，应保持为 false', () => {
+      // 执行不涉及模型切换的其他操作
       expect(config.isModelSwitchedDuringSession()).toBe(false);
     });
 
-    it('should persist switched state throughout session', () => {
+    it('切换状态应在整个会话中保持', () => {
       config.setModel(DEFAULT_GEMINI_FLASH_MODEL);
       expect(config.isModelSwitchedDuringSession()).toBe(true);
 
-      // Should remain true even after getting model
+      // 即使在获取模型后也应保持为 true
       config.getModel();
       expect(config.isModelSwitchedDuringSession()).toBe(true);
     });
   });
 
   describe('resetModelToDefault', () => {
-    it('should reset model to default and clear session switch flag', () => {
-      // Switch to Flash first
+    it('应重置模型为默认值并清除会话切换标志', () => {
+      // 首先切换到 Flash
       config.setModel(DEFAULT_GEMINI_FLASH_MODEL);
       expect(config.getModel()).toBe(DEFAULT_GEMINI_FLASH_MODEL);
       expect(config.isModelSwitchedDuringSession()).toBe(true);
 
-      // Reset to default
+      // 重置为默认值
       config.resetModelToDefault();
 
-      // Should be back to default with flag cleared
+      // 应回到默认值且标志已清除
       expect(config.getModel()).toBe(DEFAULT_GEMINI_MODEL);
       expect(config.isModelSwitchedDuringSession()).toBe(false);
     });
 
-    it('should handle case where contentGeneratorConfig is not initialized', () => {
-      // Create config without initializing contentGeneratorConfig
+    it('应处理 contentGeneratorConfig 未初始化的情况', () => {
+      // 创建未初始化 contentGeneratorConfig 的配置
       const newConfig = new Config({
         sessionId: 'test-session-2',
         targetDir: '/test',
@@ -131,7 +131,7 @@ describe('Flash Model Fallback Configuration', () => {
         model: DEFAULT_GEMINI_MODEL,
       });
 
-      // Should not crash when contentGeneratorConfig is undefined
+      // 当 contentGeneratorConfig 未定义时不应崩溃
       expect(() => newConfig.resetModelToDefault()).not.toThrow();
       expect(newConfig.isModelSwitchedDuringSession()).toBe(false);
     });

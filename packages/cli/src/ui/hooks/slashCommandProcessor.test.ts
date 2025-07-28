@@ -14,7 +14,7 @@ vi.mock('node:process', () => ({
     cwd: vi.fn(() => '/mock/cwd'),
     get env() {
       return process.env;
-    }, // Use a getter to ensure current process.env is used
+    }, // 使用 getter 确保使用当前的 process.env
     platform: 'test-platform',
     version: 'test-node-version',
     memoryUsage: vi.fn(() => ({
@@ -25,12 +25,12 @@ vi.mock('node:process', () => ({
       arrayBuffers: 123456,
     })),
   },
-  // Provide top-level exports as well for compatibility
+  // 提供顶级导出以确保兼容性
   exit: mockProcessExit,
   cwd: vi.fn(() => '/mock/cwd'),
   get env() {
     return process.env;
-  }, // Use a getter here too
+  }, // 这里也使用 getter
   platform: 'test-platform',
   version: 'test-node-version',
   memoryUsage: vi.fn(() => ({
@@ -116,17 +116,17 @@ describe('useSlashCommandProcessor', () => {
   const mockUseSessionStats = useSessionStats as Mock;
 
   beforeEach(() => {
-    // Reset all mocks to clear any previous state or calls.
+    // 重置所有模拟以清除任何先前的状态或调用。
     vi.clearAllMocks();
 
-    // Default mock setup for CommandService for all the OLD tests.
-    // This makes them pass again by simulating the original behavior where
-    // the service is constructed but doesn't do much yet.
+    // 为所有旧测试设置 CommandService 的默认模拟。
+    // 这通过模拟原始行为使它们再次通过，其中
+    // 服务被构造但尚未执行太多操作。
     vi.mocked(CommandService).mockImplementation(
       () =>
         ({
           loadCommands: vi.fn().mockResolvedValue(undefined),
-          getCommands: vi.fn().mockReturnValue([]), // Return an empty array by default
+          getCommands: vi.fn().mockReturnValue([]), // 默认返回空数组
         }) as unknown as CommandService,
     );
 
@@ -209,7 +209,7 @@ describe('useSlashCommandProcessor', () => {
 
   describe('/stats command', () => {
     it('should show detailed session statistics', async () => {
-      // Arrange
+      // 安排
       mockUseSessionStats.mockReturnValue({
         stats: {
           sessionStartTime: new Date('2025-01-01T00:00:00.000Z'),
@@ -217,17 +217,17 @@ describe('useSlashCommandProcessor', () => {
       });
 
       const { handleSlashCommand } = getProcessor();
-      const mockDate = new Date('2025-01-01T01:02:03.000Z'); // 1h 2m 3s duration
+      const mockDate = new Date('2025-01-01T01:02:03.000Z'); // 1小时 2分钟 3秒持续时间
       vi.setSystemTime(mockDate);
 
-      // Act
+      // 执行
       await act(async () => {
         handleSlashCommand('/stats');
       });
 
-      // Assert
+      // 断言
       expect(mockAddItem).toHaveBeenNthCalledWith(
-        2, // Called after the user message
+        2, // 在用户消息之后调用
         expect.objectContaining({
           type: MessageType.STATS,
           duration: '1h 2m 3s',
@@ -239,17 +239,17 @@ describe('useSlashCommandProcessor', () => {
     });
 
     it('should show model-specific statistics when using /stats model', async () => {
-      // Arrange
+      // 安排
       const { handleSlashCommand } = getProcessor();
 
-      // Act
+      // 执行
       await act(async () => {
         handleSlashCommand('/stats model');
       });
 
-      // Assert
+      // 断言
       expect(mockAddItem).toHaveBeenNthCalledWith(
-        2, // Called after the user message
+        2, // 在用户消息之后调用
         expect.objectContaining({
           type: MessageType.MODEL_STATS,
         }),
@@ -258,17 +258,17 @@ describe('useSlashCommandProcessor', () => {
     });
 
     it('should show tool-specific statistics when using /stats tools', async () => {
-      // Arrange
+      // 安排
       const { handleSlashCommand } = getProcessor();
 
-      // Act
+      // 执行
       await act(async () => {
         handleSlashCommand('/stats tools');
       });
 
-      // Assert
+      // 断言
       expect(mockAddItem).toHaveBeenNthCalledWith(
-        2, // Called after the user message
+        2, // 在用户消息之后调用
         expect.objectContaining({
           type: MessageType.TOOL_STATS,
         }),
@@ -308,10 +308,10 @@ describe('useSlashCommandProcessor', () => {
       const newCommand: SlashCommand = { name: 'test', action: mockAction };
       const mockLoader = async () => [newCommand];
 
-      // We create the instance outside the mock implementation.
+      // 我们在模拟实现之外创建实例。
       const commandServiceInstance = new ActualCommandService(mockLoader);
 
-      // This mock ensures the hook uses our pre-configured instance.
+      // 此模拟确保钩子使用我们预配置的实例。
       vi.mocked(CommandService).mockImplementation(
         () => commandServiceInstance,
       );
@@ -319,8 +319,8 @@ describe('useSlashCommandProcessor', () => {
       const { result } = getProcessorHook();
 
       await vi.waitFor(() => {
-        // We check that the `slashCommands` array, which is the public API
-        // of our hook, eventually contains the command we injected.
+        // 我们检查 `slashCommands` 数组，这是我们的钩子的公共 API
+        // 最终包含我们注入的命令。
         expect(
           result.current.slashCommands.some((c) => c.name === 'test'),
         ).toBe(true);
@@ -542,7 +542,7 @@ describe('useSlashCommandProcessor', () => {
         sandboxEnvStr = `sandbox-exec (${seatbeltProfileVar || 'unknown'})`;
       }
       const modelVersion = 'test-model';
-      // Use the mocked memoryUsage value
+      // 使用模拟的 memoryUsage 值
       const memoryUsage = '11.8 MB';
 
       const info = `
@@ -657,7 +657,7 @@ describe('useSlashCommandProcessor', () => {
           },
         ]);
 
-        // Fast-forward timers to trigger process.exit
+        // 快进计时器以触发 process.exit
         await act(async () => {
           vi.advanceTimersByTime(100);
         });
@@ -733,7 +733,7 @@ describe('useSlashCommandProcessor', () => {
     });
 
     it('should display only Gemini CLI tools (filtering out MCP tools)', async () => {
-      // Create mock tools - some with serverName property (MCP tools) and some without (Gemini CLI tools)
+      // 创建模拟工具 - 一些具有 serverName 属性（MCP 工具）和一些没有（Gemini CLI 工具）
       const mockTools = [
         { name: 'tool1', displayName: 'Tool1' },
         { name: 'tool2', displayName: 'Tool2' },
@@ -754,7 +754,7 @@ describe('useSlashCommandProcessor', () => {
         commandResult = await handleSlashCommand('/tools');
       });
 
-      // Should only show tool1 and tool2, not the MCP tools
+      // 应该只显示 tool1 和 tool2，不显示 MCP 工具
       const message = mockAddItem.mock.calls[1][0].text;
       expect(message).toContain('Tool1');
       expect(message).toContain('Tool2');
@@ -762,7 +762,7 @@ describe('useSlashCommandProcessor', () => {
     });
 
     it('should display a message when no Gemini CLI tools are available', async () => {
-      // Only MCP tools available
+      // 只有 MCP 工具可用
       const mockTools = [
         { name: 'mcp_tool1', serverName: 'mcp-server1' },
         { name: 'mcp_tool2', serverName: 'mcp-server1' },
@@ -901,26 +901,26 @@ describe('useSlashCommandProcessor', () => {
     });
 
     it('should display configured MCP servers with status indicators and their tools', async () => {
-      // Mock MCP servers configuration
+      // 模拟 MCP 服务器配置
       const mockMcpServers = {
         server1: { command: 'cmd1' },
         server2: { command: 'cmd2' },
         server3: { command: 'cmd3' },
       };
 
-      // Setup getMCPServerStatus mock implementation - use all CONNECTED to avoid startup message in this test
+      // 设置 getMCPServerStatus 模拟实现 - 使用所有 CONNECTED 避免在此测试中显示启动消息
       vi.mocked(getMCPServerStatus).mockImplementation((serverName) => {
         if (serverName === 'server1') return MCPServerStatus.CONNECTED;
         if (serverName === 'server2') return MCPServerStatus.CONNECTED;
-        return MCPServerStatus.DISCONNECTED; // Default for server3 and others
+        return MCPServerStatus.DISCONNECTED; // server3 及其他服务器的默认值
       });
 
-      // Setup getMCPDiscoveryState mock to return completed so no startup message is shown
+      // 设置 getMCPDiscoveryState 模拟以返回 completed，因此不显示启动消息
       vi.mocked(getMCPDiscoveryState).mockReturnValue(
         MCPDiscoveryState.COMPLETED,
       );
 
-      // Mock tools from each server
+      // 模拟每个服务器的工具
       const mockServer1Tools = [
         { name: 'server1_tool1' },
         { name: 'server1_tool2' },
@@ -960,22 +960,22 @@ describe('useSlashCommandProcessor', () => {
         expect.any(Number),
       );
 
-      // Check that the message contains details about servers and their tools
+      // 检查消息是否包含服务器及其工具的详细信息
       const message = mockAddItem.mock.calls[1][0].text;
-      // Server 1 - Connected
+      // 服务器 1 - 已连接
       expect(message).toContain(
         '🟢 \u001b[1mserver1\u001b[0m - Ready (2 tools)',
       );
       expect(message).toContain('\u001b[36mserver1_tool1\u001b[0m');
       expect(message).toContain('\u001b[36mserver1_tool2\u001b[0m');
 
-      // Server 2 - Connected
+      // 服务器 2 - 已连接
       expect(message).toContain(
         '🟢 \u001b[1mserver2\u001b[0m - Ready (1 tools)',
       );
       expect(message).toContain('\u001b[36mserver2_tool1\u001b[0m');
 
-      // Server 3 - Disconnected
+      // 服务器 3 - 已断开连接
       expect(message).toContain(
         '🔴 \u001b[1mserver3\u001b[0m - Disconnected (1 tools cached)',
       );
@@ -985,7 +985,7 @@ describe('useSlashCommandProcessor', () => {
     });
 
     it('should display tool descriptions when showToolDescriptions is true', async () => {
-      // Mock MCP servers configuration with server description
+      // 模拟 MCP 服务器配置，包含服务器描述
       const mockMcpServers = {
         server1: {
           command: 'cmd1',
@@ -993,18 +993,18 @@ describe('useSlashCommandProcessor', () => {
         },
       };
 
-      // Setup getMCPServerStatus mock implementation
+      // 设置 getMCPServerStatus 模拟实现
       vi.mocked(getMCPServerStatus).mockImplementation((serverName) => {
         if (serverName === 'server1') return MCPServerStatus.CONNECTED;
         return MCPServerStatus.DISCONNECTED;
       });
 
-      // Setup getMCPDiscoveryState mock to return completed
+      // 设置 getMCPDiscoveryState 模拟以返回 completed
       vi.mocked(getMCPDiscoveryState).mockReturnValue(
         MCPDiscoveryState.COMPLETED,
       );
 
-      // Mock tools from server with descriptions
+      // 模拟服务器工具，包含描述
       const mockServerTools = [
         { name: 'tool1', description: 'This is tool 1 description' },
         { name: 'tool2', description: 'This is tool 2 description' },
@@ -1035,13 +1035,13 @@ describe('useSlashCommandProcessor', () => {
 
       const message = mockAddItem.mock.calls[1][0].text;
 
-      // Check that server description is included (with ANSI color codes)
+      // 检查是否包含服务器描述（带 ANSI 颜色代码）
       expect(message).toContain('\u001b[1mserver1\u001b[0m - Ready (2 tools)');
       expect(message).toContain(
         '\u001b[32mThis is a server description\u001b[0m',
       );
 
-      // Check that tool descriptions are included (with ANSI color codes)
+      // 检查是否包含工具描述（带 ANSI 颜色代码）
       expect(message).toContain('\u001b[36mtool1\u001b[0m');
       expect(message).toContain(
         '\u001b[32mThis is tool 1 description\u001b[0m',
@@ -1055,25 +1055,25 @@ describe('useSlashCommandProcessor', () => {
     });
 
     it('should indicate when a server has no tools', async () => {
-      // Mock MCP servers configuration
+      // 模拟 MCP 服务器配置
       const mockMcpServers = {
         server1: { command: 'cmd1' },
         server2: { command: 'cmd2' },
       };
 
-      // Setup getMCPServerStatus mock implementation
+      // 设置 getMCPServerStatus 模拟实现
       vi.mocked(getMCPServerStatus).mockImplementation((serverName) => {
         if (serverName === 'server1') return MCPServerStatus.CONNECTED;
         if (serverName === 'server2') return MCPServerStatus.DISCONNECTED;
         return MCPServerStatus.DISCONNECTED;
       });
 
-      // Setup getMCPDiscoveryState mock to return completed
+      // 设置 getMCPDiscoveryState 模拟以返回 completed
       vi.mocked(getMCPDiscoveryState).mockReturnValue(
         MCPDiscoveryState.COMPLETED,
       );
 
-      // Mock tools from each server - server2 has no tools
+      // 模拟每个服务器的工具 - server2 没有工具
       const mockServer1Tools = [{ name: 'server1_tool1' }];
 
       const mockServer2Tools: Array<{ name: string }> = [];
@@ -1107,7 +1107,7 @@ describe('useSlashCommandProcessor', () => {
         expect.any(Number),
       );
 
-      // Check that the message contains details about both servers and their tools
+      // 检查消息是否包含两个服务器及其工具的详细信息
       const message = mockAddItem.mock.calls[1][0].text;
       expect(message).toContain(
         '🟢 \u001b[1mserver1\u001b[0m - Ready (1 tools)',
@@ -1122,25 +1122,25 @@ describe('useSlashCommandProcessor', () => {
     });
 
     it('should show startup indicator when servers are connecting', async () => {
-      // Mock MCP servers configuration
+      // 模拟 MCP 服务器配置
       const mockMcpServers = {
         server1: { command: 'cmd1' },
         server2: { command: 'cmd2' },
       };
 
-      // Setup getMCPServerStatus mock implementation with one server connecting
+      // 设置 getMCPServerStatus 模拟实现，其中一个服务器正在连接
       vi.mocked(getMCPServerStatus).mockImplementation((serverName) => {
         if (serverName === 'server1') return MCPServerStatus.CONNECTED;
         if (serverName === 'server2') return MCPServerStatus.CONNECTING;
         return MCPServerStatus.DISCONNECTED;
       });
 
-      // Setup getMCPDiscoveryState mock to return in progress
+      // 设置 getMCPDiscoveryState 模拟以返回进行中
       vi.mocked(getMCPDiscoveryState).mockReturnValue(
         MCPDiscoveryState.IN_PROGRESS,
       );
 
-      // Mock tools from each server
+      // 模拟每个服务器的工具
       const mockServer1Tools = [{ name: 'server1_tool1' }];
       const mockServer2Tools = [{ name: 'server2_tool1' }];
 
@@ -1166,7 +1166,7 @@ describe('useSlashCommandProcessor', () => {
 
       const message = mockAddItem.mock.calls[1][0].text;
 
-      // Check that startup indicator is shown
+      // 检查是否显示启动指示器
       expect(message).toContain(
         '⏳ MCP servers are starting up (1 initializing)...',
       );
@@ -1174,7 +1174,7 @@ describe('useSlashCommandProcessor', () => {
         'Note: First startup may take longer. Tool availability will update automatically.',
       );
 
-      // Check server statuses
+      // 检查服务器状态
       expect(message).toContain(
         '🟢 \u001b[1mserver1\u001b[0m - Ready (1 tools)',
       );
@@ -1188,7 +1188,7 @@ describe('useSlashCommandProcessor', () => {
 
   describe('/mcp schema', () => {
     it('should display tool schemas and descriptions', async () => {
-      // Mock MCP servers configuration with server description
+      // 模拟 MCP 服务器配置，包含服务器描述
       const mockMcpServers = {
         server1: {
           command: 'cmd1',
@@ -1196,18 +1196,18 @@ describe('useSlashCommandProcessor', () => {
         },
       };
 
-      // Setup getMCPServerStatus mock implementation
+      // 设置 getMCPServerStatus 模拟实现
       vi.mocked(getMCPServerStatus).mockImplementation((serverName) => {
         if (serverName === 'server1') return MCPServerStatus.CONNECTED;
         return MCPServerStatus.DISCONNECTED;
       });
 
-      // Setup getMCPDiscoveryState mock to return completed
+      // 设置 getMCPDiscoveryState 模拟以返回 completed
       vi.mocked(getMCPDiscoveryState).mockReturnValue(
         MCPDiscoveryState.COMPLETED,
       );
 
-      // Mock tools from server with descriptions
+      // 模拟服务器工具，包含描述
       const mockServerTools = [
         {
           name: 'tool1',
@@ -1250,11 +1250,11 @@ describe('useSlashCommandProcessor', () => {
 
       const message = mockAddItem.mock.calls[1][0].text;
 
-      // Check that server description is included
+      // 检查是否包含服务器描述
       expect(message).toContain('Ready (2 tools)');
       expect(message).toContain('This is a server description');
 
-      // Check that tool schemas are included
+      // 检查是否包含工具模式
       expect(message).toContain('tool 1 description');
       expect(message).toContain('param1');
       expect(message).toContain('string');

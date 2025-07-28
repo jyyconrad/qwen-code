@@ -6,12 +6,12 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
-import { useShellCommandProcessor } from './shellCommandProcessor';
+import { useShellCommandProcessor } from './shellCommandProcessor.js';
 import { Config, GeminiClient } from '@iflytek/iflycode-core';
 import * as fs from 'fs';
 import EventEmitter from 'events';
 
-// Mock dependencies
+// 模拟依赖项
 vi.mock('child_process');
 vi.mock('fs');
 vi.mock('os', () => ({
@@ -77,7 +77,7 @@ describe('useShellCommandProcessor', () => {
       ),
     );
 
-  it('should execute a command and update history on success', async () => {
+  it('应执行命令并在成功时更新历史记录', async () => {
     const { result } = renderProcessorHook();
     const abortController = new AbortController();
 
@@ -88,12 +88,12 @@ describe('useShellCommandProcessor', () => {
     expect(onExecMock).toHaveBeenCalledTimes(1);
     const execPromise = onExecMock.mock.calls[0][0];
 
-    // Simulate stdout
+    // 模拟 stdout
     act(() => {
       spawnEmitter.stdout.emit('data', Buffer.from('file1.txt\nfile2.txt'));
     });
 
-    // Simulate process exit
+    // 模拟进程退出
     act(() => {
       spawnEmitter.emit('exit', 0, null);
     });
@@ -110,7 +110,7 @@ describe('useShellCommandProcessor', () => {
     expect(geminiClientMock.addHistory).toHaveBeenCalledTimes(1);
   });
 
-  it('should handle binary output', async () => {
+  it('应处理二进制输出', async () => {
     const { result } = renderProcessorHook();
     const abortController = new AbortController();
     const { isBinary } = await import('../utils/textUtils.js');
@@ -141,11 +141,11 @@ describe('useShellCommandProcessor', () => {
     expect(addItemToHistoryMock).toHaveBeenCalledTimes(2);
     expect(addItemToHistoryMock.mock.calls[1][0]).toEqual({
       type: 'info',
-      text: '[Command produced binary output, which is not shown.]',
+      text: '[命令产生了二进制输出，未显示。]',
     });
   });
 
-  it('should handle command failure', async () => {
+  it('应处理命令失败', async () => {
     const { result } = renderProcessorHook();
     const abortController = new AbortController();
 
@@ -173,7 +173,7 @@ describe('useShellCommandProcessor', () => {
     expect(addItemToHistoryMock).toHaveBeenCalledTimes(2);
     expect(addItemToHistoryMock.mock.calls[1][0]).toEqual({
       type: 'error',
-      text: 'Command exited with code 127.\ncommand not found',
+      text: '命令以代码 127 退出。\ncommand not found',
     });
   });
 });

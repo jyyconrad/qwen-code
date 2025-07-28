@@ -1,76 +1,76 @@
-# OpenAI Authentication
+# OpenAI 认证
 
-iFlyCode CLI supports OpenAI authentication for users who want to use OpenAI models instead of Google's Gemini models.
+iFlyCode CLI 支持 OpenAI 认证，适用于希望使用 OpenAI 模型而非 Google 的 Gemini 模型的用户。
 
-## Authentication Methods
+## 认证方法
 
-### 1. Interactive Authentication (Recommended)
+### 1. 交互式认证（推荐）
 
-When you first run the CLI and select OpenAI as your authentication method, you'll be prompted to enter:
+首次运行 CLI 并选择 OpenAI 作为认证方法时，系统会提示您输入以下信息：
 
-- **API Key**: Your OpenAI API key from [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-- **Base URL**: The base URL for OpenAI API (defaults to `https://api.openai.com/v1`)
-- **Model**: The OpenAI model to use (defaults to `gpt-4o`)
+- **API 密钥**：您的 OpenAI API 密钥，获取地址为 [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+- **基础 URL**：OpenAI API 的基础 URL（默认为 `https://api.openai.com/v1`）
+- **模型**：要使用的 OpenAI 模型（默认为 `gpt-4o`）
 
-The CLI will guide you through each field:
+CLI 会引导您依次填写每个字段：
 
-1. Enter your API key and press Enter
-2. Review/modify the base URL and press Enter
-3. Review/modify the model name and press Enter
+1. 输入您的 API 密钥后按 Enter
+2. 查看/修改基础 URL 后按 Enter
+3. 查看/修改模型名称后按 Enter
 
-**Note**: You can paste your API key directly - the CLI supports paste functionality and will display the full key for verification.
+**注意**：您可以直接粘贴 API 密钥——CLI 支持粘贴功能，并会显示完整的密钥以供验证。
 
-### 2. Command Line Arguments
+### 2. 命令行参数
 
-You can also provide the OpenAI credentials via command line arguments:
+您也可以通过命令行参数提供 OpenAI 凭据：
 
 ```bash
-# Basic usage with API key
+# 仅提供 API 密钥的基本用法
 iflycode-code --openai-api-key "your-api-key-here"
 
-# With custom base URL
+# 自定义基础 URL
 iflycode-code --openai-api-key "your-api-key-here" --openai-base-url "https://your-custom-endpoint.com/v1"
 
-# With custom model
+# 自定义模型
 iflycode-code --openai-api-key "your-api-key-here" --model "gpt-4-turbo"
 ```
 
-### 3. Environment Variables
+### 3. 环境变量
 
-Set the following environment variables in your shell or `.env` file:
+在您的 shell 或 `.env` 文件中设置以下环境变量：
 
 ```bash
 export OPENAI_API_KEY="your-api-key-here"
-export OPENAI_BASE_URL="https://api.openai.com/v1"  # Optional, defaults to this value
-export OPENAI_MODEL="gpt-4o"  # Optional, defaults to gpt-4o
+export OPENAI_BASE_URL="https://api.openai.com/v1"  # 可选，默认为此值
+export OPENAI_MODEL="gpt-4o"  # 可选，默认为 gpt-4o
 ```
 
-## Supported Models
+## 支持的模型
 
-The CLI supports all OpenAI models that are available through the OpenAI API, including:
+CLI 支持所有可通过 OpenAI API 使用的模型，包括：
 
-- `gpt-4o` (default)
+- `gpt-4o`（默认）
 - `gpt-4o-mini`
 - `gpt-4-turbo`
 - `gpt-4`
 - `gpt-3.5-turbo`
-- And other available models
+- 其他可用模型
 
-## Custom Endpoints
+## 自定义端点
 
-You can use custom endpoints by setting the `OPENAI_BASE_URL` environment variable or using the `--openai-base-url` command line argument. This is useful for:
+通过设置 `OPENAI_BASE_URL` 环境变量或使用 `--openai-base-url` 命令行参数，您可以使用自定义端点。这在以下情况下非常有用：
 
-- Using Azure OpenAI
-- Using other OpenAI-compatible APIs
-- Using local OpenAI-compatible servers
+- 使用 Azure OpenAI
+- 使用其他兼容 OpenAI 的 API
+- 使用本地兼容 OpenAI 的服务器
 
-## Switching Authentication Methods
+## 切换认证方法
 
-To switch between authentication methods, use the `/auth` command in the CLI interface.
+要在不同认证方法之间切换，请在 CLI 界面中使用 `/auth` 命令。
 
-## Security Notes
+## 安全注意事项
 
-- API keys are stored in memory during the session
-- For persistent storage, use environment variables or `.env` files
-- Never commit API keys to version control
-- The CLI displays API keys in plain text for verification - ensure your terminal is secure
+- API 密钥仅在会话期间存储于内存中
+- 如需持久化存储，请使用环境变量或 `.env` 文件
+- 切勿将 API 密钥提交到版本控制系统中
+- CLI 会以明文形式显示 API 密钥以供验证——请确保您的终端环境安全

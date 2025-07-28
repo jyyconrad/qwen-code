@@ -10,7 +10,7 @@ import { useStdin } from 'ink';
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
 
-// Mock the 'ink' module to control stdin
+// 模拟 'ink' 模块以控制 stdin
 vi.mock('ink', async (importOriginal) => {
   const original = await importOriginal<typeof import('ink')>();
   return {
@@ -19,13 +19,13 @@ vi.mock('ink', async (importOriginal) => {
   };
 });
 
-// Mock the 'readline' module
+// 模拟 'readline' 模块
 vi.mock('readline', () => {
   const mockedReadline = {
     createInterface: vi.fn().mockReturnValue({ close: vi.fn() }),
-    // The paste workaround involves replacing stdin with a PassThrough stream.
-    // This mock ensures that when emitKeypressEvents is called on that
-    // stream, we simulate the 'keypress' events that the hook expects.
+    // 粘贴解决方法涉及将 stdin 替换为 PassThrough 流。
+    // 此模拟确保在该流上调用 emitKeypressEvents 时，
+    // 我们模拟钩子期望的 'keypress' 事件。
     emitKeypressEvents: vi.fn((stream: EventEmitter) => {
       if (stream instanceof PassThrough) {
         stream.on('data', (data) => {
@@ -63,7 +63,7 @@ class MockStdin extends EventEmitter {
     this.isLegacy = isLegacy;
   }
 
-  // Helper to simulate a full paste event.
+  // 辅助方法以模拟完整的粘贴事件。
   paste(text: string) {
     if (this.isLegacy) {
       const PASTE_START = '\x1B[200~';
@@ -76,7 +76,7 @@ class MockStdin extends EventEmitter {
     }
   }
 
-  // Helper to simulate the start of a paste, without the end.
+  // 辅助方法以模拟粘贴的开始，但不包括结束。
   startPaste(text: string) {
     if (this.isLegacy) {
       this.emit('data', Buffer.from('\x1B[200~' + text));
@@ -86,7 +86,7 @@ class MockStdin extends EventEmitter {
     }
   }
 
-  // Helper to simulate a single keypress event.
+  // 辅助方法以模拟单个按键事件。
   pressKey(key: Partial<Key>) {
     if (this.isLegacy) {
       this.emit('data', Buffer.from(key.sequence ?? ''));
@@ -241,10 +241,10 @@ describe('useKeypress', () => {
 
       act(() => stdin.startPaste(pasteText));
 
-      // No event should be fired yet.
+      // 尚未触发任何事件。
       expect(onKeypress).not.toHaveBeenCalled();
 
-      // Unmounting should trigger the flush.
+      // 卸载应触发刷新。
       unmount();
 
       expect(onKeypress).toHaveBeenCalledTimes(1);

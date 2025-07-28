@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -74,8 +74,7 @@ enum StreamProcessingStatus {
 }
 
 /**
- * Manages the Gemini stream, including user input, command processing,
- * API interaction, and tool call lifecycle.
+ * 管理 Gemini 流，包括用户输入、命令处理、API 交互和工具调用生命周期。
  */
 export const useGeminiStream = (
   geminiClient: GeminiClient,
@@ -114,9 +113,9 @@ export const useGeminiStream = (
   const [toolCalls, scheduleToolCalls, markToolsAsSubmitted] =
     useReactToolScheduler(
       async (completedToolCallsFromScheduler) => {
-        // This onComplete is called when ALL scheduled tools for a given batch are done.
+        // 当给定批次的所有计划工具完成时调用此 onComplete。
         if (completedToolCallsFromScheduler.length > 0) {
-          // Add the final state of these tools to the history for display.
+          // 将这些工具的最终状态添加到历史记录中以供显示。
           addItem(
             mapTrackedToolCallsToDisplay(
               completedToolCallsFromScheduler as TrackedToolCall[],
@@ -124,7 +123,7 @@ export const useGeminiStream = (
             Date.now(),
           );
 
-          // Handle tool response submission immediately when tools complete
+          // 工具完成后立即处理工具响应提交
           await handleCompletedTools(
             completedToolCallsFromScheduler as TrackedToolCall[],
           );
@@ -193,7 +192,7 @@ export const useGeminiStream = (
       addItem(
         {
           type: MessageType.INFO,
-          text: 'Request cancelled.',
+          text: '请求已取消。',
         },
         Date.now(),
       );
@@ -232,10 +231,10 @@ export const useGeminiStream = (
             trimmedQuery,
           ),
         );
-        onDebugMessage(`User query: '${trimmedQuery}'`);
+        onDebugMessage(`用户查询: '${trimmedQuery}'`);
         await logger?.logMessage(MessageSenderType.USER, trimmedQuery);
 
-        // Handle UI-only commands first
+        // 首先处理仅 UI 的命令
         const slashCommandResult = await handleSlashCommand(trimmedQuery);
 
         if (slashCommandResult) {
@@ -258,7 +257,7 @@ export const useGeminiStream = (
           return { queryToSend: null, shouldProceed: false };
         }
 
-        // Handle @-commands (which might involve tool calls)
+        // 处理 @-commands（可能涉及工具调用）
         if (isAtCommand(trimmedQuery)) {
           const atCommandResult = await handleAtCommand({
             query: trimmedQuery,
@@ -273,7 +272,7 @@ export const useGeminiStream = (
           }
           localQueryToSendToGemini = atCommandResult.processedQuery;
         } else {
-          // Normal query for Gemini
+          // 正常查询 Gemini
           addItem(
             { type: MessageType.USER, text: trimmedQuery },
             userMessageTimestamp,
@@ -281,13 +280,13 @@ export const useGeminiStream = (
           localQueryToSendToGemini = trimmedQuery;
         }
       } else {
-        // It's a function response (PartListUnion that isn't a string)
+        // 它是函数响应（不是字符串的 PartListUnion）
         localQueryToSendToGemini = query;
       }
 
       if (localQueryToSendToGemini === null) {
         onDebugMessage(
-          'Query processing resulted in null, not sending to Gemini.',
+          '查询处理结果为 null，不发送到 Gemini。',
         );
         return { queryToSend: null, shouldProceed: false };
       }
@@ -305,7 +304,7 @@ export const useGeminiStream = (
     ],
   );
 
-  // --- Stream Event Handlers ---
+  // --- 流事件处理器 ---
 
   const handleContentEvent = useCallback(
     (
@@ -314,7 +313,7 @@ export const useGeminiStream = (
       userMessageTimestamp: number,
     ): string => {
       if (turnCancelledRef.current) {
-        // Prevents additional output after a user initiated cancel.
+        // 防止用户发起取消后出现额外输出。
         return '';
       }
       let newGeminiMessageBuffer = currentGeminiMessageBuffer + eventValue;
@@ -328,24 +327,22 @@ export const useGeminiStream = (
         setPendingHistoryItem({ type: 'gemini', text: '' });
         newGeminiMessageBuffer = eventValue;
       }
-      // Split large messages for better rendering performance. Ideally,
-      // we should maximize the amount of output sent to <Static />.
+      // 拆分大消息以提高渲染性能。理想情况下，
+      // 我们应该最大化发送到 <Static /> 的输出量。
       const splitPoint = findLastSafeSplitPoint(newGeminiMessageBuffer);
       if (splitPoint === newGeminiMessageBuffer.length) {
-        // Update the existing message with accumulated content
+        // 使用累积内容更新现有消息
         setPendingHistoryItem((item) => ({
           type: item?.type as 'gemini' | 'gemini_content',
           text: newGeminiMessageBuffer,
         }));
       } else {
-        // This indicates that we need to split up this Gemini Message.
-        // Splitting a message is primarily a performance consideration. There is a
-        // <Static> component at the root of App.tsx which takes care of rendering
-        // content statically or dynamically. Everything but the last message is
-        // treated as static in order to prevent re-rendering an entire message history
-        // multiple times per-second (as streaming occurs). Prior to this change you'd
-        // see heavy flickering of the terminal. This ensures that larger messages get
-        // broken up so that there are more "statically" rendered.
+        // 这表明我们需要拆分此 Gemini 消息。
+        // 拆分消息主要是出于性能考虑。在 App.tsx 的根部有一个
+        // <Static> 组件，负责静态或动态渲染内容。除了最后一条消息外，
+        // 所有内容都被视为静态内容，以防止每秒多次重新渲染整个消息历史
+        // （随着流式传输的发生）。在此更改之前，您会看到终端严重闪烁。
+        // 这确保了较大的消息被拆分，以便有更多“静态”渲染的内容。
         const beforeText = newGeminiMessageBuffer.substring(0, splitPoint);
         const afterText = newGeminiMessageBuffer.substring(splitPoint);
         addItem(
@@ -391,7 +388,7 @@ export const useGeminiStream = (
         setPendingHistoryItem(null);
       }
       addItem(
-        { type: MessageType.INFO, text: 'User cancelled the request.' },
+        { type: MessageType.INFO, text: '用户取消了请求。' },
         userMessageTimestamp,
       );
       setIsResponding(false);
@@ -428,10 +425,10 @@ export const useGeminiStream = (
         {
           type: 'info',
           text:
-            `IMPORTANT: This conversation approached the input token limit for ${config.getModel()}. ` +
-            `A compressed context will be sent for future messages (compressed from: ` +
-            `${eventValue?.originalTokenCount ?? 'unknown'} to ` +
-            `${eventValue?.newTokenCount ?? 'unknown'} tokens).`,
+            `重要：此对话已接近 ${config.getModel()} 的输入令牌限制。` +
+            `将为未来消息发送压缩上下文（从：` +
+            `${eventValue?.originalTokenCount ?? 'unknown'} 压缩到 ` +
+            `${eventValue?.newTokenCount ?? 'unknown'} 令牌）。`,
         },
         Date.now(),
       ),
@@ -444,8 +441,8 @@ export const useGeminiStream = (
         {
           type: 'info',
           text:
-            `The session has reached the maximum number of turns: ${config.getMaxSessionTurns()}. ` +
-            `Please update this limit in your setting.json file.`,
+            `会话已达到最大轮数：${config.getMaxSessionTurns()}。` +
+            `请在您的 setting.json 文件中更新此限制。`,
         },
         Date.now(),
       ),
@@ -456,7 +453,7 @@ export const useGeminiStream = (
     addItem(
       {
         type: 'info',
-        text: `A potential loop was detected. This can happen due to repetitive tool calls or other model behavior. The request has been halted.`,
+        text: `检测到潜在循环。这可能是由于重复的工具调用或其他模型行为造成的。请求已被停止。`,
       },
       Date.now(),
     );
@@ -496,18 +493,18 @@ export const useGeminiStream = (
             break;
           case ServerGeminiEventType.ToolCallConfirmation:
           case ServerGeminiEventType.ToolCallResponse:
-            // do nothing
+            // 什么都不做
             break;
           case ServerGeminiEventType.MaxSessionTurns:
             handleMaxSessionTurnsEvent();
             break;
           case ServerGeminiEventType.LoopDetected:
-            // handle later because we want to move pending history to history
-            // before we add loop detected message to history
+            // 稍后处理，因为我们希望在将循环检测消息添加到历史记录之前
+            // 将待处理的历史记录移至历史记录
             loopDetectedRef.current = true;
             break;
           default: {
-            // enforces exhaustive switch-case
+            // 强制执行详尽的 switch-case
             const unreachable: never = event;
             return unreachable;
           }
@@ -544,7 +541,7 @@ export const useGeminiStream = (
       const userMessageTimestamp = Date.now();
       setShowHelp(false);
 
-      // Reset quota error flag when starting a new query (not a continuation)
+      // 在开始新查询时重置配额错误标志（不是延续）
       if (!options?.isContinuation) {
         setModelSwitchedFromQuotaError(false);
         config.setQuotaErrorOccurred(false);
@@ -608,7 +605,7 @@ export const useGeminiStream = (
             {
               type: MessageType.ERROR,
               text: parseAndFormatApiError(
-                getErrorMessage(error) || 'Unknown error',
+                getErrorMessage(error) || '未知错误',
                 config.getContentGeneratorConfig()?.authType,
                 undefined,
                 config.getModel(),
@@ -669,7 +666,7 @@ export const useGeminiStream = (
           },
         );
 
-      // Finalize any client-initiated tools as soon as they are done.
+      // 一旦客户端发起的工具完成，立即完成它们。
       const clientTools = completedAndReadyToSubmitTools.filter(
         (t) => t.request.isClientInitiated,
       );
@@ -677,7 +674,7 @@ export const useGeminiStream = (
         markToolsAsSubmitted(clientTools.map((t) => t.request.callId));
       }
 
-      // Identify new, successful save_memory calls that we haven't processed yet.
+      // 识别我们尚未处理的新的、成功的 save_memory 调用。
       const newSuccessfulMemorySaves = completedAndReadyToSubmitTools.filter(
         (t) =>
           t.request.name === 'save_memory' &&
@@ -686,9 +683,9 @@ export const useGeminiStream = (
       );
 
       if (newSuccessfulMemorySaves.length > 0) {
-        // Perform the refresh only if there are new ones.
+        // 只有在有新的时才执行刷新。
         void performMemoryRefresh();
-        // Mark them as processed so we don't do this again on the next render.
+        // 将它们标记为已处理，以便在下次渲染时不再执行此操作。
         newSuccessfulMemorySaves.forEach((t) =>
           processedMemoryToolsRef.current.add(t.request.callId),
         );
@@ -702,15 +699,15 @@ export const useGeminiStream = (
         return;
       }
 
-      // If all the tools were cancelled, don't submit a response to Gemini.
+      // 如果所有工具都被取消，则不向 Gemini 提交响应。
       const allToolsCancelled = geminiTools.every(
         (tc) => tc.status === 'cancelled',
       );
 
       if (allToolsCancelled) {
         if (geminiClient) {
-          // We need to manually add the function responses to the history
-          // so the model knows the tools were cancelled.
+          // 我们需要手动将函数响应添加到历史记录中
+          // 以便模型知道工具已被取消。
           const responsesToAdd = geminiTools.flatMap(
             (toolCall) => toolCall.response.responseParts,
           );
@@ -750,7 +747,7 @@ export const useGeminiStream = (
 
       markToolsAsSubmitted(callIdsToMarkAsSubmitted);
 
-      // Don't continue if model was switched due to quota error
+      // 如果由于配额错误切换了模型则不继续
       if (modelSwitchedFromQuotaError) {
         return;
       }
@@ -804,7 +801,7 @@ export const useGeminiStream = (
         } catch (error) {
           if (!isNodeError(error) || error.code !== 'EEXIST') {
             onDebugMessage(
-              `Failed to create checkpoint directory: ${getErrorMessage(error)}`,
+              `创建检查点目录失败: ${getErrorMessage(error)}`,
             );
             return;
           }
@@ -814,7 +811,7 @@ export const useGeminiStream = (
           const filePath = toolCall.request.args['file_path'] as string;
           if (!filePath) {
             onDebugMessage(
-              `Skipping restorable tool call due to missing file_path: ${toolCall.request.name}`,
+              `由于缺少 file_path 跳过可恢复的工具调用: ${toolCall.request.name}`,
             );
             continue;
           }
@@ -830,7 +827,7 @@ export const useGeminiStream = (
 
             if (!commitHash) {
               onDebugMessage(
-                `Failed to create snapshot for ${filePath}. Skipping restorable tool call.`,
+                `为 ${filePath} 创建快照失败。跳过可恢复的工具调用。`,
               );
               continue;
             }
@@ -867,7 +864,7 @@ export const useGeminiStream = (
             );
           } catch (error) {
             onDebugMessage(
-              `Failed to write restorable tool call file: ${getErrorMessage(
+              `写入可恢复的工具调用文件失败: ${getErrorMessage(
                 error,
               )}`,
             );

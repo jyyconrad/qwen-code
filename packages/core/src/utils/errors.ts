@@ -17,7 +17,7 @@ export function getErrorMessage(error: unknown): string {
   try {
     return String(error);
   } catch {
-    return 'Failed to get error details';
+    return '无法获取错误详情';
   }
 }
 
@@ -42,9 +42,8 @@ export function toFriendlyError(error: unknown): unknown {
         case 401:
           return new UnauthorizedError(data.error.message);
         case 403:
-          // It's import to pass the message here since it might
-          // explain the cause like "the cloud project you're
-          // using doesn't have code assist enabled".
+          // 传递消息非常重要，因为它可能解释了原因，
+          // 比如“您使用的云项目未启用代码辅助功能”。
           return new ForbiddenError(data.error.message);
         default:
       }
@@ -54,7 +53,7 @@ export function toFriendlyError(error: unknown): unknown {
 }
 
 function parseResponseData(error: GaxiosError): ResponseData {
-  // Inexplicably, Gaxios sometimes doesn't JSONify the response data.
+  // 不可思议的是，Gaxios 有时不会将响应数据 JSON 化。
   if (typeof error.response?.data === 'string') {
     return JSON.parse(error.response?.data) as ResponseData;
   }

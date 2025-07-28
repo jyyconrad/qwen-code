@@ -13,7 +13,7 @@ import {
   loadSettings,
 } from './config/settings.js';
 
-// Custom error to identify mock process.exit calls
+// 自定义错误以识别模拟的 process.exit 调用
 class MockProcessExitError extends Error {
   constructor(readonly code?: string | number | null | undefined) {
     super('PROCESS_EXIT_MOCKED');
@@ -21,7 +21,7 @@ class MockProcessExitError extends Error {
   }
 }
 
-// Mock dependencies
+// 模拟依赖项
 vi.mock('./config/settings.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./config/settings.js')>();
   return {
@@ -56,11 +56,11 @@ vi.mock('update-notifier', () => ({
 }));
 
 vi.mock('./utils/sandbox.js', () => ({
-  sandbox_command: vi.fn(() => ''), // Default to no sandbox command
-  start_sandbox: vi.fn(() => Promise.resolve()), // Mock as an async function that resolves
+  sandbox_command: vi.fn(() => ''), // 默认无沙箱命令
+  start_sandbox: vi.fn(() => Promise.resolve()), // 模拟为一个解析的异步函数
 }));
 
-describe('gemini.tsx main function', () => {
+describe('gemini.tsx main 函数', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let loadSettingsMock: ReturnType<typeof vi.mocked<typeof loadSettings>>;
   let originalEnvGeminiSandbox: string | undefined;
@@ -75,7 +75,7 @@ describe('gemini.tsx main function', () => {
   beforeEach(() => {
     loadSettingsMock = vi.mocked(loadSettings);
 
-    // Store and clear sandbox-related env variables to ensure a consistent test environment
+    // 存储并清除沙箱相关的环境变量以确保一致的测试环境
     originalEnvGeminiSandbox = process.env.GEMINI_SANDBOX;
     originalEnvSandbox = process.env.SANDBOX;
     delete process.env.GEMINI_SANDBOX;
@@ -85,7 +85,7 @@ describe('gemini.tsx main function', () => {
   });
 
   afterEach(() => {
-    // Restore original env variables
+    // 恢复原始环境变量
     if (originalEnvGeminiSandbox !== undefined) {
       process.env.GEMINI_SANDBOX = originalEnvGeminiSandbox;
     } else {
@@ -99,9 +99,9 @@ describe('gemini.tsx main function', () => {
     vi.restoreAllMocks();
   });
 
-  it('should call process.exit(1) if settings have errors', async () => {
+  it('如果设置有错误应调用 process.exit(1)', async () => {
     const settingsError = {
-      message: 'Test settings error',
+      message: '测试设置错误',
       path: '/test/settings.json',
     };
     const userSettingsFile: SettingsFile = {
@@ -127,8 +127,8 @@ describe('gemini.tsx main function', () => {
 
     try {
       await main();
-      // If main completes without throwing, the test should fail because process.exit was expected
-      expect.fail('main function did not exit as expected');
+      // 如果 main 完成而未抛出，则测试应失败，因为预期会调用 process.exit
+      expect.fail('main 函数未按预期退出');
     } catch (error) {
       expect(error).toBeInstanceOf(MockProcessExitError);
       if (error instanceof MockProcessExitError) {
@@ -136,16 +136,16 @@ describe('gemini.tsx main function', () => {
       }
     }
 
-    // Verify console.error was called with the error message
+    // 验证 console.error 是否使用错误消息被调用
     expect(consoleErrorSpy).toHaveBeenCalledTimes(2);
     expect(stripAnsi(String(consoleErrorSpy.mock.calls[0][0]))).toBe(
-      'Error in /test/settings.json: Test settings error',
+      'Error in /test/settings.json: 测试设置错误',
     );
     expect(stripAnsi(String(consoleErrorSpy.mock.calls[1][0]))).toBe(
       'Please fix /test/settings.json and try again.',
     );
 
-    // Verify process.exit was called (indirectly, via the thrown error)
+    // 验证是否调用了 process.exit（间接通过抛出的错误）
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 });

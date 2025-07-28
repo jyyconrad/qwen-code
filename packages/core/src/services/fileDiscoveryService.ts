@@ -27,7 +27,7 @@ export class FileDiscoveryService {
       try {
         parser.loadGitRepoPatterns();
       } catch (_error) {
-        // ignore file not found
+        // 忽略文件未找到错误
       }
       this.gitIgnoreFilter = parser;
     }
@@ -35,13 +35,13 @@ export class FileDiscoveryService {
     try {
       gParser.loadPatterns(GEMINI_IGNORE_FILE_NAME);
     } catch (_error) {
-      // ignore file not found
+      // 忽略文件未找到错误
     }
     this.geminiIgnoreFilter = gParser;
   }
 
   /**
-   * Filters a list of file paths based on git ignore rules
+   * 根据 git ignore 规则过滤文件路径列表
    */
   filterFiles(
     filePaths: string[],
@@ -65,7 +65,7 @@ export class FileDiscoveryService {
   }
 
   /**
-   * Checks if a single file should be git-ignored
+   * 检查单个文件是否应被 git 忽略
    */
   shouldGitIgnoreFile(filePath: string): boolean {
     if (this.gitIgnoreFilter) {
@@ -75,7 +75,7 @@ export class FileDiscoveryService {
   }
 
   /**
-   * Checks if a single file should be gemini-ignored
+   * 检查单个文件是否应被 gemini 忽略
    */
   shouldGeminiIgnoreFile(filePath: string): boolean {
     if (this.geminiIgnoreFilter) {
@@ -85,7 +85,7 @@ export class FileDiscoveryService {
   }
 
   /**
-   * Unified method to check if a file should be ignored based on filtering options
+   * 统一方法，根据过滤选项检查文件是否应被忽略
    */
   shouldIgnoreFile(
     filePath: string,
@@ -103,7 +103,7 @@ export class FileDiscoveryService {
   }
 
   /**
-   * Returns loaded patterns from .geminiignore
+   * 返回从 .geminiignore 加载的模式
    */
   getGeminiIgnorePatterns(): string[] {
     return this.geminiIgnoreFilter?.getPatterns() ?? [];

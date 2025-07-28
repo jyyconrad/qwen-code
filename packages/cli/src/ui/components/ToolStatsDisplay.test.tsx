@@ -10,7 +10,7 @@ import { ToolStatsDisplay } from './ToolStatsDisplay.js';
 import * as SessionContext from '../contexts/SessionContext.js';
 import { SessionMetrics } from '../contexts/SessionContext.js';
 
-// Mock the context to provide controlled data for testing
+// 模拟上下文以提供受控数据用于测试
 vi.mock('../contexts/SessionContext.js', async (importOriginal) => {
   const actual = await importOriginal<typeof SessionContext>();
   return {
@@ -38,7 +38,7 @@ const renderWithMockedStats = (metrics: SessionMetrics) => {
 };
 
 describe('<ToolStatsDisplay />', () => {
-  it('should render "no tool calls" message when there are no active tools', () => {
+  it('当没有活动工具时应渲染 "no tool calls" 消息', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {},
       tools: {
@@ -57,7 +57,7 @@ describe('<ToolStatsDisplay />', () => {
     expect(lastFrame()).toMatchSnapshot();
   });
 
-  it('should display stats for a single tool correctly', () => {
+  it('应正确显示单个工具的统计信息', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {},
       tools: {
@@ -83,7 +83,7 @@ describe('<ToolStatsDisplay />', () => {
     expect(output).toMatchSnapshot();
   });
 
-  it('should display stats for multiple tools correctly', () => {
+  it('应正确显示多个工具的统计信息', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {},
       tools: {
@@ -117,7 +117,7 @@ describe('<ToolStatsDisplay />', () => {
     expect(output).toMatchSnapshot();
   });
 
-  it('should handle large values without wrapping or overlapping', () => {
+  it('应处理大值而不换行或重叠', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {},
       tools: {
@@ -149,7 +149,7 @@ describe('<ToolStatsDisplay />', () => {
     expect(lastFrame()).toMatchSnapshot();
   });
 
-  it('should handle zero decisions gracefully', () => {
+  it('应优雅地处理零决策', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {},
       tools: {

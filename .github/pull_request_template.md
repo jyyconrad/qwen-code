@@ -1,18 +1,18 @@
 ## TLDR
 
-<!-- Add a brief description of what this pull request changes and why and any important things for reviewers to look at -->
+<!-- 请简要描述此拉取请求的更改内容、原因以及审阅者需重点关注的部分 -->
 
-## Dive Deeper
+## 深入探讨
 
-<!-- more thoughts and in depth discussion here -->
+<!-- 更多想法和深入讨论 -->
 
-## Reviewer Test Plan
+## 审阅者测试计划
 
-<!-- when a person reviews your code they should ideally be pulling and running that code. How would they validate your change works and if relevant what are some good classes of example prompts and ways they can exercise your changes -->
+<!-- 当有人审阅你的代码时，他们应拉取并运行这些代码。他们如何验证你的更改有效？如果相关，有哪些好的示例提示和测试方法可以验证你的更改 -->
 
-## Testing Matrix
+## 测试矩阵
 
-<!-- Before submitting please validate your changes on as many of these options as possible -->
+<!-- 提交前请尽可能在以下选项中验证你的更改 -->
 
 |          | 🍏  | 🪟  | 🐧  |
 | -------- | --- | --- | --- |
@@ -22,20 +22,19 @@
 | Podman   | ❓  | -   | -   |
 | Seatbelt | ❓  | -   | -   |
 
-## Linked issues / bugs
+## 关联的问题 / 缺陷
 
 <!--
-Link to any related issues or bugs.
+链接到任何相关的问题或缺陷。
 
-**If this PR fully resolves the issue, use one of the following keywords to automatically close the issue when this PR is merged:**
+**如果此 PR 完全解决了某个问题，请使用以下任一关键字，在合并此 PR 时自动关闭该问题：**
 
 - Closes #<issue_number>
 - Fixes #<issue_number>
 - Resolves #<issue_number>
 
-*Example: `Resolves #123`*
+*示例：`Resolves #123`*
 
-**If this PR is only related to an issue or is a partial fix, simply reference the issue number without a keyword:**
+**如果此 PR 仅与某个问题相关或部分修复，请在不使用关键字的情况下引用问题编号：**
 
-*Example: `This PR makes progress on #456` or `Related to #789`*
--->
+*示例：`This PR makes progress on #456` 或 `Related to #789`*

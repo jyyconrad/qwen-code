@@ -45,7 +45,7 @@ export function useConsoleMessages(): UseConsoleMessagesReturn {
       return newMessages;
     });
 
-    messageQueueTimeoutRef.current = null; // Allow next scheduling
+    messageQueueTimeoutRef.current = null; // 允许下一次调度
   }, []);
 
   const scheduleQueueProcessing = useCallback(() => {
@@ -76,7 +76,7 @@ export function useConsoleMessages(): UseConsoleMessagesReturn {
 
   useEffect(
     () =>
-      // Cleanup on unmount
+      // 在组件卸载时清理
       () => {
         if (messageQueueTimeoutRef.current !== null) {
           clearTimeout(messageQueueTimeoutRef.current);

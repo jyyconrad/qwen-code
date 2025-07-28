@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -37,35 +37,35 @@ export function getReleaseVersion() {
   let releaseTag;
 
   if (isNightly) {
-    console.error('Calculating next nightly version...');
+    console.error('正在计算下一个夜间版本...');
     releaseTag = getNightlyTagName();
   } else if (manualVersion) {
-    console.error(`Using manual version: ${manualVersion}`);
+    console.error(`使用手动指定版本: ${manualVersion}`);
     releaseTag = manualVersion;
   } else {
     throw new Error(
-      'Error: No version specified and this is not a nightly release.',
+      '错误: 未指定版本且当前不是夜间发布版本。',
     );
   }
 
   if (!releaseTag) {
-    throw new Error('Error: Version could not be determined.');
+    throw new Error('错误: 无法确定版本。');
   }
 
   if (!releaseTag.startsWith('v')) {
-    console.error("Version is missing 'v' prefix. Prepending it.");
+    console.error("版本缺少 'v' 前缀。正在添加前缀。");
     releaseTag = `v${releaseTag}`;
   }
 
   if (releaseTag.includes('+')) {
     throw new Error(
-      'Error: Versions with build metadata (+) are not supported for releases. Please use a pre-release version (e.g., v1.2.3-alpha.4) instead.',
+      '错误: 发布版本不支持包含构建元数据 (+) 的版本号。请使用预发布版本（例如 v1.2.3-alpha.4）。',
     );
   }
 
   if (!releaseTag.match(/^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$/)) {
     throw new Error(
-      'Error: Version must be in the format vX.Y.Z or vX.Y.Z-prerelease',
+      '错误: 版本必须符合格式 vX.Y.Z 或 vX.Y.Z-prerelease',
     );
   }
 

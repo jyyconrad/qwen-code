@@ -21,13 +21,13 @@ import { convert } from 'html-to-text';
 const URL_FETCH_TIMEOUT_MS = 10000;
 const MAX_CONTENT_LENGTH = 50000;
 
-// Helper function to extract URLs from a string
+// 从字符串中提取 URL 的辅助函数
 function extractUrls(text: string): string[] {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.match(urlRegex) || [];
 }
 
-// Interfaces for grounding metadata (similar to web-search.ts)
+// 接地元数据接口（类似于 web-search.ts）
 interface GroundingChunkWeb {
   uri?: string;
   title?: string;
@@ -49,17 +49,17 @@ interface GroundingSupportItem {
 }
 
 /**
- * Parameters for the WebFetch tool
+ * WebFetch 工具的参数
  */
 export interface WebFetchToolParams {
   /**
-   * The prompt containing URL(s) (up to 20) and instructions for processing their content.
+   * 包含 URL（最多 20 个）和处理其内容指令的提示。
    */
   prompt: string;
 }
 
 /**
- * Implementation of the WebFetch tool logic
+ * WebFetch 工具逻辑的实现
  */
 export class WebFetchTool extends BaseTool<WebFetchToolParams, ToolResult> {
   static readonly Name: string = 'web_fetch';
@@ -68,12 +68,12 @@ export class WebFetchTool extends BaseTool<WebFetchToolParams, ToolResult> {
     super(
       WebFetchTool.Name,
       'WebFetch',
-      "Processes content from URL(s), including local and private network addresses (e.g., localhost), embedded in a prompt. Include up to 20 URLs and instructions (e.g., summarize, extract specific data) directly in the 'prompt' parameter.",
+      "处理提示中嵌入的 URL 内容，包括本地和私有网络地址（例如 localhost）。在 'prompt' 参数中直接包含最多 20 个 URL 和指令（例如总结、提取特定数据）。",
       {
         properties: {
           prompt: {
             description:
-              'A comprehensive prompt that includes the URL(s) (up to 20) to fetch and specific instructions on how to process their content (e.g., "Summarize https://example.com/article and extract key points from https://another.com/data"). Must contain as least one URL starting with http:// or https://.',
+              '一个综合提示，包含要获取的 URL（最多 20 个）以及如何处理其内容的具体指令（例如，"总结 https://example.com/article 并从 https://another.com/data 提取要点"）。必须包含至少一个以 http:// 或 https:// 开头的 URL。',
             type: Type.STRING,
           },
         },
@@ -90,21 +90,21 @@ export class WebFetchTool extends BaseTool<WebFetchToolParams, ToolResult> {
     const urls = extractUrls(params.prompt);
     if (urls.length === 0) {
       return {
-        llmContent: 'Error: No URL found in the prompt for fallback.',
-        returnDisplay: 'Error: No URL found in the prompt for fallback.',
+        llmContent: '错误：在提示中未找到用于回退的 URL。',
+        returnDisplay: '错误：在提示中未找到用于回退的 URL。',
       };
     }
 
     const results: string[] = [];
     const processedUrls: string[] = [];
 
-    // Process multiple URLs (up to 20 as mentioned in description)
+    // 处理多个 URL（根据描述最多 20 个）
     const urlsToProcess = urls.slice(0, 20);
 
     for (const originalUrl of urlsToProcess) {
       let url = originalUrl;
 
-      // Convert GitHub blob URL to raw URL
+      // 将 GitHub blob URL 转换为原始 URL
       if (url.includes('github.com') && url.includes('/blob/')) {
         url = url
           .replace('github.com', 'raw.githubusercontent.com')
@@ -115,7 +115,7 @@ export class WebFetchTool extends BaseTool<WebFetchToolParams, ToolResult> {
         const response = await fetchWithTimeout(url, URL_FETCH_TIMEOUT_MS);
         if (!response.ok) {
           throw new Error(
-            `Request failed with status code ${response.status} ${response.statusText}`,
+            `请求失败，状态码 ${response.status} ${response.statusText}`,
           );
         }
         const html = await response.text();
@@ -127,11 +127,11 @@ export class WebFetchTool extends BaseTool<WebFetchToolParams, ToolResult> {
           ],
         }).substring(0, MAX_CONTENT_LENGTH);
 
-        results.push(`Content from ${url}:\n${textContent}`);
+        results.push(`来自 ${url} 的内容:\n${textContent}`);
         processedUrls.push(url);
       } catch (e) {
         const error = e as Error;
-        results.push(`Error fetching ${url}: ${error.message}`);
+        results.push(`获取 ${url} 时出错: ${error.message}`);
         processedUrls.push(url);
       }
     }
@@ -140,20 +140,20 @@ export class WebFetchTool extends BaseTool<WebFetchToolParams, ToolResult> {
       const geminiClient = this.config.getGeminiClient();
       const combinedContent = results.join('\n\n---\n\n');
 
-      // Ensure the total prompt length doesn't exceed limits
-      const maxPromptLength = 200000; // Leave room for system instructions
-      const promptPrefix = `The user requested the following: "${params.prompt}".
+      // 确保总提示长度不超过限制
+      const maxPromptLength = 200000; // 为系统指令留出空间
+      const promptPrefix = `用户请求如下: "${params.prompt}".
 
-I have fetched the content from the following URL(s). Please use this content to answer the user's request. Do not attempt to access the URL(s) again.
+我已从以下 URL 获取了内容。请使用这些内容回答用户的请求。请勿再次尝试访问这些 URL。
 
 `;
 
       let finalContent = combinedContent;
       if (promptPrefix.length + combinedContent.length > maxPromptLength) {
-        const availableLength = maxPromptLength - promptPrefix.length - 100; // Leave some buffer
+        const availableLength = maxPromptLength - promptPrefix.length - 100; // 留出一些缓冲
         finalContent =
           combinedContent.substring(0, availableLength) +
-          '\n\n[Content truncated due to length limits]';
+          '\n\n[内容因长度限制被截断]';
       }
 
       const fallbackPrompt = promptPrefix + finalContent;
@@ -166,14 +166,14 @@ I have fetched the content from the following URL(s). Please use this content to
       const resultText = getResponseText(result) || '';
       return {
         llmContent: resultText,
-        returnDisplay: `Content from ${processedUrls.length} URL(s) processed using fallback fetch.`,
+        returnDisplay: `已使用回退获取处理了 ${processedUrls.length} 个 URL 的内容。`,
       };
     } catch (e) {
       const error = e as Error;
-      const errorMessage = `Error during fallback processing: ${error.message}`;
+      const errorMessage = `回退处理过程中出错: ${error.message}`;
       return {
-        llmContent: `Error: ${errorMessage}`,
-        returnDisplay: `Error: ${errorMessage}`,
+        llmContent: `错误: ${errorMessage}`,
+        returnDisplay: `错误: ${errorMessage}`,
       };
     }
   }
@@ -184,13 +184,13 @@ I have fetched the content from the following URL(s). Please use this content to
       return errors;
     }
     if (!params.prompt || params.prompt.trim() === '') {
-      return "The 'prompt' parameter cannot be empty and must contain URL(s) and instructions.";
+      return "'prompt' 参数不能为空，且必须包含 URL 和指令。";
     }
     if (
       !params.prompt.includes('http://') &&
       !params.prompt.includes('https://')
     ) {
-      return "The 'prompt' must contain at least one valid URL (starting with http:// or https://).";
+      return "'prompt' 必须包含至少一个有效的 URL（以 http:// 或 https:// 开头）。";
     }
     return null;
   }
@@ -200,7 +200,7 @@ I have fetched the content from the following URL(s). Please use this content to
       params.prompt.length > 100
         ? params.prompt.substring(0, 97) + '...'
         : params.prompt;
-    return `Processing URLs and instructions from prompt: "${displayPrompt}"`;
+    return `正在处理提示中的 URL 和指令: "${displayPrompt}"`;
   }
 
   async shouldConfirmExecute(
@@ -215,8 +215,7 @@ I have fetched the content from the following URL(s). Please use this content to
       return false;
     }
 
-    // Perform GitHub URL conversion here to differentiate between user-provided
-    // URL and the actual URL to be fetched.
+    // 在此处执行 GitHub URL 转换，以区分用户提供的 URL 和实际要获取的 URL。
     const urls = extractUrls(params.prompt).map((url) => {
       if (url.includes('github.com') && url.includes('/blob/')) {
         return url
@@ -228,7 +227,7 @@ I have fetched the content from the following URL(s). Please use this content to
 
     const confirmationDetails: ToolCallConfirmationDetails = {
       type: 'info',
-      title: `Confirm Web Fetch`,
+      title: `确认 Web 获取`,
       prompt: params.prompt,
       urls,
       onConfirm: async (outcome: ToolConfirmationOutcome) => {
@@ -247,7 +246,7 @@ I have fetched the content from the following URL(s). Please use this content to
     const validationError = this.validateParams(params);
     if (validationError) {
       return {
-        llmContent: `Error: Invalid parameters provided. Reason: ${validationError}`,
+        llmContent: `错误: 提供的参数无效。原因: ${validationError}`,
         returnDisplay: validationError,
       };
     }
@@ -264,7 +263,7 @@ I have fetched the content from the following URL(s). Please use this content to
     const geminiClient = this.config.getGeminiClient();
     const contentGenerator = geminiClient.getContentGenerator();
 
-    // Check if using OpenAI content generator - if so, use fallback
+    // 检查是否使用 OpenAI 内容生成器 - 如果是，则使用回退
     if (contentGenerator.constructor.name === 'OpenAIContentGenerator') {
       return this.executeFallback(params, signal);
     }
@@ -273,14 +272,14 @@ I have fetched the content from the following URL(s). Please use this content to
       const response = await geminiClient.generateContent(
         [{ role: 'user', parts: [{ text: userPrompt }] }],
         { tools: [{ urlContext: {} }] },
-        signal, // Pass signal
+        signal, // 传递信号
       );
 
       console.debug(
-        `[WebFetchTool] Full response for prompt "${userPrompt.substring(
+        `[WebFetchTool] 提示 "${userPrompt.substring(
           0,
           50,
-        )}...":`,
+        )}..." 的完整响应:`,
         JSON.stringify(response, null, 2),
       );
 
@@ -294,7 +293,7 @@ I have fetched the content from the following URL(s). Please use this content to
         | GroundingSupportItem[]
         | undefined;
 
-      // Error Handling
+      // 错误处理
       let processingError = false;
 
       if (
@@ -308,7 +307,7 @@ I have fetched the content from the following URL(s). Please use this content to
           processingError = true;
         }
       } else if (!responseText.trim() && !sources?.length) {
-        // No URL metadata and no content/sources
+        // 没有 URL 元数据且没有内容/来源
         processingError = true;
       }
 
@@ -317,7 +316,7 @@ I have fetched the content from the following URL(s). Please use this content to
         !responseText.trim() &&
         (!sources || sources.length === 0)
       ) {
-        // Successfully retrieved some URL (or no specific error from urlContextMeta), but no usable text or grounding data.
+        // 成功获取了一些 URL（或 urlContextMeta 中没有特定错误），但没有可用的文本或接地数据。
         processingError = true;
       }
 
@@ -328,8 +327,8 @@ I have fetched the content from the following URL(s). Please use this content to
       const sourceListFormatted: string[] = [];
       if (sources && sources.length > 0) {
         sources.forEach((source: GroundingChunkItem, index: number) => {
-          const title = source.web?.title || 'Untitled';
-          const uri = source.web?.uri || 'Unknown URI'; // Fallback if URI is missing
+          const title = source.web?.title || '无标题';
+          const uri = source.web?.uri || '未知 URI'; // 如果 URI 缺失则回退
           sourceListFormatted.push(`[${index + 1}] ${title} (${uri})`);
         });
 
@@ -358,7 +357,7 @@ I have fetched the content from the following URL(s). Please use this content to
         if (sourceListFormatted.length > 0) {
           responseText += `
 
-Sources:
+来源:
 ${sourceListFormatted.join('\n')}`;
         }
       }
@@ -366,23 +365,23 @@ ${sourceListFormatted.join('\n')}`;
       const llmContent = responseText;
 
       console.debug(
-        `[WebFetchTool] Formatted tool response for prompt "${userPrompt}:\n\n":`,
+        `[WebFetchTool] 提示 "${userPrompt}:\n\n" 的格式化工具响应:`,
         llmContent,
       );
 
       return {
         llmContent,
-        returnDisplay: `Content processed from prompt.`,
+        returnDisplay: `已处理提示中的内容。`,
       };
     } catch (error: unknown) {
-      const errorMessage = `Error processing web content for prompt "${userPrompt.substring(
+      const errorMessage = `处理提示 "${userPrompt.substring(
         0,
         50,
-      )}...": ${getErrorMessage(error)}`;
+      )}..." 的网页内容时出错: ${getErrorMessage(error)}`;
       console.error(errorMessage, error);
       return {
-        llmContent: `Error: ${errorMessage}`,
-        returnDisplay: `Error: ${errorMessage}`,
+        llmContent: `错误: ${errorMessage}`,
+        returnDisplay: `错误: ${errorMessage}`,
       };
     }
   }

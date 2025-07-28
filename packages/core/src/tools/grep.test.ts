@@ -11,14 +11,14 @@ import fs from 'fs/promises';
 import os from 'os';
 import { Config } from '../config/config.js';
 
-// Mock the child_process module to control grep/git grep behavior
+// 模拟 child_process 模块以控制 grep/git grep 行为
 vi.mock('child_process', () => ({
   spawn: vi.fn(() => ({
     on: (event: string, cb: (...args: unknown[]) => void) => {
       if (event === 'error' || event === 'close') {
-        // Simulate command not found or error for git grep and system grep
-        // to force fallback to JS implementation.
-        setTimeout(() => cb(1), 0); // cb(1) for error/close
+        // 模拟命令未找到或 git grep 和系统 grep 出错
+        // 以强制回退到 JS 实现。
+        setTimeout(() => cb(1), 0); // cb(1) 表示错误/关闭
       }
     },
     stdout: { on: vi.fn() },
@@ -39,7 +39,7 @@ describe('GrepTool', () => {
     tempRootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'grep-tool-root-'));
     grepTool = new GrepTool(mockConfig);
 
-    // Create some test files and directories
+    // 创建一些测试文件和目录
     await fs.writeFile(
       path.join(tempRootDir, 'fileA.txt'),
       'hello world\nsecond line with world',
@@ -64,17 +64,17 @@ describe('GrepTool', () => {
   });
 
   describe('validateToolParams', () => {
-    it('should return null for valid params (pattern only)', () => {
+    it('对于有效参数应返回 null（仅模式）', () => {
       const params: GrepToolParams = { pattern: 'hello' };
       expect(grepTool.validateToolParams(params)).toBeNull();
     });
 
-    it('should return null for valid params (pattern and path)', () => {
+    it('对于有效参数应返回 null（模式和路径）', () => {
       const params: GrepToolParams = { pattern: 'hello', path: '.' };
       expect(grepTool.validateToolParams(params)).toBeNull();
     });
 
-    it('should return null for valid params (pattern, path, and include)', () => {
+    it('对于有效参数应返回 null（模式、路径和包含）', () => {
       const params: GrepToolParams = {
         pattern: 'hello',
         path: '.',
@@ -83,78 +83,78 @@ describe('GrepTool', () => {
       expect(grepTool.validateToolParams(params)).toBeNull();
     });
 
-    it('should return error if pattern is missing', () => {
+    it('如果缺少模式应返回错误', () => {
       const params = { path: '.' } as unknown as GrepToolParams;
       expect(grepTool.validateToolParams(params)).toBe(
-        `params must have required property 'pattern'`,
+        `params 必须具有必需属性 'pattern'`,
       );
     });
 
-    it('should return error for invalid regex pattern', () => {
+    it('对于无效正则表达式模式应返回错误', () => {
       const params: GrepToolParams = { pattern: '[[' };
       expect(grepTool.validateToolParams(params)).toContain(
-        'Invalid regular expression pattern',
+        '无效的正则表达式模式',
       );
     });
 
-    it('should return error if path does not exist', () => {
+    it('如果路径不存在应返回错误', () => {
       const params: GrepToolParams = { pattern: 'hello', path: 'nonexistent' };
-      // Check for the core error message, as the full path might vary
+      // 检查核心错误信息，因为完整路径可能不同
       expect(grepTool.validateToolParams(params)).toContain(
-        'Failed to access path stats for',
+        '无法访问路径统计信息',
       );
       expect(grepTool.validateToolParams(params)).toContain('nonexistent');
     });
 
-    it('should return error if path is a file, not a directory', async () => {
+    it('如果路径是文件而不是目录应返回错误', async () => {
       const filePath = path.join(tempRootDir, 'fileA.txt');
       const params: GrepToolParams = { pattern: 'hello', path: filePath };
       expect(grepTool.validateToolParams(params)).toContain(
-        `Path is not a directory: ${filePath}`,
+        `路径不是目录: ${filePath}`,
       );
     });
   });
 
   describe('execute', () => {
-    it('should find matches for a simple pattern in all files', async () => {
+    it('应在所有文件中找到简单模式的匹配项', async () => {
       const params: GrepToolParams = { pattern: 'world' };
       const result = await grepTool.execute(params, abortSignal);
       expect(result.llmContent).toContain(
-        'Found 3 matches for pattern "world" in path "."',
+        '在路径 "." 中找到模式 "world" 的 3 个匹配项',
       );
-      expect(result.llmContent).toContain('File: fileA.txt');
+      expect(result.llmContent).toContain('文件: fileA.txt');
       expect(result.llmContent).toContain('L1: hello world');
       expect(result.llmContent).toContain('L2: second line with world');
-      expect(result.llmContent).toContain('File: sub/fileC.txt');
+      expect(result.llmContent).toContain('文件: sub/fileC.txt');
       expect(result.llmContent).toContain('L1: another world in sub dir');
-      expect(result.returnDisplay).toBe('Found 3 matches');
+      expect(result.returnDisplay).toBe('找到 3 个匹配项');
     });
 
-    it('should find matches in a specific path', async () => {
+    it('应在特定路径中找到匹配项', async () => {
       const params: GrepToolParams = { pattern: 'world', path: 'sub' };
       const result = await grepTool.execute(params, abortSignal);
       expect(result.llmContent).toContain(
-        'Found 1 match for pattern "world" in path "sub"',
+        '在路径 "sub" 中找到模式 "world" 的 1 个匹配项',
       );
-      expect(result.llmContent).toContain('File: fileC.txt'); // Path relative to 'sub'
+      expect(result.llmContent).toContain('文件: fileC.txt'); // 相对于 'sub' 的路径
       expect(result.llmContent).toContain('L1: another world in sub dir');
-      expect(result.returnDisplay).toBe('Found 1 match');
+      expect(result.returnDisplay).toBe('找到 1 个匹配项');
     });
 
-    it('should find matches with an include glob', async () => {
+    it('应使用包含 glob 找到匹配项', async () => {
       const params: GrepToolParams = { pattern: 'hello', include: '*.js' };
       const result = await grepTool.execute(params, abortSignal);
       expect(result.llmContent).toContain(
-        'Found 1 match for pattern "hello" in path "." (filter: "*.js")',
+        '在路径 "." 中找到模式 "hello" 的 1 个匹配项（过滤器: "*.js"）',
       );
-      expect(result.llmContent).toContain('File: fileB.js');
+      expect(result.llmContent).toContain('文件: fileB.js');
       expect(result.llmContent).toContain(
         'L2: function baz() { return "hello"; }',
       );
-      expect(result.returnDisplay).toBe('Found 1 match');
+      expect(result.returnDisplay).toBe('找到 1 个匹配项');
     });
 
-    it('should find matches with an include glob and path', async () => {
+    it('应使用包含 glob 和路径找到匹配项', async () => {
       await fs.writeFile(
         path.join(tempRootDir, 'sub', 'another.js'),
         'const greeting = "hello";',
@@ -166,65 +166,65 @@ describe('GrepTool', () => {
       };
       const result = await grepTool.execute(params, abortSignal);
       expect(result.llmContent).toContain(
-        'Found 1 match for pattern "hello" in path "sub" (filter: "*.js")',
+        '在路径 "sub" 中找到模式 "hello" 的 1 个匹配项（过滤器: "*.js"）',
       );
-      expect(result.llmContent).toContain('File: another.js');
+      expect(result.llmContent).toContain('文件: another.js');
       expect(result.llmContent).toContain('L1: const greeting = "hello";');
-      expect(result.returnDisplay).toBe('Found 1 match');
+      expect(result.returnDisplay).toBe('找到 1 个匹配项');
     });
 
-    it('should return "No matches found" when pattern does not exist', async () => {
+    it('当模式不存在时应返回 "未找到匹配项"', async () => {
       const params: GrepToolParams = { pattern: 'nonexistentpattern' };
       const result = await grepTool.execute(params, abortSignal);
       expect(result.llmContent).toContain(
-        'No matches found for pattern "nonexistentpattern" in path "."',
+        '在路径 "." 中未找到模式 "nonexistentpattern" 的匹配项',
       );
-      expect(result.returnDisplay).toBe('No matches found');
+      expect(result.returnDisplay).toBe('未找到匹配项');
     });
 
-    it('should handle regex special characters correctly', async () => {
-      const params: GrepToolParams = { pattern: 'foo.*bar' }; // Matches 'const foo = "bar";'
+    it('应正确处理正则表达式特殊字符', async () => {
+      const params: GrepToolParams = { pattern: 'foo.*bar' }; // 匹配 'const foo = "bar";'
       const result = await grepTool.execute(params, abortSignal);
       expect(result.llmContent).toContain(
-        'Found 1 match for pattern "foo.*bar" in path "."',
+        '在路径 "." 中找到模式 "foo.*bar" 的 1 个匹配项',
       );
-      expect(result.llmContent).toContain('File: fileB.js');
+      expect(result.llmContent).toContain('文件: fileB.js');
       expect(result.llmContent).toContain('L1: const foo = "bar";');
     });
 
-    it('should be case-insensitive by default (JS fallback)', async () => {
+    it('默认情况下应不区分大小写（JS 回退）', async () => {
       const params: GrepToolParams = { pattern: 'HELLO' };
       const result = await grepTool.execute(params, abortSignal);
       expect(result.llmContent).toContain(
-        'Found 2 matches for pattern "HELLO" in path "."',
+        '在路径 "." 中找到模式 "HELLO" 的 2 个匹配项',
       );
-      expect(result.llmContent).toContain('File: fileA.txt');
+      expect(result.llmContent).toContain('文件: fileA.txt');
       expect(result.llmContent).toContain('L1: hello world');
-      expect(result.llmContent).toContain('File: fileB.js');
+      expect(result.llmContent).toContain('文件: fileB.js');
       expect(result.llmContent).toContain(
         'L2: function baz() { return "hello"; }',
       );
     });
 
-    it('should return an error if params are invalid', async () => {
-      const params = { path: '.' } as unknown as GrepToolParams; // Invalid: pattern missing
+    it('如果参数无效应返回错误', async () => {
+      const params = { path: '.' } as unknown as GrepToolParams; // 无效：缺少模式
       const result = await grepTool.execute(params, abortSignal);
       expect(result.llmContent).toBe(
-        "Error: Invalid parameters provided. Reason: params must have required property 'pattern'",
+        "错误: 提供的参数无效。原因: params 必须具有必需属性 'pattern'",
       );
       expect(result.returnDisplay).toBe(
-        "Model provided invalid parameters. Error: params must have required property 'pattern'",
+        "模型提供了无效参数。错误: params 必须具有必需属性 'pattern'",
       );
     });
   });
 
   describe('getDescription', () => {
-    it('should generate correct description with pattern only', () => {
+    it('应仅使用模式生成正确的描述', () => {
       const params: GrepToolParams = { pattern: 'testPattern' };
       expect(grepTool.getDescription(params)).toBe("'testPattern'");
     });
 
-    it('should generate correct description with pattern and include', () => {
+    it('应使用模式和包含生成正确的描述', () => {
       const params: GrepToolParams = {
         pattern: 'testPattern',
         include: '*.ts',
@@ -232,19 +232,19 @@ describe('GrepTool', () => {
       expect(grepTool.getDescription(params)).toBe("'testPattern' in *.ts");
     });
 
-    it('should generate correct description with pattern and path', () => {
+    it('应使用模式和路径生成正确的描述', () => {
       const params: GrepToolParams = {
         pattern: 'testPattern',
         path: 'src/app',
       };
-      // The path will be relative to the tempRootDir, so we check for containment.
+      // 路径将相对于 tempRootDir，所以我们检查是否包含。
       expect(grepTool.getDescription(params)).toContain("'testPattern' within");
       expect(grepTool.getDescription(params)).toContain(
         path.join('src', 'app'),
       );
     });
 
-    it('should generate correct description with pattern, include, and path', () => {
+    it('应使用模式、包含和路径生成正确的描述', () => {
       const params: GrepToolParams = {
         pattern: 'testPattern',
         include: '*.ts',
@@ -256,7 +256,7 @@ describe('GrepTool', () => {
       expect(grepTool.getDescription(params)).toContain('src/app');
     });
 
-    it('should use ./ for root path in description', () => {
+    it('应在描述中为根路径使用 ./', () => {
       const params: GrepToolParams = { pattern: 'testPattern', path: '.' };
       expect(grepTool.getDescription(params)).toBe("'testPattern' within ./");
     });

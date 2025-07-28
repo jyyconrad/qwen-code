@@ -41,7 +41,7 @@ class EditorSettingsManager {
     ];
     this.availableEditors = [
       {
-        name: 'None',
+        name: '无',
         type: 'not_set',
         disabled: false,
       },
@@ -50,9 +50,9 @@ class EditorSettingsManager {
         const isAllowedInSandbox = allowEditorTypeInSandbox(type);
 
         let labelSuffix = !isAllowedInSandbox
-          ? ' (Not available in sandbox)'
+          ? '（沙盒中不可用）'
           : '';
-        labelSuffix = !hasEditor ? ' (Not installed)' : labelSuffix;
+        labelSuffix = !hasEditor ? '（未安装）' : labelSuffix;
 
         return {
           name: EDITOR_DISPLAY_NAMES[type] + labelSuffix,

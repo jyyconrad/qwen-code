@@ -14,45 +14,45 @@ import {
   isApiError,
   isStructuredError,
 } from '@iflytek/iflycode-core';
-// Free Tier message functions
+// 免费层级消息函数
 const getRateLimitErrorMessageGoogleFree = (
   fallbackModel: string = DEFAULT_GEMINI_FLASH_MODEL,
 ) =>
-  `\nPossible quota limitations in place or slow response times detected. Switching to the ${fallbackModel} model for the rest of this session.`;
+  `\n检测到可能的配额限制或响应缓慢。在本次会话剩余时间内切换到 ${fallbackModel} 模型。`;
 
 const getRateLimitErrorMessageGoogleProQuotaFree = (
   currentModel: string = DEFAULT_GEMINI_MODEL,
   fallbackModel: string = DEFAULT_GEMINI_FLASH_MODEL,
 ) =>
-  `\nYou have reached your daily ${currentModel} quota limit. You will be switched to the ${fallbackModel} model for the rest of this session. To increase your limits, upgrade to a Gemini Code Assist Standard or Enterprise plan with higher limits at https://goo.gle/set-up-gemini-code-assist, or use /auth to switch to using a paid API key from AI Studio at https://aistudio.google.com/apikey`;
+  `\n您已达到每日 ${currentModel} 配额限制。在本次会话剩余时间内您将被切换到 ${fallbackModel} 模型。要提高限制，请升级到具有更高限制的 Gemini Code Assist 标准版或企业版计划，网址：https://goo.gle/set-up-gemini-code-assist，或使用 /auth 切换到使用来自 AI Studio 的付费 API 密钥，网址：https://aistudio.google.com/apikey`;
 
 const getRateLimitErrorMessageGoogleGenericQuotaFree = () =>
-  `\nYou have reached your daily quota limit. To increase your limits, upgrade to a Gemini Code Assist Standard or Enterprise plan with higher limits at https://goo.gle/set-up-gemini-code-assist, or use /auth to switch to using a paid API key from AI Studio at https://aistudio.google.com/apikey`;
+  `\n您已达到每日配额限制。要提高限制，请升级到具有更高限制的 Gemini Code Assist 标准版或企业版计划，网址：https://goo.gle/set-up-gemini-code-assist，或使用 /auth 切换到使用来自 AI Studio 的付费 API 密钥，网址：https://aistudio.google.com/apikey`;
 
-// Legacy/Standard Tier message functions
+// 旧版/标准版层级消息函数
 const getRateLimitErrorMessageGooglePaid = (
   fallbackModel: string = DEFAULT_GEMINI_FLASH_MODEL,
 ) =>
-  `\nPossible quota limitations in place or slow response times detected. Switching to the ${fallbackModel} model for the rest of this session. We appreciate you for choosing Gemini Code Assist and the Gemini CLI.`;
+  `\n检测到可能的配额限制或响应缓慢。在本次会话剩余时间内切换到 ${fallbackModel} 模型。感谢您选择 Gemini Code Assist 和 Gemini CLI。`;
 
 const getRateLimitErrorMessageGoogleProQuotaPaid = (
   currentModel: string = DEFAULT_GEMINI_MODEL,
   fallbackModel: string = DEFAULT_GEMINI_FLASH_MODEL,
 ) =>
-  `\nYou have reached your daily ${currentModel} quota limit. You will be switched to the ${fallbackModel} model for the rest of this session. We appreciate you for choosing Gemini Code Assist and the Gemini CLI. To continue accessing the ${currentModel} model today, consider using /auth to switch to using a paid API key from AI Studio at https://aistudio.google.com/apikey`;
+  `\n您已达到每日 ${currentModel} 配额限制。在本次会话剩余时间内您将被切换到 ${fallbackModel} 模型。感谢您选择 Gemini Code Assist 和 Gemini CLI。要继续在今天访问 ${currentModel} 模型，请考虑使用 /auth 切换到使用来自 AI Studio 的付费 API 密钥，网址：https://aistudio.google.com/apikey`;
 
 const getRateLimitErrorMessageGoogleGenericQuotaPaid = (
   currentModel: string = DEFAULT_GEMINI_MODEL,
 ) =>
-  `\nYou have reached your daily quota limit. We appreciate you for choosing Gemini Code Assist and the Gemini CLI. To continue accessing the ${currentModel} model today, consider using /auth to switch to using a paid API key from AI Studio at https://aistudio.google.com/apikey`;
+  `\n您已达到每日配额限制。感谢您选择 Gemini Code Assist 和 Gemini CLI。要继续在今天访问 ${currentModel} 模型，请考虑使用 /auth 切换到使用来自 AI Studio 的付费 API 密钥，网址：https://aistudio.google.com/apikey`;
 const RATE_LIMIT_ERROR_MESSAGE_USE_GEMINI =
-  '\nPlease wait and try again later. To increase your limits, request a quota increase through AI Studio, or switch to another /auth method';
+  '\n请稍等后重试。要提高限制，请通过 AI Studio 请求增加配额，或切换到其他 /auth 方法';
 const RATE_LIMIT_ERROR_MESSAGE_VERTEX =
-  '\nPlease wait and try again later. To increase your limits, request a quota increase through Vertex, or switch to another /auth method';
+  '\n请稍等后重试。要提高限制，请通过 Vertex 请求增加配额，或切换到其他 /auth 方法';
 const getRateLimitErrorMessageDefault = (
   fallbackModel: string = DEFAULT_GEMINI_FLASH_MODEL,
 ) =>
-  `\nPossible quota limitations in place or slow response times detected. Switching to the ${fallbackModel} model for the rest of this session.`;
+  `\n检测到可能的配额限制或响应缓慢。在本次会话剩余时间内切换到 ${fallbackModel} 模型。`;
 
 function getRateLimitMessage(
   authType?: AuthType,
@@ -63,7 +63,7 @@ function getRateLimitMessage(
 ): string {
   switch (authType) {
     case AuthType.LOGIN_WITH_GOOGLE: {
-      // Determine if user is on a paid tier (Legacy or Standard) - default to FREE if not specified
+      // 确定用户是否在付费层级（旧版或标准版）- 如果未指定则默认为免费
       const isPaidTier =
         userTier === UserTierId.LEGACY || userTier === UserTierId.STANDARD;
 
@@ -106,7 +106,7 @@ export function parseAndFormatApiError(
   fallbackModel?: string,
 ): string {
   if (isStructuredError(error)) {
-    let text = `[API Error: ${error.message}]`;
+    let text = `[API 错误: ${error.message}]`;
     if (error.status === 429) {
       text += getRateLimitMessage(
         authType,
@@ -119,11 +119,11 @@ export function parseAndFormatApiError(
     return text;
   }
 
-  // The error message might be a string containing a JSON object.
+  // 错误消息可能是一个包含 JSON 对象的字符串。
   if (typeof error === 'string') {
     const jsonStart = error.indexOf('{');
     if (jsonStart === -1) {
-      return `[API Error: ${error}]`; // Not a JSON error, return as is.
+      return `[API 错误: ${error}]`; // 不是 JSON 错误，按原样返回。
     }
 
     const jsonString = error.substring(jsonStart);
@@ -133,15 +133,15 @@ export function parseAndFormatApiError(
       if (isApiError(parsedError)) {
         let finalMessage = parsedError.error.message;
         try {
-          // See if the message is a stringified JSON with another error
+          // 查看消息是否是包含另一个错误的字符串化 JSON
           const nestedError = JSON.parse(finalMessage) as unknown;
           if (isApiError(nestedError)) {
             finalMessage = nestedError.error.message;
           }
         } catch (_e) {
-          // It's not a nested JSON error, so we just use the message as is.
+          // 不是嵌套的 JSON 错误，所以我们按原样使用消息。
         }
-        let text = `[API Error: ${finalMessage} (Status: ${parsedError.error.status})]`;
+        let text = `[API 错误: ${finalMessage} (状态: ${parsedError.error.status})]`;
         if (parsedError.error.code === 429) {
           text += getRateLimitMessage(
             authType,
@@ -154,10 +154,10 @@ export function parseAndFormatApiError(
         return text;
       }
     } catch (_e) {
-      // Not a valid JSON, fall through and return the original message.
+      // 不是有效的 JSON，继续执行并返回原始消息。
     }
-    return `[API Error: ${error}]`;
+    return `[API 错误: ${error}]`;
   }
 
-  return '[API Error: An unknown error occurred.]';
+  return '[API 错误: 发生未知错误。]';
 }

@@ -14,7 +14,7 @@ import {
 import { ModelMetrics, SessionMetrics } from '../contexts/SessionContext.js';
 
 describe('calculateErrorRate', () => {
-  it('should return 0 if totalRequests is 0', () => {
+  it('如果 totalRequests 为 0，应返回 0', () => {
     const metrics: ModelMetrics = {
       api: { totalRequests: 0, totalErrors: 0, totalLatencyMs: 0 },
       tokens: {
@@ -29,7 +29,7 @@ describe('calculateErrorRate', () => {
     expect(calculateErrorRate(metrics)).toBe(0);
   });
 
-  it('should calculate the error rate correctly', () => {
+  it('应正确计算错误率', () => {
     const metrics: ModelMetrics = {
       api: { totalRequests: 10, totalErrors: 2, totalLatencyMs: 0 },
       tokens: {
@@ -46,7 +46,7 @@ describe('calculateErrorRate', () => {
 });
 
 describe('calculateAverageLatency', () => {
-  it('should return 0 if totalRequests is 0', () => {
+  it('如果 totalRequests 为 0，应返回 0', () => {
     const metrics: ModelMetrics = {
       api: { totalRequests: 0, totalErrors: 0, totalLatencyMs: 1000 },
       tokens: {
@@ -61,7 +61,7 @@ describe('calculateAverageLatency', () => {
     expect(calculateAverageLatency(metrics)).toBe(0);
   });
 
-  it('should calculate the average latency correctly', () => {
+  it('应正确计算平均延迟', () => {
     const metrics: ModelMetrics = {
       api: { totalRequests: 10, totalErrors: 0, totalLatencyMs: 1500 },
       tokens: {
@@ -78,7 +78,7 @@ describe('calculateAverageLatency', () => {
 });
 
 describe('calculateCacheHitRate', () => {
-  it('should return 0 if prompt tokens is 0', () => {
+  it('如果提示词令牌为 0，应返回 0', () => {
     const metrics: ModelMetrics = {
       api: { totalRequests: 0, totalErrors: 0, totalLatencyMs: 0 },
       tokens: {
@@ -93,7 +93,7 @@ describe('calculateCacheHitRate', () => {
     expect(calculateCacheHitRate(metrics)).toBe(0);
   });
 
-  it('should calculate the cache hit rate correctly', () => {
+  it('应正确计算缓存命中率', () => {
     const metrics: ModelMetrics = {
       api: { totalRequests: 0, totalErrors: 0, totalLatencyMs: 0 },
       tokens: {
@@ -110,7 +110,7 @@ describe('calculateCacheHitRate', () => {
 });
 
 describe('computeSessionStats', () => {
-  it('should return all zeros for initial empty metrics', () => {
+  it('对于初始空指标，应返回全零', () => {
     const metrics: SessionMetrics = {
       models: {},
       tools: {
@@ -140,7 +140,7 @@ describe('computeSessionStats', () => {
     });
   });
 
-  it('should correctly calculate API and tool time percentages', () => {
+  it('应正确计算 API 和工具时间百分比', () => {
     const metrics: SessionMetrics = {
       models: {
         'gemini-pro': {
@@ -174,7 +174,7 @@ describe('computeSessionStats', () => {
     expect(result.toolTimePercent).toBe(25);
   });
 
-  it('should correctly calculate cache efficiency', () => {
+  it('应正确计算缓存效率', () => {
     const metrics: SessionMetrics = {
       models: {
         'gemini-pro': {
@@ -204,7 +204,7 @@ describe('computeSessionStats', () => {
     expect(result.cacheEfficiency).toBeCloseTo(33.33); // 50 / 150
   });
 
-  it('should correctly calculate success and agreement rates', () => {
+  it('应正确计算成功率和一致率', () => {
     const metrics: SessionMetrics = {
       models: {},
       tools: {
@@ -223,7 +223,7 @@ describe('computeSessionStats', () => {
     expect(result.agreementRate).toBe(60); // 6 / 10
   });
 
-  it('should handle division by zero gracefully', () => {
+  it('应优雅地处理除零情况', () => {
     const metrics: SessionMetrics = {
       models: {},
       tools: {

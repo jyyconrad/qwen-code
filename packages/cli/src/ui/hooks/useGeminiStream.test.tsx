@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,7 +28,7 @@ import {
 import { Dispatch, SetStateAction } from 'react';
 import { LoadedSettings } from '../../config/settings.js';
 
-// --- MOCKS ---
+// --- 模拟 ---
 const mockSendMessageStream = vi
   .fn()
   .mockReturnValue((async function* () {})());
@@ -128,10 +128,10 @@ vi.mock('../utils/errorParsing.js', () => ({
   parseAndFormatApiError: mockParseAndFormatApiError,
 }));
 
-// --- END MOCKS ---
+// --- 结束模拟 ---
 
 describe('mergePartListUnions', () => {
-  it('should merge multiple PartListUnion arrays', () => {
+  it('应合并多个 PartListUnion 数组', () => {
     const list1: PartListUnion = [{ text: 'Hello' }];
     const list2: PartListUnion = [
       { inlineData: { mimeType: 'image/png', data: 'abc' } },
@@ -146,7 +146,7 @@ describe('mergePartListUnions', () => {
     ]);
   });
 
-  it('should handle empty arrays in the input list', () => {
+  it('应处理输入列表中的空数组', () => {
     const list1: PartListUnion = [{ text: 'First' }];
     const list2: PartListUnion = [];
     const list3: PartListUnion = [{ text: 'Last' }];
@@ -154,7 +154,7 @@ describe('mergePartListUnions', () => {
     expect(result).toEqual([{ text: 'First' }, { text: 'Last' }]);
   });
 
-  it('should handle a single PartListUnion array', () => {
+  it('应处理单个 PartListUnion 数组', () => {
     const list1: PartListUnion = [
       { text: 'One' },
       { inlineData: { mimeType: 'image/jpeg', data: 'xyz' } },
@@ -163,19 +163,19 @@ describe('mergePartListUnions', () => {
     expect(result).toEqual(list1);
   });
 
-  it('should return an empty array if all input arrays are empty', () => {
+  it('如果所有输入数组都为空，则应返回一个空数组', () => {
     const list1: PartListUnion = [];
     const list2: PartListUnion = [];
     const result = mergePartListUnions([list1, list2]);
     expect(result).toEqual([]);
   });
 
-  it('should handle input list being empty', () => {
+  it('应处理输入列表为空的情况', () => {
     const result = mergePartListUnions([]);
     expect(result).toEqual([]);
   });
 
-  it('should correctly merge when PartListUnion items are single Parts not in arrays', () => {
+  it('当 PartListUnion 项是单个部分而不是数组时，应正确合并', () => {
     const part1: Part = { text: 'Single part 1' };
     const part2: Part = { inlineData: { mimeType: 'image/gif', data: 'gif' } };
     const listContainingSingleParts: PartListUnion[] = [
@@ -191,7 +191,7 @@ describe('mergePartListUnions', () => {
     ]);
   });
 
-  it('should handle a mix of arrays and single parts, including empty arrays and undefined/null parts if they were possible (though PartListUnion typing restricts this)', () => {
+  it('应处理数组和单个部分的混合，包括空数组和未定义/空部分（尽管 PartListUnion 类型限制了这一点）', () => {
     const list1: PartListUnion = [{ text: 'A' }];
     const list2: PartListUnion = [];
     const part3: Part = { text: 'B' };
@@ -208,7 +208,7 @@ describe('mergePartListUnions', () => {
     ]);
   });
 
-  it('should preserve the order of parts from the input arrays', () => {
+  it('应保留输入数组中部分的顺序', () => {
     const listA: PartListUnion = [{ text: '1' }, { text: '2' }];
     const listB: PartListUnion = [{ text: '3' }];
     const listC: PartListUnion = [{ text: '4' }, { text: '5' }];
@@ -222,7 +222,7 @@ describe('mergePartListUnions', () => {
     ]);
   });
 
-  it('should handle cases where some PartListUnion items are single Parts and others are arrays of Parts', () => {
+  it('应处理某些 PartListUnion 项是单个部分而其他项是部分数组的情况', () => {
     const singlePart1: Part = { text: 'First single' };
     const arrayPart1: Part[] = [
       { text: 'Array item 1' },
@@ -249,7 +249,7 @@ describe('mergePartListUnions', () => {
   });
 });
 
-// --- Tests for useGeminiStream Hook ---
+// --- useGeminiStream Hook 的测试 ---
 describe('useGeminiStream', () => {
   let mockAddItem: Mock;
   let mockSetShowHelp: Mock;
@@ -261,14 +261,14 @@ describe('useGeminiStream', () => {
   let mockMarkToolsAsSubmitted: Mock;
 
   beforeEach(() => {
-    vi.clearAllMocks(); // Clear mocks before each test
+    vi.clearAllMocks(); // 在每次测试前清除模拟
 
     mockAddItem = vi.fn();
     mockSetShowHelp = vi.fn();
-    // Define the mock for getGeminiClient
+    // 定义 getGeminiClient 的模拟
     const mockGetGeminiClient = vi.fn().mockImplementation(() => {
-      // MockedGeminiClientClass is defined in the module scope by the previous change.
-      // It will use the mockStartChat and mockSendMessageStream that are managed within beforeEach.
+      // MockedGeminiClientClass 在模块作用域中由之前的更改定义。
+      // 它将使用在 beforeEach 中管理的 mockStartChat 和 mockSendMessageStream。
       const clientInstance = new MockedGeminiClientClass(mockConfig);
       return clientInstance;
     });
@@ -321,21 +321,21 @@ describe('useGeminiStream', () => {
     mockOnDebugMessage = vi.fn();
     mockHandleSlashCommand = vi.fn().mockResolvedValue(false);
 
-    // Mock return value for useReactToolScheduler
+    // useReactToolScheduler 的模拟返回值
     mockScheduleToolCalls = vi.fn();
     mockCancelAllToolCalls = vi.fn();
     mockMarkToolsAsSubmitted = vi.fn();
 
-    // Default mock for useReactToolScheduler to prevent toolCalls being undefined initially
+    // useReactToolScheduler 的默认模拟，防止 toolCalls 最初未定义
     mockUseReactToolScheduler.mockReturnValue([
-      [], // Default to empty array for toolCalls
+      [], // 默认为空数组用于 toolCalls
       mockScheduleToolCalls,
       mockCancelAllToolCalls,
       mockMarkToolsAsSubmitted,
     ]);
 
-    // Reset mocks for GeminiClient instance methods (startChat and sendMessageStream)
-    // The GeminiClient constructor itself is mocked at the module level.
+    // 重置 GeminiClient 实例方法的模拟（startChat 和 sendMessageStream）
+    // GeminiClient 构造函数本身在模块级别被模拟。
     mockStartChat.mockClear().mockResolvedValue({
       sendMessageStream: mockSendMessageStream,
     } as unknown as any); // GeminiChat -> any
@@ -384,9 +384,9 @@ describe('useGeminiStream', () => {
         ) => Promise<SlashCommandProcessorResult | false>;
         shellModeActive: boolean;
         loadedSettings: LoadedSettings;
-        toolCalls?: TrackedToolCall[]; // Allow passing updated toolCalls
+        toolCalls?: TrackedToolCall[]; // 允许传递更新的 toolCalls
       }) => {
-        // Update the mock's return value if new toolCalls are passed in props
+        // 如果 props 中传递了新的 toolCalls，则更新模拟的返回值
         if (props.toolCalls) {
           setToolCalls(props.toolCalls);
         }
@@ -432,7 +432,7 @@ describe('useGeminiStream', () => {
     };
   };
 
-  it('should not submit tool responses if not all tool calls are completed', () => {
+  it('如果并非所有工具调用都已完成，则不应提交工具响应', () => {
     const toolCalls: TrackedToolCall[] = [
       {
         request: {
@@ -480,14 +480,14 @@ describe('useGeminiStream', () => {
     const { mockMarkToolsAsSubmitted, mockSendMessageStream } =
       renderTestHook(toolCalls);
 
-    // Effect for submitting tool responses depends on toolCalls and isResponding
-    // isResponding is initially false, so the effect should run.
+    // 提交工具响应的效果取决于 toolCalls 和 isResponding
+    // isResponding 最初为 false，因此效果应该运行。
 
     expect(mockMarkToolsAsSubmitted).not.toHaveBeenCalled();
-    expect(mockSendMessageStream).not.toHaveBeenCalled(); // submitQuery uses this
+    expect(mockSendMessageStream).not.toHaveBeenCalled(); // submitQuery 使用这个
   });
 
-  it('should submit tool responses when all tool calls are completed and ready', async () => {
+  it('当所有工具调用都已完成并准备就绪时，应提交工具响应', async () => {
     const toolCall1ResponseParts: PartListUnion = [
       { text: 'tool 1 final response' },
     ];
@@ -518,10 +518,10 @@ describe('useGeminiStream', () => {
         status: 'error',
         responseSubmittedToGemini: false,
         response: { callId: 'call2', responseParts: toolCall2ResponseParts },
-      } as TrackedCompletedToolCall, // Treat error as a form of completion for submission
+      } as TrackedCompletedToolCall, // 将错误视为一种完成形式以进行提交
     ];
 
-    // Capture the onComplete callback
+    // 捕获 onComplete 回调
     let capturedOnComplete:
       | ((completedTools: TrackedToolCall[]) => Promise<void>)
       | null = null;
@@ -549,7 +549,7 @@ describe('useGeminiStream', () => {
       ),
     );
 
-    // Trigger the onComplete callback with completed tools
+    // 使用已完成的工具触发 onComplete 回调
     await act(async () => {
       if (capturedOnComplete) {
         await capturedOnComplete(completedToolCalls);
@@ -572,7 +572,7 @@ describe('useGeminiStream', () => {
     );
   });
 
-  it('should handle all tool calls being cancelled', async () => {
+  it('应处理所有工具调用都被取消的情况', async () => {
     const cancelledToolCalls: TrackedToolCall[] = [
       {
         request: {
@@ -589,7 +589,7 @@ describe('useGeminiStream', () => {
     ];
     const client = new MockedGeminiClientClass(mockConfig);
 
-    // Capture the onComplete callback
+    // 捕获 onComplete 回调
     let capturedOnComplete:
       | ((completedTools: TrackedToolCall[]) => Promise<void>)
       | null = null;
@@ -617,7 +617,7 @@ describe('useGeminiStream', () => {
       ),
     );
 
-    // Trigger the onComplete callback with cancelled tools
+    // 使用已取消的工具触发 onComplete 回调
     await act(async () => {
       if (capturedOnComplete) {
         await capturedOnComplete(cancelledToolCalls);
@@ -630,12 +630,12 @@ describe('useGeminiStream', () => {
         role: 'user',
         parts: [{ text: 'cancelled' }],
       });
-      // Ensure we do NOT call back to the API
+      // 确保我们不会回调到 API
       expect(mockSendMessageStream).not.toHaveBeenCalled();
     });
   });
 
-  it('should group multiple cancelled tool call responses into a single history entry', async () => {
+  it('应将多个已取消的工具调用响应分组到单个历史记录条目中', async () => {
     const cancelledToolCall1: TrackedCancelledToolCall = {
       request: {
         callId: 'cancel-1',
@@ -714,7 +714,7 @@ describe('useGeminiStream', () => {
       ),
     );
 
-    // Trigger the onComplete callback with multiple cancelled tools
+    // 使用多个已取消的工具触发 onComplete 回调
     await act(async () => {
       if (capturedOnComplete) {
         await capturedOnComplete(allCancelledTools);
@@ -722,16 +722,16 @@ describe('useGeminiStream', () => {
     });
 
     await waitFor(() => {
-      // The tools should be marked as submitted locally
+      // 工具应被标记为本地提交
       expect(mockMarkToolsAsSubmitted).toHaveBeenCalledWith([
         'cancel-1',
         'cancel-2',
       ]);
 
-      // Crucially, addHistory should be called only ONCE
+      // 关键是，addHistory 应该只被调用一次
       expect(client.addHistory).toHaveBeenCalledTimes(1);
 
-      // And that single call should contain BOTH function responses
+      // 该单次调用应包含两个函数响应
       expect(client.addHistory).toHaveBeenCalledWith({
         role: 'user',
         parts: [
@@ -740,12 +740,12 @@ describe('useGeminiStream', () => {
         ],
       });
 
-      // No message should be sent back to the API for a turn with only cancellations
+      // 对于只有取消的回合，不应回调到 API
       expect(mockSendMessageStream).not.toHaveBeenCalled();
     });
   });
 
-  it('should not flicker streaming state to Idle between tool completion and submission', async () => {
+  it('在工具完成和提交之间不应闪烁流状态到空闲', async () => {
     const toolCallResponseParts: PartListUnion = [
       { text: 'tool 1 final response' },
     ];
@@ -784,7 +784,7 @@ describe('useGeminiStream', () => {
       } as TrackedCompletedToolCall,
     ];
 
-    // Capture the onComplete callback
+    // 捕获 onComplete 回调
     let capturedOnComplete:
       | ((completedTools: TrackedToolCall[]) => Promise<void>)
       | null = null;
@@ -817,10 +817,10 @@ describe('useGeminiStream', () => {
       ),
     );
 
-    // 1. Initial state should be Responding because a tool is executing.
+    // 1. 初始状态应为 Responding，因为工具正在执行。
     expect(result.current.streamingState).toBe(StreamingState.Responding);
 
-    // 2. Update the tool calls to completed state and rerender
+    // 2. 更新工具调用到完成状态并重新渲染
     currentToolCalls = completedToolCalls;
     mockUseReactToolScheduler.mockImplementation((onComplete) => {
       capturedOnComplete = onComplete;
@@ -835,18 +835,18 @@ describe('useGeminiStream', () => {
       rerender();
     });
 
-    // 3. The state should *still* be Responding, not Idle.
-    // This is because the completed tool's response has not been submitted yet.
+    // 3. 状态应*仍然*为 Responding，而不是 Idle。
+    // 这是因为已完成工具的响应尚未提交。
     expect(result.current.streamingState).toBe(StreamingState.Responding);
 
-    // 4. Trigger the onComplete callback to simulate tool completion
+    // 4. 触发 onComplete 回调以模拟工具完成
     await act(async () => {
       if (capturedOnComplete) {
         await capturedOnComplete(completedToolCalls);
       }
     });
 
-    // 5. Wait for submitQuery to be called
+    // 5. 等待 submitQuery 被调用
     await waitFor(() => {
       expect(mockSendMessageStream).toHaveBeenCalledWith(
         toolCallResponseParts,
@@ -855,16 +855,16 @@ describe('useGeminiStream', () => {
       );
     });
 
-    // 6. After submission, the state should remain Responding until the stream completes.
+    // 6. 提交后，状态应保持 Responding 直到流完成。
     expect(result.current.streamingState).toBe(StreamingState.Responding);
   });
 
-  describe('User Cancellation', () => {
+  describe('用户取消', () => {
     let useInputCallback: (input: string, key: any) => void;
     const mockUseInput = useInput as Mock;
 
     beforeEach(() => {
-      // Capture the callback passed to useInput
+      // 捕获传递给 useInput 的回调
       mockUseInput.mockImplementation((callback) => {
         useInputCallback = callback;
       });
@@ -876,62 +876,62 @@ describe('useGeminiStream', () => {
       });
     };
 
-    it('should cancel an in-progress stream when escape is pressed', async () => {
+    it('当按下 escape 键时应取消正在进行的流', async () => {
       const mockStream = (async function* () {
         yield { type: 'content', value: 'Part 1' };
-        // Keep the stream open
+        // 保持流打开
         await new Promise(() => {});
       })();
       mockSendMessageStream.mockReturnValue(mockStream);
 
       const { result } = renderTestHook();
 
-      // Start a query
+      // 开始查询
       await act(async () => {
         result.current.submitQuery('test query');
       });
 
-      // Wait for the first part of the response
+      // 等待响应的第一部分
       await waitFor(() => {
         expect(result.current.streamingState).toBe(StreamingState.Responding);
       });
 
-      // Simulate escape key press
+      // 模拟 escape 键按下
       simulateEscapeKeyPress();
 
-      // Verify cancellation message is added
+      // 验证取消消息已添加
       await waitFor(() => {
         expect(mockAddItem).toHaveBeenCalledWith(
           {
             type: MessageType.INFO,
-            text: 'Request cancelled.',
+            text: '请求已取消。',
           },
           expect.any(Number),
         );
       });
 
-      // Verify state is reset
+      // 验证状态已重置
       expect(result.current.streamingState).toBe(StreamingState.Idle);
     });
 
-    it('should not do anything if escape is pressed when not responding', () => {
+    it('当未响应时按下 escape 键不应执行任何操作', () => {
       const { result } = renderTestHook();
 
       expect(result.current.streamingState).toBe(StreamingState.Idle);
 
-      // Simulate escape key press
+      // 模拟 escape 键按下
       simulateEscapeKeyPress();
 
-      // No change should happen, no cancellation message
+      // 不应发生任何变化，不应有取消消息
       expect(mockAddItem).not.toHaveBeenCalledWith(
         expect.objectContaining({
-          text: 'Request cancelled.',
+          text: '请求已取消。',
         }),
         expect.any(Number),
       );
     });
 
-    it('should prevent further processing after cancellation', async () => {
+    it('取消后应阻止进一步处理', async () => {
       let continueStream: () => void;
       const streamPromise = new Promise<void>((resolve) => {
         continueStream = resolve;
@@ -939,7 +939,7 @@ describe('useGeminiStream', () => {
 
       const mockStream = (async function* () {
         yield { type: 'content', value: 'Initial' };
-        await streamPromise; // Wait until we manually continue
+        await streamPromise; // 等到我们手动继续
         yield { type: 'content', value: ' Canceled' };
       })();
       mockSendMessageStream.mockReturnValue(mockStream);
@@ -954,28 +954,28 @@ describe('useGeminiStream', () => {
         expect(result.current.streamingState).toBe(StreamingState.Responding);
       });
 
-      // Cancel the request
+      // 取消请求
       simulateEscapeKeyPress();
 
-      // Allow the stream to continue
+      // 允许流继续
       act(() => {
         continueStream();
       });
 
-      // Wait a bit to see if the second part is processed
+      // 等待片刻查看第二部分是否被处理
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // The text should not have been updated with " Canceled"
+      // 文本不应更新为 " Canceled"
       const lastCall = mockAddItem.mock.calls.find(
         (call) => call[0].type === 'gemini',
       );
       expect(lastCall?.[0].text).toBe('Initial');
 
-      // The final state should be idle after cancellation
+      // 取消后的最终状态应为空闲
       expect(result.current.streamingState).toBe(StreamingState.Idle);
     });
 
-    it('should not cancel if a tool call is in progress (not just responding)', async () => {
+    it('如果有工具调用正在进行（不仅仅是响应），则不应取消', async () => {
       const toolCalls: TrackedToolCall[] = [
         {
           request: { callId: 'call1', name: 'tool1', args: {} },
@@ -994,19 +994,19 @@ describe('useGeminiStream', () => {
       const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
       const { result } = renderTestHook(toolCalls);
 
-      // State is `Responding` because a tool is running
+      // 状态为 `Responding`，因为工具正在运行
       expect(result.current.streamingState).toBe(StreamingState.Responding);
 
-      // Try to cancel
+      // 尝试取消
       simulateEscapeKeyPress();
 
-      // Nothing should happen because the state is not `Responding`
+      // 不应发生任何事情，因为状态不是 `Responding`
       expect(abortSpy).not.toHaveBeenCalled();
     });
   });
 
-  describe('Slash Command Handling', () => {
-    it('should schedule a tool call when the command processor returns a schedule_tool action', async () => {
+  describe('斜杠命令处理', () => {
+    it('当命令处理器返回 schedule_tool 操作时，应安排工具调用', async () => {
       const clientToolRequest: SlashCommandProcessorResult = {
         type: 'schedule_tool',
         toolName: 'save_memory',
@@ -1035,7 +1035,7 @@ describe('useGeminiStream', () => {
       });
     });
 
-    it('should stop processing and not call Gemini when a command is handled without a tool call', async () => {
+    it('当命令处理后不调用工具时，应停止处理且不调用 Gemini', async () => {
       const uiOnlyCommandResult: SlashCommandProcessorResult = {
         type: 'handled',
       };
@@ -1050,13 +1050,13 @@ describe('useGeminiStream', () => {
       await waitFor(() => {
         expect(mockHandleSlashCommand).toHaveBeenCalledWith('/help');
         expect(mockScheduleToolCalls).not.toHaveBeenCalled();
-        expect(mockSendMessageStream).not.toHaveBeenCalled(); // No LLM call made
+        expect(mockSendMessageStream).not.toHaveBeenCalled(); // 未进行 LLM 调用
       });
     });
   });
 
-  describe('Memory Refresh on save_memory', () => {
-    it('should call performMemoryRefresh when a save_memory tool call completes successfully', async () => {
+  describe('save_memory 上的内存刷新', () => {
+    it('当 save_memory 工具调用成功完成时，应调用 performMemoryRefresh', async () => {
       const mockPerformMemoryRefresh = vi.fn();
       const completedToolCall: TrackedCompletedToolCall = {
         request: {
@@ -1081,7 +1081,7 @@ describe('useGeminiStream', () => {
         } as any,
       };
 
-      // Capture the onComplete callback
+      // 捕获 onComplete 回调
       let capturedOnComplete:
         | ((completedTools: TrackedToolCall[]) => Promise<void>)
         | null = null;
@@ -1109,7 +1109,7 @@ describe('useGeminiStream', () => {
         ),
       );
 
-      // Trigger the onComplete callback with the completed save_memory tool
+      // 使用已完成的 save_memory 工具触发 onComplete 回调
       await act(async () => {
         if (capturedOnComplete) {
           await capturedOnComplete([completedToolCall]);
@@ -1122,9 +1122,9 @@ describe('useGeminiStream', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should call parseAndFormatApiError with the correct authType on stream initialization failure', async () => {
-      // 1. Setup
+  describe('错误处理', () => {
+    it('应在流初始化失败时使用正确的 authType 调用 parseAndFormatApiError', async () => {
+      // 1. 设置
       const mockError = new Error('Rate limit exceeded');
       const mockAuthType = AuthType.LOGIN_WITH_GOOGLE;
       mockParseAndFormatApiError.mockClear();
@@ -1161,12 +1161,12 @@ describe('useGeminiStream', () => {
         ),
       );
 
-      // 2. Action
+      // 2. 操作
       await act(async () => {
         await result.current.submitQuery('test query');
       });
 
-      // 3. Assertion
+      // 3. 断言
       await waitFor(() => {
         expect(mockParseAndFormatApiError).toHaveBeenCalledWith(
           'Rate limit exceeded',

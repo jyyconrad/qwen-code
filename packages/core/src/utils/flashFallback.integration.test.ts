@@ -29,46 +29,46 @@ describe('Flash Fallback Integration', () => {
       model: 'gemini-2.5-pro',
     });
 
-    // Reset simulation state for each test
+    // 为每个测试重置模拟状态
     setSimulate429(false);
     resetRequestCounter();
   });
 
-  it('should automatically accept fallback', async () => {
-    // Set up a minimal flash fallback handler for testing
+  it('应自动接受回退', async () => {
+    // 设置一个最小的 flash 回退处理器用于测试
     const flashFallbackHandler = async (): Promise<boolean> => true;
 
     config.setFlashFallbackHandler(flashFallbackHandler);
 
-    // Call the handler directly to test
+    // 直接调用处理器进行测试
     const result = await config.flashFallbackHandler!(
       'gemini-2.5-pro',
       DEFAULT_GEMINI_FLASH_MODEL,
     );
 
-    // Verify it automatically accepts
+    // 验证它自动接受了回退
     expect(result).toBe(true);
   });
 
-  it('should trigger fallback after 2 consecutive 429 errors for OAuth users', async () => {
+  it('应在连续2次429错误后为OAuth用户触发回退', async () => {
     let fallbackCalled = false;
     let fallbackModel = '';
 
-    // Mock function that simulates exactly 2 429 errors, then succeeds after fallback
+    // 模拟函数，恰好产生2次429错误，然后在回退后成功
     const mockApiCall = vi
       .fn()
       .mockRejectedValueOnce(createSimulated429Error())
       .mockRejectedValueOnce(createSimulated429Error())
       .mockResolvedValueOnce('success after fallback');
 
-    // Mock fallback handler
+    // 模拟回退处理器
     const mockFallbackHandler = vi.fn(async (_authType?: string) => {
       fallbackCalled = true;
       fallbackModel = DEFAULT_GEMINI_FLASH_MODEL;
       return fallbackModel;
     });
 
-    // Test with OAuth personal auth type, with maxAttempts = 2 to ensure fallback triggers
+    // 使用OAuth个人认证类型进行测试，maxAttempts = 2以确保触发回退
     const result = await retryWithBackoff(mockApiCall, {
       maxAttempts: 2,
       initialDelayMs: 1,
@@ -81,7 +81,7 @@ describe('Flash Fallback Integration', () => {
       authType: AuthType.LOGIN_WITH_GOOGLE,
     });
 
-    // Verify fallback was triggered
+    // 验证回退已被触发
     expect(fallbackCalled).toBe(true);
     expect(fallbackModel).toBe(DEFAULT_GEMINI_FLASH_MODEL);
     expect(mockFallbackHandler).toHaveBeenCalledWith(
@@ -89,23 +89,23 @@ describe('Flash Fallback Integration', () => {
       expect.any(Error),
     );
     expect(result).toBe('success after fallback');
-    // Should have: 2 failures, then fallback triggered, then 1 success after retry reset
+    // 应该有：2次失败，然后触发回退，然后重试重置后1次成功
     expect(mockApiCall).toHaveBeenCalledTimes(3);
   });
 
-  it('should not trigger fallback for API key users', async () => {
+  it('不应为API密钥用户触发回退', async () => {
     let fallbackCalled = false;
 
-    // Mock function that simulates 429 errors
+    // 模拟产生429错误的函数
     const mockApiCall = vi.fn().mockRejectedValue(createSimulated429Error());
 
-    // Mock fallback handler
+    // 模拟回退处理器
     const mockFallbackHandler = vi.fn(async () => {
       fallbackCalled = true;
       return DEFAULT_GEMINI_FLASH_MODEL;
     });
 
-    // Test with API key auth type - should not trigger fallback
+    // 使用API密钥认证类型进行测试 - 不应触发回退
     try {
       await retryWithBackoff(mockApiCall, {
         maxAttempts: 5,
@@ -116,29 +116,29 @@ describe('Flash Fallback Integration', () => {
           return status === 429;
         },
         onPersistent429: mockFallbackHandler,
-        authType: AuthType.USE_GEMINI, // API key auth type
+        authType: AuthType.USE_GEMINI, // API密钥认证类型
       });
     } catch (error) {
-      // Expected to throw after max attempts
+      // 预期在最大尝试次数后抛出异常
       expect((error as Error).message).toContain('Rate limit exceeded');
     }
 
-    // Verify fallback was NOT triggered for API key users
+    // 验证对于API密钥用户未触发回退
     expect(fallbackCalled).toBe(false);
     expect(mockFallbackHandler).not.toHaveBeenCalled();
   });
 
-  it('should properly disable simulation state after fallback', () => {
-    // Enable simulation
+  it('应在回退后正确禁用模拟状态', () => {
+    // 启用模拟
     setSimulate429(true);
 
-    // Verify simulation is enabled
+    // 验证模拟已启用
     expect(shouldSimulate429()).toBe(true);
 
-    // Disable simulation after fallback
+    // 在回退后禁用模拟
     disableSimulationAfterFallback();
 
-    // Verify simulation is now disabled
+    // 验证模拟现在已禁用
     expect(shouldSimulate429()).toBe(false);
   });
 });

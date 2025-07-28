@@ -30,7 +30,7 @@ import { SERVICE_NAME } from './constants.js';
 import { initializeMetrics } from './metrics.js';
 import { ClearcutLogger } from './clearcut-logger/clearcut-logger.js';
 
-// For troubleshooting, set the log level to DiagLogLevel.DEBUG
+// 用于故障排除，请将日志级别设置为 DiagLogLevel.DEBUG
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 
 let sdk: NodeSDK | undefined;
@@ -46,16 +46,16 @@ function parseGrpcEndpoint(
   if (!otlpEndpointSetting) {
     return undefined;
   }
-  // Trim leading/trailing quotes that might come from env variables
+  // 去除可能来自环境变量的前导/尾随引号
   const trimmedEndpoint = otlpEndpointSetting.replace(/^["']|["']$/g, '');
 
   try {
     const url = new URL(trimmedEndpoint);
-    // OTLP gRPC exporters expect an endpoint in the format scheme://host:port
-    // The `origin` property provides this, stripping any path, query, or hash.
+    // OTLP gRPC 导出器期望的端点格式为 scheme://host:port
+    // `origin` 属性提供此格式，去除任何路径、查询或哈希。
     return url.origin;
   } catch (error) {
-    diag.error('Invalid OTLP endpoint URL provided:', trimmedEndpoint, error);
+    diag.error('提供的 OTLP 端点 URL 无效:', trimmedEndpoint, error);
     return undefined;
   }
 }
@@ -110,11 +110,11 @@ export function initializeTelemetry(config: Config): void {
 
   try {
     sdk.start();
-    console.log('OpenTelemetry SDK started successfully.');
+    console.log('OpenTelemetry SDK 启动成功。');
     telemetryInitialized = true;
     initializeMetrics(config);
   } catch (error) {
-    console.error('Error starting OpenTelemetry SDK:', error);
+    console.error('启动 OpenTelemetry SDK 时出错:', error);
   }
 
   process.on('SIGTERM', shutdownTelemetry);
@@ -128,9 +128,9 @@ export async function shutdownTelemetry(): Promise<void> {
   try {
     ClearcutLogger.getInstance()?.shutdown();
     await sdk.shutdown();
-    console.log('OpenTelemetry SDK shut down successfully.');
+    console.log('OpenTelemetry SDK 关闭成功。');
   } catch (error) {
-    console.error('Error shutting down SDK:', error);
+    console.error('关闭 SDK 时出错:', error);
   } finally {
     telemetryInitialized = false;
   }

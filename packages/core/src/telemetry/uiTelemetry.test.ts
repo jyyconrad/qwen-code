@@ -88,7 +88,7 @@ describe('UiTelemetryService', () => {
     service = new UiTelemetryService();
   });
 
-  it('should have correct initial metrics', () => {
+  it('应具有正确的初始指标', () => {
     const metrics = service.getMetrics();
     expect(metrics).toEqual({
       models: {},
@@ -108,7 +108,7 @@ describe('UiTelemetryService', () => {
     expect(service.getLastPromptTokenCount()).toBe(0);
   });
 
-  it('should emit an update event when an event is added', () => {
+  it('当添加事件时应发出更新事件', () => {
     const spy = vi.fn();
     service.on('update', spy);
 
@@ -132,8 +132,8 @@ describe('UiTelemetryService', () => {
     expect(lastPromptTokenCount).toBe(10);
   });
 
-  describe('API Response Event Processing', () => {
-    it('should process a single ApiResponseEvent', () => {
+  describe('API 响应事件处理', () => {
+    it('应处理单个 ApiResponseEvent', () => {
       const event = {
         'event.name': EVENT_API_RESPONSE,
         model: 'gemini-2.5-pro',
@@ -167,7 +167,7 @@ describe('UiTelemetryService', () => {
       expect(service.getLastPromptTokenCount()).toBe(10);
     });
 
-    it('should aggregate multiple ApiResponseEvents for the same model', () => {
+    it('应聚合同一模型的多个 ApiResponseEvents', () => {
       const event1 = {
         'event.name': EVENT_API_RESPONSE,
         model: 'gemini-2.5-pro',
@@ -217,7 +217,7 @@ describe('UiTelemetryService', () => {
       expect(service.getLastPromptTokenCount()).toBe(15);
     });
 
-    it('should handle ApiResponseEvents for different models', () => {
+    it('应处理不同模型的 ApiResponseEvents', () => {
       const event1 = {
         'event.name': EVENT_API_RESPONSE,
         model: 'gemini-2.5-pro',
@@ -257,8 +257,8 @@ describe('UiTelemetryService', () => {
     });
   });
 
-  describe('API Error Event Processing', () => {
-    it('should process a single ApiErrorEvent', () => {
+  describe('API 错误事件处理', () => {
+    it('应处理单个 ApiErrorEvent', () => {
       const event = {
         'event.name': EVENT_API_ERROR,
         model: 'gemini-2.5-pro',
@@ -286,7 +286,7 @@ describe('UiTelemetryService', () => {
       });
     });
 
-    it('should aggregate ApiErrorEvents and ApiResponseEvents', () => {
+    it('应聚合 ApiErrorEvents 和 ApiResponseEvents', () => {
       const responseEvent = {
         'event.name': EVENT_API_RESPONSE,
         model: 'gemini-2.5-pro',
@@ -329,8 +329,8 @@ describe('UiTelemetryService', () => {
     });
   });
 
-  describe('Tool Call Event Processing', () => {
-    it('should process a single successful ToolCallEvent', () => {
+  describe('工具调用事件处理', () => {
+    it('应处理单个成功的 ToolCallEvent', () => {
       const toolCall = createFakeCompletedToolCall(
         'test_tool',
         true,
@@ -363,7 +363,7 @@ describe('UiTelemetryService', () => {
       });
     });
 
-    it('should process a single failed ToolCallEvent', () => {
+    it('应处理单个失败的 ToolCallEvent', () => {
       const toolCall = createFakeCompletedToolCall(
         'test_tool',
         false,
@@ -396,7 +396,7 @@ describe('UiTelemetryService', () => {
       });
     });
 
-    it('should process a ToolCallEvent with modify decision', () => {
+    it('应处理带有修改决策的 ToolCallEvent', () => {
       const toolCall = createFakeCompletedToolCall(
         'test_tool',
         true,
@@ -417,7 +417,7 @@ describe('UiTelemetryService', () => {
       );
     });
 
-    it('should process a ToolCallEvent without a decision', () => {
+    it('应处理没有决策的 ToolCallEvent', () => {
       const toolCall = createFakeCompletedToolCall('test_tool', true, 100);
       service.addEvent({
         ...JSON.parse(JSON.stringify(new ToolCallEvent(toolCall))),
@@ -439,7 +439,7 @@ describe('UiTelemetryService', () => {
       });
     });
 
-    it('should aggregate multiple ToolCallEvents for the same tool', () => {
+    it('应聚合同一工具的多个 ToolCallEvents', () => {
       const toolCall1 = createFakeCompletedToolCall(
         'test_tool',
         true,
@@ -484,7 +484,7 @@ describe('UiTelemetryService', () => {
       });
     });
 
-    it('should handle ToolCallEvents for different tools', () => {
+    it('应处理不同工具的 ToolCallEvents', () => {
       const toolCall1 = createFakeCompletedToolCall('tool_A', true, 100);
       const toolCall2 = createFakeCompletedToolCall('tool_B', false, 200);
       service.addEvent({

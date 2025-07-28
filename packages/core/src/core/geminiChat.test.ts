@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,7 +16,7 @@ import { GeminiChat } from './geminiChat.js';
 import { Config } from '../config/config.js';
 import { setSimulate429 } from '../utils/testUtils.js';
 
-// Mocks
+// 模拟
 const mockModelsModule = {
   generateContent: vi.fn(),
   generateContentStream: vi.fn(),
@@ -48,9 +48,9 @@ describe('GeminiChat', () => {
       flashFallbackHandler: undefined,
     } as unknown as Config;
 
-    // Disable 429 simulation for tests
+    // 禁用测试中的 429 模拟
     setSimulate429(false);
-    // Reset history for each test by creating a new instance
+    // 通过创建新实例为每个测试重置历史记录
     chat = new GeminiChat(mockConfig, mockModelsModule, config, []);
   });
 
@@ -60,7 +60,7 @@ describe('GeminiChat', () => {
   });
 
   describe('sendMessage', () => {
-    it('should call generateContent with the correct parameters', async () => {
+    it('应使用正确的参数调用 generateContent', async () => {
       const response = {
         candidates: [
           {
@@ -88,7 +88,7 @@ describe('GeminiChat', () => {
   });
 
   describe('sendMessageStream', () => {
-    it('should call generateContentStream with the correct parameters', async () => {
+    it('应使用正确的参数调用 generateContentStream', async () => {
       const response = (async function* () {
         yield {
           candidates: [
@@ -125,22 +125,22 @@ describe('GeminiChat', () => {
       parts: [{ text: 'User input' }],
     };
 
-    it('should add user input and a single model output to history', () => {
+    it('应将用户输入和单个模型输出添加到历史记录中', () => {
       const modelOutput: Content[] = [
         { role: 'model', parts: [{ text: 'Model output' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutput);
       const history = chat.getHistory();
       expect(history).toEqual([userInput, modelOutput[0]]);
     });
 
-    it('should consolidate adjacent model outputs', () => {
+    it('应合并相邻的模型输出', () => {
       const modelOutputParts: Content[] = [
         { role: 'model', parts: [{ text: 'Model part 1' }] },
         { role: 'model', parts: [{ text: 'Model part 2' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputParts);
       const history = chat.getHistory();
       expect(history.length).toBe(2);
@@ -149,13 +149,13 @@ describe('GeminiChat', () => {
       expect(history[1].parts).toEqual([{ text: 'Model part 1Model part 2' }]);
     });
 
-    it('should handle a mix of user and model roles in outputContents (though unusual)', () => {
+    it('应处理 outputContents 中用户和模型角色的混合（尽管不常见）', () => {
       const mixedOutput: Content[] = [
         { role: 'model', parts: [{ text: 'Model 1' }] },
-        { role: 'user', parts: [{ text: 'Unexpected User' }] }, // This should be pushed as is
+        { role: 'user', parts: [{ text: 'Unexpected User' }] }, // 这应该按原样推送
         { role: 'model', parts: [{ text: 'Model 2' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, mixedOutput);
       const history = chat.getHistory();
       expect(history.length).toBe(4); // user, model1, user_unexpected, model2
@@ -165,26 +165,26 @@ describe('GeminiChat', () => {
       expect(history[3]).toEqual(mixedOutput[2]);
     });
 
-    it('should consolidate multiple adjacent model outputs correctly', () => {
+    it('应正确合并多个相邻的模型输出', () => {
       const modelOutputParts: Content[] = [
         { role: 'model', parts: [{ text: 'M1' }] },
         { role: 'model', parts: [{ text: 'M2' }] },
         { role: 'model', parts: [{ text: 'M3' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputParts);
       const history = chat.getHistory();
       expect(history.length).toBe(2);
       expect(history[1].parts).toEqual([{ text: 'M1M2M3' }]);
     });
 
-    it('should not consolidate if roles are different between model outputs', () => {
+    it('如果模型输出之间的角色不同，则不应合并', () => {
       const modelOutputParts: Content[] = [
         { role: 'model', parts: [{ text: 'M1' }] },
         { role: 'user', parts: [{ text: 'Interjecting User' }] },
         { role: 'model', parts: [{ text: 'M2' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputParts);
       const history = chat.getHistory();
       expect(history.length).toBe(4); // user, M1, Interjecting User, M2
@@ -192,21 +192,21 @@ describe('GeminiChat', () => {
       expect(history[3].parts).toEqual([{ text: 'M2' }]);
     });
 
-    it('should merge with last history entry if it is also a model output', () => {
-      // @ts-expect-error Accessing private property for test setup
+    it('如果最后一个历史记录条目也是模型输出，则应与之合并', () => {
+      // @ts-expect-error 访问私有属性用于测试设置
       chat.history = [
         userInput,
         { role: 'model', parts: [{ text: 'Initial Model Output' }] },
-      ]; // Prime the history
+      ]; // 预设历史记录
 
       const newModelOutput: Content[] = [
         { role: 'model', parts: [{ text: 'New Model Part 1' }] },
         { role: 'model', parts: [{ text: 'New Model Part 2' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
-      chat.recordHistory(userInput, newModelOutput); // userInput here is for the *next* turn, but history is already primed
+      // @ts-expect-error 访问私有方法用于测试目的
+      chat.recordHistory(userInput, newModelOutput); // 这里的 userInput 是用于 *下一个* 回合的，但历史记录已经预设
 
-      // Reset and set up a more realistic scenario for merging with existing history
+      // 重置并设置更真实的合并现有历史记录场景
       chat = new GeminiChat(mockConfig, mockModelsModule, config, []);
       const firstUserInput: Content = {
         role: 'user',
@@ -215,7 +215,7 @@ describe('GeminiChat', () => {
       const firstModelOutput: Content[] = [
         { role: 'model', parts: [{ text: 'First model response' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(firstUserInput, firstModelOutput);
 
       const secondUserInput: Content = {
@@ -226,7 +226,7 @@ describe('GeminiChat', () => {
         { role: 'model', parts: [{ text: 'Second model response part 1' }] },
         { role: 'model', parts: [{ text: 'Second model response part 2' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(secondUserInput, secondModelOutput);
 
       const finalHistory = chat.getHistory();
@@ -240,8 +240,8 @@ describe('GeminiChat', () => {
       ]);
     });
 
-    it('should correctly merge consolidated new output with existing model history', () => {
-      // Setup: history ends with a model turn
+    it('应正确合并已合并的新输出与现有的模型历史记录', () => {
+      // 设置：历史记录以模型回合结束
       const initialUser: Content = {
         role: 'user',
         parts: [{ text: 'Initial user query' }],
@@ -255,7 +255,7 @@ describe('GeminiChat', () => {
         initialModel,
       ]);
 
-      // New interaction
+      // 新交互
       const currentUserInput: Content = {
         role: 'user',
         parts: [{ text: 'Follow-up question' }],
@@ -265,11 +265,11 @@ describe('GeminiChat', () => {
         { role: 'model', parts: [{ text: 'Part B of new answer.' }] },
       ];
 
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(currentUserInput, newModelParts);
       const history = chat.getHistory();
 
-      // Expected: initialUser, initialModel, currentUserInput, consolidatedNewModelParts
+      // 预期：initialUser, initialModel, currentUserInput, consolidatedNewModelParts
       expect(history.length).toBe(4);
       expect(history[0]).toEqual(initialUser);
       expect(history[1]).toEqual(initialModel);
@@ -280,27 +280,27 @@ describe('GeminiChat', () => {
       ]);
     });
 
-    it('should handle empty modelOutput array', () => {
-      // @ts-expect-error Accessing private method for testing purposes
+    it('应处理空的 modelOutput 数组', () => {
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, []);
       const history = chat.getHistory();
-      // If modelOutput is empty, it might push a default empty model part depending on isFunctionResponse
-      // Assuming isFunctionResponse(userInput) is false for this simple text input
+      // 如果 modelOutput 为空，它可能会推送一个默认的空模型部分，具体取决于 isFunctionResponse
+      // 假设 isFunctionResponse(userInput) 对于这个简单的文本输入为 false
       expect(history.length).toBe(2);
       expect(history[0]).toEqual(userInput);
       expect(history[1].role).toBe('model');
       expect(history[1].parts).toEqual([]);
     });
 
-    it('should handle aggregating modelOutput', () => {
+    it('应处理聚合 modelOutput', () => {
       const modelOutputUndefinedParts: Content[] = [
         { role: 'model', parts: [{ text: 'First model part' }] },
         { role: 'model', parts: [{ text: 'Second model part' }] },
-        { role: 'model', parts: undefined as unknown as Part[] }, // Test undefined parts
+        { role: 'model', parts: undefined as unknown as Part[] }, // 测试未定义的部分
         { role: 'model', parts: [{ text: 'Third model part' }] },
-        { role: 'model', parts: [] }, // Test empty parts array
+        { role: 'model', parts: [] }, // 测试空部分数组
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputUndefinedParts);
       const history = chat.getHistory();
       expect(history.length).toBe(5);
@@ -317,13 +317,13 @@ describe('GeminiChat', () => {
       expect(history[4].parts).toEqual([]);
     });
 
-    it('should handle modelOutput with parts being undefined or empty (if they pass initial every check)', () => {
+    it('应处理 parts 为 undefined 或空的 modelOutput（如果它们通过初始的 every 检查）', () => {
       const modelOutputUndefinedParts: Content[] = [
         { role: 'model', parts: [{ text: 'Text part' }] },
-        { role: 'model', parts: undefined as unknown as Part[] }, // Test undefined parts
-        { role: 'model', parts: [] }, // Test empty parts array
+        { role: 'model', parts: undefined as unknown as Part[] }, // 测试未定义的部分
+        { role: 'model', parts: [] }, // 测试空部分数组
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputUndefinedParts);
       const history = chat.getHistory();
       expect(history.length).toBe(4); // userInput, model1 (text), model2 (undefined parts), model3 (empty parts)
@@ -336,7 +336,7 @@ describe('GeminiChat', () => {
       expect(history[3].parts).toEqual([]);
     });
 
-    it('should correctly handle automaticFunctionCallingHistory', () => {
+    it('应正确处理 automaticFunctionCallingHistory', () => {
       const afcHistory: Content[] = [
         { role: 'user', parts: [{ text: 'AFC User' }] },
         { role: 'model', parts: [{ text: 'AFC Model' }] },
@@ -344,7 +344,7 @@ describe('GeminiChat', () => {
       const modelOutput: Content[] = [
         { role: 'model', parts: [{ text: 'Regular Model Output' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutput, afcHistory);
       const history = chat.getHistory();
       expect(history.length).toBe(3);
@@ -353,45 +353,45 @@ describe('GeminiChat', () => {
       expect(history[2]).toEqual(modelOutput[0]);
     });
 
-    it('should add userInput if AFC history is present but empty', () => {
+    it('如果 AFC 历史记录存在但为空，则应添加 userInput', () => {
       const modelOutput: Content[] = [
         { role: 'model', parts: [{ text: 'Model Output' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
-      chat.recordHistory(userInput, modelOutput, []); // Empty AFC history
+      // @ts-expect-error 访问私有方法用于测试目的
+      chat.recordHistory(userInput, modelOutput, []); // 空的 AFC 历史记录
       const history = chat.getHistory();
       expect(history.length).toBe(2);
       expect(history[0]).toEqual(userInput);
       expect(history[1]).toEqual(modelOutput[0]);
     });
 
-    it('should skip "thought" content from modelOutput', () => {
+    it('应跳过 modelOutput 中的 "thought" 内容', () => {
       const modelOutputWithThought: Content[] = [
         { role: 'model', parts: [{ thought: true }, { text: 'Visible text' }] },
         { role: 'model', parts: [{ text: 'Another visible text' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputWithThought);
       const history = chat.getHistory();
-      expect(history.length).toBe(2); // User input + consolidated model output
+      expect(history.length).toBe(2); // 用户输入 + 合并的模型输出
       expect(history[0]).toEqual(userInput);
       expect(history[1].role).toBe('model');
-      // The 'thought' part is skipped, 'Another visible text' becomes the first part.
+      // 'thought' 部分被跳过，'Another visible text' 成为第一部分。
       expect(history[1].parts).toEqual([{ text: 'Another visible text' }]);
     });
 
-    it('should skip "thought" content even if it is the only content', () => {
+    it('即使它是唯一的内容也应跳过 "thought" 内容', () => {
       const modelOutputOnlyThought: Content[] = [
         { role: 'model', parts: [{ thought: true }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputOnlyThought);
       const history = chat.getHistory();
-      expect(history.length).toBe(1); // User input + default empty model part
+      expect(history.length).toBe(1); // 用户输入 + 默认空模型部分
       expect(history[0]).toEqual(userInput);
     });
 
-    it('should correctly consolidate text parts when a thought part is in between', () => {
+    it('当 thought 部分在中间时应正确合并文本部分', () => {
       const modelOutputMixed: Content[] = [
         { role: 'model', parts: [{ text: 'Part 1.' }] },
         {
@@ -400,7 +400,7 @@ describe('GeminiChat', () => {
         },
         { role: 'model', parts: [{ text: 'Part 2.' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputMixed);
       const history = chat.getHistory();
       expect(history.length).toBe(2);
@@ -409,14 +409,14 @@ describe('GeminiChat', () => {
       expect(history[1].parts).toEqual([{ text: 'Part 1.Part 2.' }]);
     });
 
-    it('should handle multiple thought parts correctly', () => {
+    it('应正确处理多个 thought 部分', () => {
       const modelOutputMultipleThoughts: Content[] = [
         { role: 'model', parts: [{ thought: true }] },
         { role: 'model', parts: [{ text: 'Visible 1' }] },
         { role: 'model', parts: [{ thought: true }] },
         { role: 'model', parts: [{ text: 'Visible 2' }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputMultipleThoughts);
       const history = chat.getHistory();
       expect(history.length).toBe(2);
@@ -425,12 +425,12 @@ describe('GeminiChat', () => {
       expect(history[1].parts).toEqual([{ text: 'Visible 1Visible 2' }]);
     });
 
-    it('should handle thought part at the end of outputContents', () => {
+    it('应处理 outputContents 末尾的 thought 部分', () => {
       const modelOutputThoughtAtEnd: Content[] = [
         { role: 'model', parts: [{ text: 'Visible text' }] },
         { role: 'model', parts: [{ thought: true }] },
       ];
-      // @ts-expect-error Accessing private method for testing purposes
+      // @ts-expect-error 访问私有方法用于测试目的
       chat.recordHistory(userInput, modelOutputThoughtAtEnd);
       const history = chat.getHistory();
       expect(history.length).toBe(2);
@@ -441,7 +441,7 @@ describe('GeminiChat', () => {
   });
 
   describe('addHistory', () => {
-    it('should add a new content item to the history', () => {
+    it('应将新的内容项添加到历史记录中', () => {
       const newContent: Content = {
         role: 'user',
         parts: [{ text: 'A new message' }],
@@ -452,7 +452,7 @@ describe('GeminiChat', () => {
       expect(history[0]).toEqual(newContent);
     });
 
-    it('should add multiple items correctly', () => {
+    it('应正确添加多个项目', () => {
       const content1: Content = {
         role: 'user',
         parts: [{ text: 'Message 1' }],

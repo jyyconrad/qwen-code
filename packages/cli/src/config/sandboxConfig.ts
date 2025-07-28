@@ -10,8 +10,8 @@ import * as os from 'node:os';
 import { getPackageJson } from '../utils/package.js';
 import { Settings } from './settings.js';
 
-// This is a stripped-down version of the CliArgs interface from config.ts
-// to avoid circular dependencies.
+// 这是来自 config.ts 的 CliArgs 接口的简化版本
+// 以避免循环依赖。
 interface SandboxCliArgs {
   sandbox?: boolean | string;
   sandboxImage?: string;
@@ -30,12 +30,12 @@ function isSandboxCommand(value: string): value is SandboxConfig['command'] {
 function getSandboxCommand(
   sandbox?: boolean | string,
 ): SandboxConfig['command'] | '' {
-  // If the SANDBOX env var is set, we're already inside the sandbox.
+  // 如果设置了 SANDBOX 环境变量，说明我们已经在沙箱内。
   if (process.env.SANDBOX) {
     return '';
   }
 
-  // note environment variable takes precedence over argument (from command line or settings)
+  // 注意环境变量优先于参数（来自命令行或设置）
   const environmentConfiguredSandbox =
     process.env.GEMINI_SANDBOX?.toLowerCase().trim() ?? '';
   sandbox =
@@ -58,7 +58,7 @@ function getSandboxCommand(
       );
       process.exit(1);
     }
-    // confirm that specified command exists
+    // 确认指定的命令存在
     if (commandExists.sync(sandbox)) {
       return sandbox;
     }
@@ -68,8 +68,8 @@ function getSandboxCommand(
     process.exit(1);
   }
 
-  // look for seatbelt, docker, or podman, in that order
-  // for container-based sandboxing, require sandbox to be enabled explicitly
+  // 按顺序查找 seatbelt、docker 或 podman
+  // 对于基于容器的沙箱，需要显式启用沙箱
   if (os.platform() === 'darwin' && commandExists.sync('sandbox-exec')) {
     return 'sandbox-exec';
   } else if (commandExists.sync('docker') && sandbox === true) {
@@ -78,7 +78,7 @@ function getSandboxCommand(
     return 'podman';
   }
 
-  // throw an error if user requested sandbox but no command was found
+  // 如果用户请求了沙箱但未找到命令，则抛出错误
   if (sandbox === true) {
     console.error(
       'ERROR: GEMINI_SANDBOX is true but failed to determine command for sandbox; ' +

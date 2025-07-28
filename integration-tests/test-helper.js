@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -43,7 +43,7 @@ export class TestRig {
   }
 
   sync() {
-    // ensure file system is done before spawning
+    // 确保文件系统操作完成后再启动进程
     execSync('sync', { cwd: this.testDir });
   }
 
@@ -77,9 +77,9 @@ export class TestRig {
         '.test.js',
         '',
       )}:${this.testName.replace(/ /g, '-')}`;
-      console.log(`--- TEST: ${testId} ---`);
+      console.log(`--- 测试: ${testId} ---`);
       console.log(output);
-      console.log(`--- END TEST: ${testId} ---`);
+      console.log(`--- 测试结束: ${testId} ---`);
     }
 
     return output;
@@ -92,9 +92,9 @@ export class TestRig {
         '.test.js',
         '',
       )}:${this.testName.replace(/ /g, '-')}`;
-      console.log(`--- FILE: ${testId}/${fileName} ---`);
+      console.log(`--- 文件: ${testId}/${fileName} ---`);
       console.log(content);
-      console.log(`--- END FILE: ${testId}/${fileName} ---`);
+      console.log(`--- 文件结束: ${testId}/${fileName} ---`);
     }
     return content;
   }

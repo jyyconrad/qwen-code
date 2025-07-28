@@ -12,11 +12,11 @@ import { Config } from '../config/config.js';
 import { checkNextSpeaker, NextSpeakerResponse } from './nextSpeakerChecker.js';
 import { GeminiChat } from '../core/geminiChat.js';
 
-// Mock GeminiClient and Config constructor
+// 模拟 GeminiClient 和 Config 构造函数
 vi.mock('../core/client.js');
 vi.mock('../config/config.js');
 
-// Define mocks for GoogleGenAI and Models instances that will be used across tests
+// 定义将在测试中使用的 GoogleGenAI 和 Models 实例的模拟对象
 const mockModelsInstance = {
   generateContent: vi.fn(),
   generateContentStream: vi.fn(),
@@ -27,7 +27,7 @@ const mockModelsInstance = {
 
 const mockGoogleGenAIInstance = {
   getGenerativeModel: vi.fn().mockReturnValue(mockModelsInstance),
-  // Add other methods of GoogleGenAI if they are directly used by GeminiChat constructor or its methods
+  // 如果 GeminiChat 构造函数或其方法直接使用了 GoogleGenAI 的其他方法，请在此添加
 } as unknown as GoogleGenAI;
 
 vi.mock('@google/genai', async () => {
@@ -35,9 +35,9 @@ vi.mock('@google/genai', async () => {
     await vi.importActual<typeof import('@google/genai')>('@google/genai');
   return {
     ...actualGenAI,
-    GoogleGenAI: vi.fn(() => mockGoogleGenAIInstance), // Mock constructor to return the predefined instance
-    // If Models is instantiated directly in GeminiChat, mock its constructor too
-    // For now, assuming Models instance is obtained via getGenerativeModel
+    GoogleGenAI: vi.fn(() => mockGoogleGenAIInstance), // 模拟构造函数以返回预定义的实例
+    // 如果 Models 在 GeminiChat 中被直接实例化，也要模拟其构造函数
+    // 目前假设 Models 实例是通过 getGenerativeModel 获得的
   };
 });
 
@@ -64,19 +64,19 @@ describe('checkNextSpeaker', () => {
 
     mockGeminiClient = new GeminiClient(mockConfigInstance);
 
-    // Reset mocks before each test to ensure test isolation
+    // 在每次测试前重置模拟对象以确保测试隔离
     vi.mocked(mockModelsInstance.generateContent).mockReset();
     vi.mocked(mockModelsInstance.generateContentStream).mockReset();
 
-    // GeminiChat will receive the mocked instances via the mocked GoogleGenAI constructor
+    // GeminiChat 将通过模拟的 GoogleGenAI 构造函数接收模拟实例
     chatInstance = new GeminiChat(
       mockConfigInstance,
-      mockModelsInstance, // This is the instance returned by mockGoogleGenAIInstance.getGenerativeModel
+      mockModelsInstance, // 这是 mockGoogleGenAIInstance.getGenerativeModel 返回的实例
       {},
-      [], // initial history
+      [], // 初始历史记录
     );
 
-    // Spy on getHistory for chatInstance
+    // 监视 chatInstance 的 getHistory 方法
     vi.spyOn(chatInstance, 'getHistory');
   });
 
@@ -84,7 +84,7 @@ describe('checkNextSpeaker', () => {
     vi.clearAllMocks();
   });
 
-  it('should return null if history is empty', async () => {
+  it('如果历史记录为空，应返回 null', async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([]);
     const result = await checkNextSpeaker(
       chatInstance,
@@ -95,7 +95,7 @@ describe('checkNextSpeaker', () => {
     expect(mockGeminiClient.generateJson).not.toHaveBeenCalled();
   });
 
-  it('should return null if the last speaker was the user', async () => {
+  it('如果最后一位发言者是用户，应返回 null', async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([
       { role: 'user', parts: [{ text: 'Hello' }] },
     ] as Content[]);
@@ -108,12 +108,12 @@ describe('checkNextSpeaker', () => {
     expect(mockGeminiClient.generateJson).not.toHaveBeenCalled();
   });
 
-  it("should return { next_speaker: 'model' } when model intends to continue", async () => {
+  it("当模型意图继续时，应返回 { next_speaker: 'model' }", async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([
       { role: 'model', parts: [{ text: 'I will now do something.' }] },
     ] as Content[]);
     const mockApiResponse: NextSpeakerResponse = {
-      reasoning: 'Model stated it will do something.',
+      reasoning: '模型声明它将执行某些操作。',
       next_speaker: 'model',
     };
     (mockGeminiClient.generateJson as Mock).mockResolvedValue(mockApiResponse);
@@ -127,12 +127,12 @@ describe('checkNextSpeaker', () => {
     expect(mockGeminiClient.generateJson).toHaveBeenCalledTimes(1);
   });
 
-  it("should return { next_speaker: 'user' } when model asks a question", async () => {
+  it("当模型提出问题时，应返回 { next_speaker: 'user' }", async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([
       { role: 'model', parts: [{ text: 'What would you like to do?' }] },
     ] as Content[]);
     const mockApiResponse: NextSpeakerResponse = {
-      reasoning: 'Model asked a question.',
+      reasoning: '模型提出了一个问题。',
       next_speaker: 'user',
     };
     (mockGeminiClient.generateJson as Mock).mockResolvedValue(mockApiResponse);
@@ -145,12 +145,12 @@ describe('checkNextSpeaker', () => {
     expect(result).toEqual(mockApiResponse);
   });
 
-  it("should return { next_speaker: 'user' } when model makes a statement", async () => {
+  it("当模型做出陈述时，应返回 { next_speaker: 'user' }", async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([
       { role: 'model', parts: [{ text: 'This is a statement.' }] },
     ] as Content[]);
     const mockApiResponse: NextSpeakerResponse = {
-      reasoning: 'Model made a statement, awaiting user input.',
+      reasoning: '模型做出了陈述，等待用户输入。',
       next_speaker: 'user',
     };
     (mockGeminiClient.generateJson as Mock).mockResolvedValue(mockApiResponse);
@@ -163,7 +163,7 @@ describe('checkNextSpeaker', () => {
     expect(result).toEqual(mockApiResponse);
   });
 
-  it('should return null if geminiClient.generateJson throws an error', async () => {
+  it('如果 geminiClient.generateJson 抛出错误，应返回 null', async () => {
     const consoleWarnSpy = vi
       .spyOn(console, 'warn')
       .mockImplementation(() => {});
@@ -183,13 +183,13 @@ describe('checkNextSpeaker', () => {
     consoleWarnSpy.mockRestore();
   });
 
-  it('should return null if geminiClient.generateJson returns invalid JSON (missing next_speaker)', async () => {
+  it('如果 geminiClient.generateJson 返回无效 JSON（缺少 next_speaker），应返回 null', async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([
       { role: 'model', parts: [{ text: 'Some model output.' }] },
     ] as Content[]);
     (mockGeminiClient.generateJson as Mock).mockResolvedValue({
-      reasoning: 'This is incomplete.',
-    } as unknown as NextSpeakerResponse); // Type assertion to simulate invalid response
+      reasoning: '这是不完整的。',
+    } as unknown as NextSpeakerResponse); // 类型断言以模拟无效响应
 
     const result = await checkNextSpeaker(
       chatInstance,
@@ -199,13 +199,13 @@ describe('checkNextSpeaker', () => {
     expect(result).toBeNull();
   });
 
-  it('should return null if geminiClient.generateJson returns a non-string next_speaker', async () => {
+  it('如果 geminiClient.generateJson 返回非字符串类型的 next_speaker，应返回 null', async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([
       { role: 'model', parts: [{ text: 'Some model output.' }] },
     ] as Content[]);
     (mockGeminiClient.generateJson as Mock).mockResolvedValue({
-      reasoning: 'Model made a statement, awaiting user input.',
-      next_speaker: 123, // Invalid type
+      reasoning: '模型做出了陈述，等待用户输入。',
+      next_speaker: 123, // 无效类型
     } as unknown as NextSpeakerResponse);
 
     const result = await checkNextSpeaker(
@@ -216,13 +216,13 @@ describe('checkNextSpeaker', () => {
     expect(result).toBeNull();
   });
 
-  it('should return null if geminiClient.generateJson returns an invalid next_speaker string value', async () => {
+  it('如果 geminiClient.generateJson 返回无效的 next_speaker 字符串值，应返回 null', async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([
       { role: 'model', parts: [{ text: 'Some model output.' }] },
     ] as Content[]);
     (mockGeminiClient.generateJson as Mock).mockResolvedValue({
-      reasoning: 'Model made a statement, awaiting user input.',
-      next_speaker: 'neither', // Invalid enum value
+      reasoning: '模型做出了陈述，等待用户输入。',
+      next_speaker: 'neither', // 无效的枚举值
     } as unknown as NextSpeakerResponse);
 
     const result = await checkNextSpeaker(
@@ -233,12 +233,12 @@ describe('checkNextSpeaker', () => {
     expect(result).toBeNull();
   });
 
-  it('should call generateJson with DEFAULT_GEMINI_FLASH_MODEL', async () => {
+  it('应使用 DEFAULT_GEMINI_FLASH_MODEL 调用 generateJson', async () => {
     (chatInstance.getHistory as Mock).mockReturnValue([
       { role: 'model', parts: [{ text: 'Some model output.' }] },
     ] as Content[]);
     const mockApiResponse: NextSpeakerResponse = {
-      reasoning: 'Model made a statement, awaiting user input.',
+      reasoning: '模型做出了陈述，等待用户输入。',
       next_speaker: 'user',
     };
     (mockGeminiClient.generateJson as Mock).mockResolvedValue(mockApiResponse);

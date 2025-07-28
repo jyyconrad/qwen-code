@@ -70,8 +70,8 @@ export function allowEditorTypeInSandbox(editor: EditorType): boolean {
 }
 
 /**
- * Check if the editor is valid and can be used.
- * Returns false if preferred editor is not set / invalid / not available / not allowed in sandbox.
+ * 检查编辑器是否有效且可以使用。
+ * 如果首选编辑器未设置/无效/不可用/在沙箱中不允许，则返回 false。
  */
 export function isEditorAvailable(editor: string | undefined): boolean {
   if (editor && isValidEditorType(editor)) {
@@ -81,7 +81,7 @@ export function isEditorAvailable(editor: string | undefined): boolean {
 }
 
 /**
- * Get the diff command for a specific editor.
+ * 获取特定编辑器的差异命令。
  */
 export function getDiffCommand(
   oldPath: string,
@@ -107,23 +107,23 @@ export function getDiffCommand(
         command,
         args: [
           '-d',
-          // skip viminfo file to avoid E138 errors
+          // 跳过 viminfo 文件以避免 E138 错误
           '-i',
           'NONE',
-          // make the left window read-only and the right window editable
+          // 使左窗口只读，右窗口可编辑
           '-c',
           'wincmd h | set readonly | wincmd l',
-          // set up colors for diffs
+          // 为差异设置颜色
           '-c',
           'highlight DiffAdd cterm=bold ctermbg=22 guibg=#005f00 | highlight DiffChange cterm=bold ctermbg=24 guibg=#005f87 | highlight DiffText ctermbg=21 guibg=#0000af | highlight DiffDelete ctermbg=52 guibg=#5f0000',
-          // Show helpful messages
+          // 显示有用的信息
           '-c',
           'set showtabline=2 | set tabline=[Instructions]\\ :wqa(save\\ &\\ quit)\\ \\|\\ i/esc(toggle\\ edit\\ mode)',
           '-c',
           'wincmd h | setlocal statusline=OLD\\ FILE',
           '-c',
           'wincmd l | setlocal statusline=%#StatusBold#NEW\\ FILE\\ :wqa(save\\ &\\ quit)\\ \\|\\ i/esc(toggle\\ edit\\ mode)',
-          // Auto close all windows when one is closed
+          // 关闭一个窗口时自动关闭所有窗口
           '-c',
           'autocmd WinClosed * wqa',
           oldPath,
@@ -136,9 +136,9 @@ export function getDiffCommand(
 }
 
 /**
- * Opens a diff tool to compare two files.
- * Terminal-based editors by default blocks parent process until the editor exits.
- * GUI-based editors require args such as "--wait" to block parent process.
+ * 打开差异工具以比较两个文件。
+ * 基于终端的编辑器默认会阻塞父进程直到编辑器退出。
+ * 基于 GUI 的编辑器需要 "--wait" 等参数来阻塞父进程。
  */
 export async function openDiff(
   oldPath: string,
@@ -147,7 +147,7 @@ export async function openDiff(
 ): Promise<void> {
   const diffCommand = getDiffCommand(oldPath, newPath, editor);
   if (!diffCommand) {
-    console.error('No diff tool available. Install a supported editor.');
+    console.error('没有可用的差异工具。请安装受支持的编辑器。');
     return;
   }
 
@@ -158,7 +158,7 @@ export async function openDiff(
       case 'windsurf':
       case 'cursor':
       case 'zed':
-        // Use spawn for GUI-based editors to avoid blocking the entire process
+        // 对于基于 GUI 的编辑器使用 spawn 以避免阻塞整个进程
         return new Promise((resolve, reject) => {
           const childProcess = spawn(diffCommand.command, diffCommand.args, {
             stdio: 'inherit',
@@ -169,7 +169,7 @@ export async function openDiff(
             if (code === 0) {
               resolve();
             } else {
-              reject(new Error(`${editor} exited with code ${code}`));
+              reject(new Error(`${editor} 退出代码 ${code}`));
             }
           });
 
@@ -180,7 +180,7 @@ export async function openDiff(
 
       case 'vim':
       case 'neovim': {
-        // Use execSync for terminal-based editors
+        // 对于基于终端的编辑器使用 execSync
         const command =
           process.platform === 'win32'
             ? `${diffCommand.command} ${diffCommand.args.join(' ')}`
@@ -193,7 +193,7 @@ export async function openDiff(
       }
 
       default:
-        throw new Error(`Unsupported editor: ${editor}`);
+        throw new Error(`不支持的编辑器: ${editor}`);
     }
   } catch (error) {
     console.error(error);

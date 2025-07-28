@@ -10,10 +10,10 @@ import { ToolConfirmationMessage } from './ToolConfirmationMessage.js';
 import { ToolCallConfirmationDetails } from '@iflytek/iflycode-core';
 
 describe('ToolConfirmationMessage', () => {
-  it('should not display urls if prompt and url are the same', () => {
+  it('如果提示和URL相同，则不应显示URL', () => {
     const confirmationDetails: ToolCallConfirmationDetails = {
       type: 'info',
-      title: 'Confirm Web Fetch',
+      title: '确认网络获取',
       prompt: 'https://example.com',
       urls: ['https://example.com'],
       onConfirm: vi.fn(),
@@ -27,15 +27,15 @@ describe('ToolConfirmationMessage', () => {
       />,
     );
 
-    expect(lastFrame()).not.toContain('URLs to fetch:');
+    expect(lastFrame()).not.toContain('要获取的URL:');
   });
 
-  it('should display urls if prompt and url are different', () => {
+  it('如果提示和URL不同，则应显示URL', () => {
     const confirmationDetails: ToolCallConfirmationDetails = {
       type: 'info',
-      title: 'Confirm Web Fetch',
+      title: '确认网络获取',
       prompt:
-        'fetch https://github.com/google/gemini-react/blob/main/README.md',
+        '获取 https://github.com/google/gemini-react/blob/main/README.md',
       urls: [
         'https://raw.githubusercontent.com/google/gemini-react/main/README.md',
       ],
@@ -50,7 +50,7 @@ describe('ToolConfirmationMessage', () => {
       />,
     );
 
-    expect(lastFrame()).toContain('URLs to fetch:');
+    expect(lastFrame()).toContain('要获取的URL:');
     expect(lastFrame()).toContain(
       '- https://raw.githubusercontent.com/google/gemini-react/main/README.md',
     );

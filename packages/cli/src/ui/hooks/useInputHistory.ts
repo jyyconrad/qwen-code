@@ -10,7 +10,7 @@ interface UseInputHistoryProps {
   userMessages: readonly string[];
   onSubmit: (value: string) => void;
   isActive: boolean;
-  currentQuery: string; // Renamed from query to avoid confusion
+  currentQuery: string; // 从 query 重命名为 currentQuery 以避免混淆
   onChange: (value: string) => void;
 }
 
@@ -40,7 +40,7 @@ export function useInputHistory({
     (value: string) => {
       const trimmedValue = value.trim();
       if (trimmedValue) {
-        onSubmit(trimmedValue); // Parent handles clearing the query
+        onSubmit(trimmedValue); // 父组件负责清除查询
       }
       resetHistoryNav();
     },
@@ -53,13 +53,13 @@ export function useInputHistory({
 
     let nextIndex = historyIndex;
     if (historyIndex === -1) {
-      // Store the current query from the parent before navigating
+      // 在导航前存储来自父组件的当前查询
       setOriginalQueryBeforeNav(currentQuery);
       nextIndex = 0;
     } else if (historyIndex < userMessages.length - 1) {
       nextIndex = historyIndex + 1;
     } else {
-      return false; // Already at the oldest message
+      return false; // 已经在最旧的消息处
     }
 
     if (nextIndex !== historyIndex) {
@@ -75,19 +75,19 @@ export function useInputHistory({
     onChange,
     userMessages,
     isActive,
-    currentQuery, // Use currentQuery from props
+    currentQuery, // 使用来自 props 的 currentQuery
     setOriginalQueryBeforeNav,
   ]);
 
   const navigateDown = useCallback(() => {
     if (!isActive) return false;
-    if (historyIndex === -1) return false; // Not currently navigating history
+    if (historyIndex === -1) return false; // 当前未在浏览历史记录
 
     const nextIndex = historyIndex - 1;
     setHistoryIndex(nextIndex);
 
     if (nextIndex === -1) {
-      // Reached the end of history navigation, restore original query
+      // 到达历史导航的末尾，恢复原始查询
       onChange(originalQueryBeforeNav);
     } else {
       const newValue = userMessages[userMessages.length - 1 - nextIndex];

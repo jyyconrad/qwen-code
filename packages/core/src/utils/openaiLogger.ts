@@ -10,22 +10,22 @@ import { v4 as uuidv4 } from 'uuid';
 import * as os from 'os';
 
 /**
- * Logger specifically for OpenAI API requests and responses
+ * 专门用于记录 OpenAI API 请求和响应的日志记录器
  */
 export class OpenAILogger {
   private logDir: string;
   private initialized: boolean = false;
 
   /**
-   * Creates a new OpenAI logger
-   * @param customLogDir Optional custom log directory path
+   * 创建一个新的 OpenAI 日志记录器
+   * @param customLogDir 可选的自定义日志目录路径
    */
   constructor(customLogDir?: string) {
     this.logDir = customLogDir || path.join(process.cwd(), 'logs', 'openai');
   }
 
   /**
-   * Initialize the logger by creating the log directory if it doesn't exist
+   * 通过创建日志目录来初始化日志记录器（如果目录不存在）
    */
   async initialize(): Promise<void> {
     if (this.initialized) return;
@@ -34,17 +34,17 @@ export class OpenAILogger {
       await fs.mkdir(this.logDir, { recursive: true });
       this.initialized = true;
     } catch (error) {
-      console.error('Failed to initialize OpenAI logger:', error);
-      throw new Error(`Failed to initialize OpenAI logger: ${error}`);
+      console.error('初始化 OpenAI 日志记录器失败:', error);
+      throw new Error(`初始化 OpenAI 日志记录器失败: ${error}`);
     }
   }
 
   /**
-   * Logs an OpenAI API request and its response
-   * @param request The request sent to OpenAI
-   * @param response The response received from OpenAI
-   * @param error Optional error if the request failed
-   * @returns The file path where the log was written
+   * 记录 OpenAI API 请求及其响应
+   * @param request 发送到 OpenAI 的请求
+   * @param response 从 OpenAI 接收到的响应
+   * @param error 请求失败时的可选错误信息
+   * @returns 写入日志的文件路径
    */
   async logInteraction(
     request: unknown,
@@ -82,15 +82,15 @@ export class OpenAILogger {
       await fs.writeFile(filePath, JSON.stringify(logData, null, 2), 'utf-8');
       return filePath;
     } catch (writeError) {
-      console.error('Failed to write OpenAI log file:', writeError);
-      throw new Error(`Failed to write OpenAI log file: ${writeError}`);
+      console.error('写入 OpenAI 日志文件失败:', writeError);
+      throw new Error(`写入 OpenAI 日志文件失败: ${writeError}`);
     }
   }
 
   /**
-   * Get all logged interactions
-   * @param limit Optional limit on the number of log files to return (sorted by most recent first)
-   * @returns Array of log file paths
+   * 获取所有已记录的交互日志
+   * @param limit 可选的返回日志文件数量限制（按最新排序）
+   * @returns 日志文件路径数组
    */
   async getLogFiles(limit?: number): Promise<string[]> {
     if (!this.initialized) {
@@ -110,26 +110,26 @@ export class OpenAILogger {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return [];
       }
-      console.error('Failed to read OpenAI log directory:', error);
+      console.error('读取 OpenAI 日志目录失败:', error);
       return [];
     }
   }
 
   /**
-   * Read a specific log file
-   * @param filePath The path to the log file
-   * @returns The log file content
+   * 读取特定的日志文件
+   * @param filePath 日志文件的路径
+   * @returns 日志文件内容
    */
   async readLogFile(filePath: string): Promise<unknown> {
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       return JSON.parse(content);
     } catch (error) {
-      console.error(`Failed to read log file ${filePath}:`, error);
-      throw new Error(`Failed to read log file: ${error}`);
+      console.error(`读取日志文件 ${filePath} 失败:`, error);
+      throw new Error(`读取日志文件失败: ${error}`);
     }
   }
 }
 
-// Create a singleton instance for easy import
+// 创建单例实例以便于导入
 export const openaiLogger = new OpenAILogger();

@@ -16,7 +16,7 @@ export class LruCache<K, V> {
   get(key: K): V | undefined {
     const value = this.cache.get(key);
     if (value) {
-      // Move to end to mark as recently used
+      // 移至末尾以标记为最近使用
       this.cache.delete(key);
       this.cache.set(key, value);
     }

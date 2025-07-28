@@ -25,7 +25,7 @@ async function readHistoryFile(filePath: string): Promise<string[]> {
     if (isNodeError(error) && error.code === 'ENOENT') {
       return [];
     }
-    console.error('Error reading shell history:', error);
+    console.error('读取 Shell 历史记录时出错:', error);
     return [];
   }
 }
@@ -38,7 +38,7 @@ async function writeHistoryFile(
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, history.join('\n'));
   } catch (error) {
-    console.error('Error writing shell history:', error);
+    console.error('写入 Shell 历史记录时出错:', error);
   }
 }
 
@@ -52,7 +52,7 @@ export function useShellHistory(projectRoot: string) {
       const filePath = await getHistoryFilePath(projectRoot);
       setHistoryFilePath(filePath);
       const loadedHistory = await readHistoryFile(filePath);
-      setHistory(loadedHistory.reverse()); // Newest first
+      setHistory(loadedHistory.reverse()); // 最新的在前
     }
     loadHistory();
   }, [projectRoot]);
@@ -66,7 +66,7 @@ export function useShellHistory(projectRoot: string) {
         .slice(0, MAX_HISTORY_LENGTH)
         .filter(Boolean);
       setHistory(newHistory);
-      // Write to file in reverse order (oldest first)
+      // 以相反顺序写入文件（最旧的在前）
       writeHistoryFile(historyFilePath, [...newHistory].reverse());
       setHistoryIndex(-1);
     },

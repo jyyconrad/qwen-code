@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -40,15 +40,15 @@ export interface LogResponse {
   nextRequestWaitMs?: number;
 }
 
-// Singleton class for batch posting log events to Clearcut. When a new event comes in, the elapsed time
-// is checked and events are flushed to Clearcut if at least a minute has passed since the last flush.
+// 用于批量发布日志事件到 Clearcut 的单例类。当新事件到来时，会检查经过的时间，
+// 如果距离上次刷新至少已过去一分钟，则将事件刷新到 Clearcut。
 export class ClearcutLogger {
   private static instance: ClearcutLogger;
   private config?: Config;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Clearcut expects this format.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Clearcut 期望这种格式。
   private readonly events: any = [];
   private last_flush_time: number = Date.now();
-  private flush_interval_ms: number = 1000 * 60; // Wait at least a minute before flushing events.
+  private flush_interval_ms: number = 1000 * 60; // 至少等待一分钟再刷新事件。
 
   private constructor(config?: Config) {
     this.config = config;
@@ -63,7 +63,7 @@ export class ClearcutLogger {
     return ClearcutLogger.instance;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Clearcut expects this format.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Clearcut 期望这种格式。
   enqueueLogEvent(event: any): void {
     this.events.push([
       {
@@ -89,7 +89,7 @@ export class ClearcutLogger {
       event_metadata: [data] as object[],
     };
 
-    // Should log either email or install ID, not both. See go/cloudmill-1p-oss-instrumentation#define-sessionable-id
+    // 应记录电子邮件或安装 ID，不能同时记录两者。参见 go/cloudmill-1p-oss-instrumentation#define-sessionable-id
     if (email) {
       logEvent.client_email = email;
     } else {
@@ -105,13 +105,13 @@ export class ClearcutLogger {
     }
 
     this.flushToClearcut().catch((error) => {
-      console.debug('Error flushing to Clearcut:', error);
+      console.debug('刷新到 Clearcut 时出错:', error);
     });
   }
 
   flushToClearcut(): Promise<LogResponse> {
     if (this.config?.getDebugMode()) {
-      console.log('Flushing log events to Clearcut.');
+      console.log('正在将日志事件刷新到 Clearcut。');
     }
     const eventsToSend = [...this.events];
     this.events.length = 0;
@@ -140,9 +140,9 @@ export class ClearcutLogger {
       });
       req.on('error', (e) => {
         if (this.config?.getDebugMode()) {
-          console.log('Clearcut POST request error: ', e);
+          console.log('Clearcut POST 请求错误: ', e);
         }
-        // Add the events back to the front of the queue to be retried.
+        // 将事件重新添加到队列前端以便重试。
         this.events.unshift(...eventsToSend);
         reject(e);
       });
@@ -153,29 +153,28 @@ export class ClearcutLogger {
           this.last_flush_time = Date.now();
           return this.decodeLogResponse(buf) || {};
         } catch (error: unknown) {
-          console.error('Error flushing log events:', error);
+          console.error('刷新日志事件时出错:', error);
           return {};
         }
       })
       .catch((error: unknown) => {
-        // Handle all errors to prevent unhandled promise rejections
-        console.error('Error flushing log events:', error);
-        // Return empty response to maintain the Promise<LogResponse> contract
+        // 处理所有错误以防止未处理的 Promise 拒绝
+        console.error('刷新日志事件时出错:', error);
+        // 返回空响应以维持 Promise<LogResponse> 合约
         return {};
       });
   }
 
-  // Visible for testing. Decodes protobuf-encoded response from Clearcut server.
+  // 可见用于测试。解码来自 Clearcut 服务器的 protobuf 编码响应。
   decodeLogResponse(buf: Buffer): LogResponse | undefined {
-    // TODO(obrienowen): return specific errors to facilitate debugging.
+    // TODO(obrienowen): 返回特定错误以促进调试。
     if (buf.length < 1) {
       return undefined;
     }
 
-    // The first byte of the buffer is `field<<3 | type`. We're looking for field
-    // 1, with type varint, represented by type=0. If the first byte isn't 8, that
-    // means field 1 is missing or the message is corrupted. Either way, we return
-    // undefined.
+    // 缓冲区的第一个字节是 `field<<3 | type`。我们正在寻找字段 1，
+    // 类型为 varint，由 type=0 表示。如果第一个字节不是 8，
+    // 则表示字段 1 缺失或消息已损坏。无论哪种情况，我们都返回 undefined。
     if (buf.readUInt8(0) !== 8) {
       return undefined;
     }
@@ -183,9 +182,8 @@ export class ClearcutLogger {
     let ms = BigInt(0);
     let cont = true;
 
-    // In each byte, the most significant bit is the continuation bit. If it's
-    // set, we keep going. The lowest 7 bits, are data bits. They are concatenated
-    // in reverse order to form the final number.
+    // 在每个字节中，最高有效位是延续位。如果设置了该位，我们继续读取。
+    // 最低 7 位是数据位。它们按相反顺序连接形成最终数字。
     for (let i = 1; cont && i < buf.length; i++) {
       const byte = buf.readUInt8(i);
       ms |= BigInt(byte & 0x7f) << BigInt(7 * (i - 1));
@@ -193,8 +191,7 @@ export class ClearcutLogger {
     }
 
     if (cont) {
-      // We have fallen off the buffer without seeing a terminating byte. The
-      // message is corrupted.
+      // 我们已超出缓冲区但未看到终止字节。消息已损坏。
       return undefined;
     }
 
@@ -267,10 +264,10 @@ export class ClearcutLogger {
         value: event.telemetry_log_user_prompts_enabled.toString(),
       },
     ];
-    // Flush start event immediately
+    // 立即刷新开始事件
     this.enqueueLogEvent(this.createLogEvent(start_session_event_name, data));
     this.flushToClearcut().catch((error) => {
-      console.debug('Error flushing to Clearcut:', error);
+      console.debug('刷新到 Clearcut 时出错:', error);
     });
   }
 
@@ -446,7 +443,7 @@ export class ClearcutLogger {
 
     this.enqueueLogEvent(this.createLogEvent(flash_fallback_event_name, data));
     this.flushToClearcut().catch((error) => {
-      console.debug('Error flushing to Clearcut:', error);
+      console.debug('刷新到 Clearcut 时出错:', error);
     });
   }
 
@@ -470,10 +467,10 @@ export class ClearcutLogger {
       },
     ];
 
-    // Flush immediately on session end.
+    // 在会话结束时立即刷新。
     this.enqueueLogEvent(this.createLogEvent(end_session_event_name, data));
     this.flushToClearcut().catch((error) => {
-      console.debug('Error flushing to Clearcut:', error);
+      console.debug('刷新到 Clearcut 时出错:', error);
     });
   }
 

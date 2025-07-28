@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,10 +16,9 @@ interface GeminiMessageContentProps {
 }
 
 /*
- * Gemini message content is a semi-hacked component. The intention is to represent a partial
- * of GeminiMessage and is only used when a response gets too long. In that instance messages
- * are split into multiple GeminiMessageContent's to enable the root <Static> component in
- * App.tsx to be as performant as humanly possible.
+ * Gemini 消息内容是一个半 hack 的组件。其目的是表示 GeminiMessage 的一部分，
+ * 仅在响应过长时使用。在这种情况下，消息会被拆分成多个 GeminiMessageContent，
+ * 以便 App.tsx 中的根 <Static> 组件尽可能高效地运行。
  */
 export const GeminiMessageContent: React.FC<GeminiMessageContentProps> = ({
   text,

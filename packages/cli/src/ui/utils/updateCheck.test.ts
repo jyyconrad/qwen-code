@@ -22,13 +22,13 @@ describe('checkForUpdates', () => {
     vi.resetAllMocks();
   });
 
-  it('should return null if package.json is missing', async () => {
+  it('如果 package.json 丢失则应返回 null', async () => {
     getPackageJson.mockResolvedValue(null);
     const result = await checkForUpdates();
     expect(result).toBeNull();
   });
 
-  it('should return null if there is no update', async () => {
+  it('如果没有更新则应返回 null', async () => {
     getPackageJson.mockResolvedValue({
       name: 'test-package',
       version: '1.0.0',
@@ -38,7 +38,7 @@ describe('checkForUpdates', () => {
     expect(result).toBeNull();
   });
 
-  it('should return a message if a newer version is available', async () => {
+  it('如果有新版本可用则应返回一条消息', async () => {
     getPackageJson.mockResolvedValue({
       name: 'test-package',
       version: '1.0.0',
@@ -50,7 +50,7 @@ describe('checkForUpdates', () => {
     expect(result).toContain('1.0.0 → 1.1.0');
   });
 
-  it('should return null if the latest version is the same as the current version', async () => {
+  it('如果最新版本与当前版本相同则应返回 null', async () => {
     getPackageJson.mockResolvedValue({
       name: 'test-package',
       version: '1.0.0',
@@ -62,7 +62,7 @@ describe('checkForUpdates', () => {
     expect(result).toBeNull();
   });
 
-  it('should return null if the latest version is older than the current version', async () => {
+  it('如果最新版本比当前版本旧则应返回 null', async () => {
     getPackageJson.mockResolvedValue({
       name: 'test-package',
       version: '1.1.0',
@@ -74,7 +74,7 @@ describe('checkForUpdates', () => {
     expect(result).toBeNull();
   });
 
-  it('should handle errors gracefully', async () => {
+  it('应优雅地处理错误', async () => {
     getPackageJson.mockRejectedValue(new Error('test error'));
     const result = await checkForUpdates();
     expect(result).toBeNull();

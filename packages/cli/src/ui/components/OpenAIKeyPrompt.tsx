@@ -79,7 +79,7 @@ export function OpenAIKeyPrompt({
       return;
     }
 
-    // Handle Tab key for field navigation
+    // 处理 Tab 键用于字段导航
     if (key.tab) {
       if (currentField === 'apiKey') {
         setCurrentField('baseUrl');
@@ -91,7 +91,7 @@ export function OpenAIKeyPrompt({
       return;
     }
 
-    // Handle arrow keys for field navigation
+    // 处理方向键用于字段导航
     if (key.upArrow) {
       if (currentField === 'baseUrl') {
         setCurrentField('apiKey');
@@ -110,7 +110,7 @@ export function OpenAIKeyPrompt({
       return;
     }
 
-    // Handle backspace - check both key.backspace and delete key
+    // 处理退格键 - 同时检查 key.backspace 和 delete 键
     if (key.backspace || key.delete) {
       if (currentField === 'apiKey') {
         setApiKey((prev) => prev.slice(0, -1));
@@ -132,11 +132,11 @@ export function OpenAIKeyPrompt({
       width="100%"
     >
       <Text bold color={Colors.AccentBlue}>
-        OpenAI Configuration Required
+        需要 OpenAI 配置
       </Text>
       <Box marginTop={1}>
         <Text>
-          Please enter your OpenAI configuration. You can get an API key from{' '}
+          请输入您的 OpenAI 配置。您可以从以下网址获取 API 密钥{' '}
           <Text color={Colors.AccentBlue}>
             https://platform.openai.com/api-keys
           </Text>
@@ -147,7 +147,7 @@ export function OpenAIKeyPrompt({
           <Text
             color={currentField === 'apiKey' ? Colors.AccentBlue : Colors.Gray}
           >
-            API Key:
+            API 密钥:
           </Text>
         </Box>
         <Box flexGrow={1}>
@@ -162,7 +162,7 @@ export function OpenAIKeyPrompt({
           <Text
             color={currentField === 'baseUrl' ? Colors.AccentBlue : Colors.Gray}
           >
-            Base URL:
+            基础 URL:
           </Text>
         </Box>
         <Box flexGrow={1}>
@@ -177,7 +177,7 @@ export function OpenAIKeyPrompt({
           <Text
             color={currentField === 'model' ? Colors.AccentBlue : Colors.Gray}
           >
-            Model:
+            模型:
           </Text>
         </Box>
         <Box flexGrow={1}>
@@ -189,7 +189,7 @@ export function OpenAIKeyPrompt({
       </Box>
       <Box marginTop={1}>
         <Text color={Colors.Gray}>
-          Press Enter to continue, Tab/↑↓ to navigate, Esc to cancel
+          按 Enter 继续，Tab/↑↓ 导航，Esc 取消
         </Text>
       </Box>
     </Box>

@@ -14,57 +14,57 @@ import { Config } from '../config/config.js';
 import { isWithinRoot } from '../utils/fileUtils.js';
 
 /**
- * Parameters for the LS tool
+ * LS 工具的参数
  */
 export interface LSToolParams {
   /**
-   * The absolute path to the directory to list
+   * 要列出的目录的绝对路径
    */
   path: string;
 
   /**
-   * Array of glob patterns to ignore (optional)
+   * 要忽略的 glob 模式数组（可选）
    */
   ignore?: string[];
 
   /**
-   * Whether to respect .gitignore patterns (optional, defaults to true)
+   * 是否遵循 .gitignore 模式（可选，默认为 true）
    */
   respect_git_ignore?: boolean;
 }
 
 /**
- * File entry returned by LS tool
+ * LS 工具返回的文件条目
  */
 export interface FileEntry {
   /**
-   * Name of the file or directory
+   * 文件或目录的名称
    */
   name: string;
 
   /**
-   * Absolute path to the file or directory
+   * 文件或目录的绝对路径
    */
   path: string;
 
   /**
-   * Whether this entry is a directory
+   * 此条目是否为目录
    */
   isDirectory: boolean;
 
   /**
-   * Size of the file in bytes (0 for directories)
+   * 文件大小（以字节为单位）（目录为 0）
    */
   size: number;
 
   /**
-   * Last modified timestamp
+   * 最后修改时间戳
    */
   modifiedTime: Date;
 }
 
 /**
- * Implementation of the LS tool logic
+ * LS 工具逻辑的实现
  */
 export class LSTool extends BaseTool<LSToolParams, ToolResult> {
   static readonly Name = 'list_directory';
@@ -73,16 +73,16 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
     super(
       LSTool.Name,
       'ReadFolder',
-      'Lists the names of files and subdirectories directly within a specified directory path. Can optionally ignore entries matching provided glob patterns.',
+      '列出指定目录路径内直接包含的文件和子目录的名称。可选择性地忽略与提供的 glob 模式匹配的条目。',
       {
         properties: {
           path: {
             description:
-              'The absolute path to the directory to list (must be absolute, not relative)',
+              '要列出的目录的绝对路径（必须是绝对路径，不能是相对路径）',
             type: Type.STRING,
           },
           ignore: {
-            description: 'List of glob patterns to ignore',
+            description: '要忽略的 glob 模式列表',
             items: {
               type: Type.STRING,
             },
@@ -90,7 +90,7 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
           },
           respect_git_ignore: {
             description:
-              'Optional: Whether to respect .gitignore patterns when listing files. Only available in git repositories. Defaults to true.',
+              '可选：列出文件时是否遵循 .gitignore 模式。仅在 git 仓库中可用。默认为 true。',
             type: Type.BOOLEAN,
           },
         },
@@ -101,9 +101,9 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
   }
 
   /**
-   * Validates the parameters for the tool
-   * @param params Parameters to validate
-   * @returns An error message string if invalid, null otherwise
+   * 验证工具的参数
+   * @param params 要验证的参数
+   * @returns 如果无效则返回错误消息字符串，否则返回 null
    */
   validateToolParams(params: LSToolParams): string | null {
     const errors = SchemaValidator.validate(this.schema.parameters, params);
@@ -111,26 +111,26 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
       return errors;
     }
     if (!path.isAbsolute(params.path)) {
-      return `Path must be absolute: ${params.path}`;
+      return `路径必须是绝对路径: ${params.path}`;
     }
     if (!isWithinRoot(params.path, this.config.getTargetDir())) {
-      return `Path must be within the root directory (${this.config.getTargetDir()}): ${params.path}`;
+      return `路径必须在根目录内 (${this.config.getTargetDir()}): ${params.path}`;
     }
     return null;
   }
 
   /**
-   * Checks if a filename matches any of the ignore patterns
-   * @param filename Filename to check
-   * @param patterns Array of glob patterns to check against
-   * @returns True if the filename should be ignored
+   * 检查文件名是否匹配任何忽略模式
+   * @param filename 要检查的文件名
+   * @param patterns 要检查的 glob 模式数组
+   * @returns 如果应忽略该文件名则返回 true
    */
   private shouldIgnore(filename: string, patterns?: string[]): boolean {
     if (!patterns || patterns.length === 0) {
       return false;
     }
     for (const pattern of patterns) {
-      // Convert glob pattern to RegExp
+      // 将 glob 模式转换为 RegExp
       const regexPattern = pattern
         .replace(/[.+^${}()|[\]\\]/g, '\\$&')
         .replace(/\*/g, '.*')
@@ -144,28 +144,28 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
   }
 
   /**
-   * Gets a description of the file reading operation
-   * @param params Parameters for the file reading
-   * @returns A string describing the file being read
+   * 获取文件读取操作的描述
+   * @param params 文件读取的参数
+   * @returns 描述正在读取的文件的字符串
    */
   getDescription(params: LSToolParams): string {
     const relativePath = makeRelative(params.path, this.config.getTargetDir());
     return shortenPath(relativePath);
   }
 
-  // Helper for consistent error formatting
+  // 用于一致的错误格式化的辅助函数
   private errorResult(llmContent: string, returnDisplay: string): ToolResult {
     return {
       llmContent,
-      // Keep returnDisplay simpler in core logic
-      returnDisplay: `Error: ${returnDisplay}`,
+      // 在核心逻辑中保持 returnDisplay 更简单
+      returnDisplay: `错误: ${returnDisplay}`,
     };
   }
 
   /**
-   * Executes the LS operation with the given parameters
-   * @param params Parameters for the LS operation
-   * @returns Result of the LS operation
+   * 使用给定参数执行 LS 操作
+   * @param params LS 操作的参数
+   * @returns LS 操作的结果
    */
   async execute(
     params: LSToolParams,
@@ -174,31 +174,31 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
     const validationError = this.validateToolParams(params);
     if (validationError) {
       return this.errorResult(
-        `Error: Invalid parameters provided. Reason: ${validationError}`,
-        `Failed to execute tool.`,
+        `错误: 提供了无效的参数。原因: ${validationError}`,
+        `执行工具失败。`,
       );
     }
 
     try {
       const stats = fs.statSync(params.path);
       if (!stats) {
-        // fs.statSync throws on non-existence, so this check might be redundant
-        // but keeping for clarity. Error message adjusted.
+        // fs.statSync 在不存在时会抛出异常，因此此检查可能是多余的
+        // 但为了清晰起见保留。错误消息已调整。
         return this.errorResult(
-          `Error: Directory not found or inaccessible: ${params.path}`,
-          `Directory not found or inaccessible.`,
+          `错误: 目录未找到或无法访问: ${params.path}`,
+          `目录未找到或无法访问。`,
         );
       }
       if (!stats.isDirectory()) {
         return this.errorResult(
-          `Error: Path is not a directory: ${params.path}`,
-          `Path is not a directory.`,
+          `错误: 路径不是目录: ${params.path}`,
+          `路径不是目录。`,
         );
       }
 
       const files = fs.readdirSync(params.path);
 
-      // Get centralized file discovery service
+      // 获取集中式文件发现服务
       const respectGitIgnore =
         params.respect_git_ignore ??
         this.config.getFileFilteringRespectGitIgnore();
@@ -208,10 +208,10 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
       let gitIgnoredCount = 0;
 
       if (files.length === 0) {
-        // Changed error message to be more neutral for LLM
+        // 更改为对 LLM 更中性的错误消息
         return {
-          llmContent: `Directory ${params.path} is empty.`,
-          returnDisplay: `Directory is empty.`,
+          llmContent: `目录 ${params.path} 为空。`,
+          returnDisplay: `目录为空。`,
         };
       }
 
@@ -226,7 +226,7 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
           fullPath,
         );
 
-        // Check if this file should be git-ignored (only in git repositories)
+        // 检查此文件是否应被 git 忽略（仅在 git 仓库中）
         if (
           respectGitIgnore &&
           fileDiscovery.shouldGitIgnoreFile(relativePath)
@@ -246,31 +246,31 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
             modifiedTime: stats.mtime,
           });
         } catch (error) {
-          // Log error internally but don't fail the whole listing
-          console.error(`Error accessing ${fullPath}: ${error}`);
+          // 内部记录错误但不使整个列表失败
+          console.error(`访问 ${fullPath} 时出错: ${error}`);
         }
       }
 
-      // Sort entries (directories first, then alphabetically)
+      // 对条目进行排序（目录优先，然后按字母顺序）
       entries.sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
         return a.name.localeCompare(b.name);
       });
 
-      // Create formatted content for LLM
+      // 为 LLM 创建格式化内容
       const directoryContent = entries
         .map((entry) => `${entry.isDirectory ? '[DIR] ' : ''}${entry.name}`)
         .join('\n');
 
-      let resultMessage = `Directory listing for ${params.path}:\n${directoryContent}`;
+      let resultMessage = `目录 ${params.path} 的列表:\n${directoryContent}`;
       if (gitIgnoredCount > 0) {
-        resultMessage += `\n\n(${gitIgnoredCount} items were git-ignored)`;
+        resultMessage += `\n\n(${gitIgnoredCount} 个项目被 git 忽略)`;
       }
 
-      let displayMessage = `Listed ${entries.length} item(s).`;
+      let displayMessage = `列出了 ${entries.length} 个项目。`;
       if (gitIgnoredCount > 0) {
-        displayMessage += ` (${gitIgnoredCount} git-ignored)`;
+        displayMessage += ` (${gitIgnoredCount} 个被 git 忽略)`;
       }
 
       return {
@@ -278,8 +278,8 @@ export class LSTool extends BaseTool<LSToolParams, ToolResult> {
         returnDisplay: displayMessage,
       };
     } catch (error) {
-      const errorMsg = `Error listing directory: ${error instanceof Error ? error.message : String(error)}`;
-      return this.errorResult(errorMsg, 'Failed to list directory.');
+      const errorMsg = `列出目录时出错: ${error instanceof Error ? error.message : String(error)}`;
+      return this.errorResult(errorMsg, '列出目录失败。');
     }
   }
 }

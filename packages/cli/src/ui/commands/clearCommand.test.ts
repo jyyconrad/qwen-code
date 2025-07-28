@@ -29,15 +29,15 @@ describe('clearCommand', () => {
     });
   });
 
-  it('should set debug message, reset chat, and clear UI when config is available', async () => {
+  it('应当设置调试信息、重置聊天并清除 UI（当配置可用时）', async () => {
     if (!clearCommand.action) {
-      throw new Error('clearCommand must have an action.');
+      throw new Error('clearCommand 必须包含一个 action。');
     }
 
     await clearCommand.action(mockContext, '');
 
     expect(mockContext.ui.setDebugMessage).toHaveBeenCalledWith(
-      'Clearing terminal and resetting chat.',
+      '正在清除终端并重置聊天。',
     );
     expect(mockContext.ui.setDebugMessage).toHaveBeenCalledTimes(1);
 
@@ -45,7 +45,7 @@ describe('clearCommand', () => {
 
     expect(mockContext.ui.clear).toHaveBeenCalledTimes(1);
 
-    // Check the order of operations.
+    // 检查操作顺序。
     const setDebugMessageOrder = (mockContext.ui.setDebugMessage as Mock).mock
       .invocationCallOrder[0];
     const resetChatOrder = mockResetChat.mock.invocationCallOrder[0];
@@ -56,9 +56,9 @@ describe('clearCommand', () => {
     expect(resetChatOrder).toBeLessThan(clearOrder);
   });
 
-  it('should not attempt to reset chat if config service is not available', async () => {
+  it('如果配置服务不可用，则不应尝试重置聊天', async () => {
     if (!clearCommand.action) {
-      throw new Error('clearCommand must have an action.');
+      throw new Error('clearCommand 必须包含一个 action。');
     }
 
     const nullConfigContext = createMockCommandContext({
@@ -70,7 +70,7 @@ describe('clearCommand', () => {
     await clearCommand.action(nullConfigContext, '');
 
     expect(nullConfigContext.ui.setDebugMessage).toHaveBeenCalledWith(
-      'Clearing terminal and resetting chat.',
+      '正在清除终端并重置聊天。',
     );
     expect(mockResetChat).not.toHaveBeenCalled();
     expect(nullConfigContext.ui.clear).toHaveBeenCalledTimes(1);

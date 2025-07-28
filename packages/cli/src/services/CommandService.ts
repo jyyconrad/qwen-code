@@ -29,12 +29,12 @@ export class CommandService {
   constructor(
     private commandLoader: () => Promise<SlashCommand[]> = loadBuiltInCommands,
   ) {
-    // The constructor can be used for dependency injection in the future.
+    // 构造函数可用于未来的依赖注入。
   }
 
   async loadCommands(): Promise<void> {
-    // For now, we only load the built-in commands.
-    // File-based and remote commands will be added later.
+    // 目前，我们只加载内置命令。
+    // 基于文件和远程的命令将在后续添加。
     this.commands = await this.commandLoader();
   }
 

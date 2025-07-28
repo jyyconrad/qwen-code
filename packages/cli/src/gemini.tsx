@@ -41,6 +41,7 @@ import {
 import { validateAuthMethod } from './config/auth.js';
 import { setMaxSizedBoxDebugging } from './ui/components/shared/MaxSizedBox.js';
 
+// 获取 Node 内存参数
 function getNodeMemoryArgs(config: Config): string[] {
   const totalMemoryMB = os.totalmem() / (1024 * 1024);
   const heapStats = v8.getHeapStatistics();
@@ -48,11 +49,11 @@ function getNodeMemoryArgs(config: Config): string[] {
     heapStats.heap_size_limit / 1024 / 1024,
   );
 
-  // Set target to 50% of total memory
+  // 设置目标为总内存的 50%
   const targetMaxOldSpaceSizeInMB = Math.floor(totalMemoryMB * 0.5);
   if (config.getDebugMode()) {
     console.debug(
-      `Current heap size ${currentMaxOldSpaceSizeMb.toFixed(2)} MB`,
+      `当前堆大小 ${currentMaxOldSpaceSizeMb.toFixed(2)} MB`,
     );
   }
 
@@ -63,7 +64,7 @@ function getNodeMemoryArgs(config: Config): string[] {
   if (targetMaxOldSpaceSizeInMB > currentMaxOldSpaceSizeMb) {
     if (config.getDebugMode()) {
       console.debug(
-        `Need to relaunch with more memory: ${targetMaxOldSpaceSizeInMB.toFixed(2)} MB`,
+        `需要以更多内存重新启动: ${targetMaxOldSpaceSizeInMB.toFixed(2)} MB`,
       );
     }
     return [`--max-old-space-size=${targetMaxOldSpaceSizeInMB}`];
@@ -72,6 +73,7 @@ function getNodeMemoryArgs(config: Config): string[] {
   return [];
 }
 
+// 使用额外参数重新启动
 async function relaunchWithAdditionalArgs(additionalArgs: string[]) {
   const nodeArgs = [...additionalArgs, ...process.argv.slice(1)];
   const newEnv = { ...process.env, GEMINI_CLI_NO_RELAUNCH: 'true' };
@@ -92,12 +94,12 @@ export async function main() {
   await cleanupCheckpoints();
   if (settings.errors.length > 0) {
     for (const error of settings.errors) {
-      let errorMessage = `Error in ${error.path}: ${error.message}`;
+      let errorMessage = `配置文件错误 ${error.path}: ${error.message}`;
       if (!process.env.NO_COLOR) {
         errorMessage = `\x1b[31m${errorMessage}\x1b[0m`;
       }
       console.error(errorMessage);
-      console.error(`Please fix ${error.path} and try again.`);
+      console.error(`请修复 ${error.path} 后重试。`);
     }
     process.exit(1);
   }
@@ -113,20 +115,20 @@ export async function main() {
 
   if (argv.promptInteractive && !process.stdin.isTTY) {
     console.error(
-      'Error: The --prompt-interactive flag is not supported when piping input from stdin.',
+      '错误: 当从标准输入管道输入时，不支持 --prompt-interactive 标志。',
     );
     process.exit(1);
   }
 
   if (config.getListExtensions()) {
-    console.log('Installed extensions:');
+    console.log('已安装的扩展:');
     for (const extension of extensions) {
       console.log(`- ${extension.config.name}`);
     }
     process.exit(0);
   }
 
-  // Set a default auth type if one isn't set.
+  // 如果未设置认证类型，则设置默认认证类型
   if (!settings.merged.selectedAuthType) {
     if (process.env.CLOUD_SHELL === 'true') {
       settings.setValue(
@@ -143,13 +145,13 @@ export async function main() {
 
   if (settings.merged.theme) {
     if (!themeManager.setActiveTheme(settings.merged.theme)) {
-      // If the theme is not found during initial load, log a warning and continue.
-      // The useThemeCommand hook in App.tsx will handle opening the dialog.
-      console.warn(`Warning: Theme "${settings.merged.theme}" not found.`);
+      // 如果在初始加载期间未找到主题，则记录警告并继续。
+      // App.tsx 中的 useThemeCommand 钩子将处理打开对话框。
+      console.warn(`警告: 未找到主题 "${settings.merged.theme}"。`);
     }
   }
 
-  // hop into sandbox if we are outside and sandboxing is enabled
+  // 如果我们在沙箱外部且启用了沙箱，则进入沙箱
   if (!process.env.SANDBOX) {
     const memoryArgs = settings.merged.autoConfigureMaxOldSpaceSize
       ? getNodeMemoryArgs(config)
@@ -157,7 +159,7 @@ export async function main() {
     const sandboxConfig = config.getSandbox();
     if (sandboxConfig) {
       if (settings.merged.selectedAuthType) {
-        // Validate authentication here because the sandbox will interfere with the Oauth2 web redirect.
+        // 在此处验证身份认证，因为沙箱会干扰 Oauth2 网页重定向。
         try {
           const err = validateAuthMethod(settings.merged.selectedAuthType);
           if (err) {
@@ -165,15 +167,15 @@ export async function main() {
           }
           await config.refreshAuth(settings.merged.selectedAuthType);
         } catch (err) {
-          console.error('Error authenticating:', err);
+          console.error('认证错误:', err);
           process.exit(1);
         }
       }
       await start_sandbox(sandboxConfig, memoryArgs);
       process.exit(0);
     } else {
-      // Not in a sandbox and not entering one, so relaunch with additional
-      // arguments to control memory usage if needed.
+      // 不在沙箱中且不进入沙箱，因此根据需要重新启动并添加
+      // 参数来控制内存使用。
       if (memoryArgs.length > 0) {
         await relaunchWithAdditionalArgs(memoryArgs);
         process.exit(0);
@@ -185,7 +187,7 @@ export async function main() {
     settings.merged.selectedAuthType === AuthType.LOGIN_WITH_GOOGLE &&
     config.getNoBrowser()
   ) {
-    // Do oauth before app renders to make copying the link possible.
+    // 在应用程序渲染前进行 oauth，以便可以复制链接。
     await getOauthClient(settings.merged.selectedAuthType, config);
   }
 
@@ -198,7 +200,7 @@ export async function main() {
   const shouldBeInteractive =
     !!argv.promptInteractive || (process.stdin.isTTY && input?.length === 0);
 
-  // Render UI, passing necessary config values. Check that there is no command line question.
+  // 渲染 UI，传递必要的配置值。检查是否有命令行问题。
   if (shouldBeInteractive) {
     const version = await getCliVersion();
     setWindowTitle(basename(workspaceRoot), settings);
@@ -217,13 +219,13 @@ export async function main() {
     registerCleanup(() => instance.unmount());
     return;
   }
-  // If not a TTY, read from stdin
-  // This is for cases where the user pipes input directly into the command
+  // 如果不是 TTY，则从标准输入读取
+  // 这适用于用户直接将输入管道到命令中的情况
   if (!process.stdin.isTTY && !input) {
     input += await readStdin();
   }
   if (!input) {
-    console.error('No input provided via stdin.');
+    console.error('未通过标准输入提供输入。');
     process.exit(1);
   }
 
@@ -237,7 +239,7 @@ export async function main() {
     prompt_length: input.length,
   });
 
-  // Non-interactive mode handled by runNonInteractive
+  // 非交互模式由 runNonInteractive 处理
   const nonInteractiveConfig = await loadNonInteractiveConfig(
     config,
     extensions,
@@ -249,6 +251,7 @@ export async function main() {
   process.exit(0);
 }
 
+// 设置窗口标题
 function setWindowTitle(title: string, settings: LoadedSettings) {
   if (!settings.merged.hideWindowTitle) {
     const windowTitle = (process.env.CLI_TITLE || `iFlyCode - ${title}`).replace(
@@ -264,21 +267,22 @@ function setWindowTitle(title: string, settings: LoadedSettings) {
   }
 }
 
-// --- Global Unhandled Rejection Handler ---
+// --- 全局未处理拒绝处理器 ---
 process.on('unhandledRejection', (reason, _promise) => {
-  // Log other unexpected unhandled rejections as critical errors
+  // 将其他意外的未处理拒绝记录为严重错误
   console.error('=========================================');
-  console.error('CRITICAL: Unhandled Promise Rejection!');
+  console.error('严重错误: 未处理的 Promise 拒绝!');
   console.error('=========================================');
-  console.error('Reason:', reason);
-  console.error('Stack trace may follow:');
+  console.error('原因:', reason);
+  console.error('可能的堆栈跟踪如下:');
   if (!(reason instanceof Error)) {
     console.error(reason);
   }
-  // Exit for genuinely unhandled errors
+  // 对于真正未处理的错误则退出
   process.exit(1);
 });
 
+// 加载非交互配置
 async function loadNonInteractiveConfig(
   config: Config,
   extensions: Extension[],
@@ -287,7 +291,7 @@ async function loadNonInteractiveConfig(
 ) {
   let finalConfig = config;
   if (config.getApprovalMode() !== ApprovalMode.YOLO) {
-    // Everything is not allowed, ensure that only read-only tools are configured.
+    // 不允许所有操作，确保只配置只读工具。
     const existingExcludeTools = settings.merged.excludeTools || [];
     const interactiveTools = [
       ShellTool.Name,
@@ -318,16 +322,16 @@ async function loadNonInteractiveConfig(
   );
 }
 
+// 验证非交互认证
 async function validateNonInterActiveAuth(
   selectedAuthType: AuthType | undefined,
   nonInteractiveConfig: Config,
 ) {
-  // making a special case for the cli. many headless environments might not have a settings.json set
-  // so if GEMINI_API_KEY is set, we'll use that. However since the oauth things are interactive anyway, we'll
-  // still expect that exists
+  // 为 CLI 做特殊处理。许多无头环境可能没有设置 settings.json
+  // 所以如果设置了 GEMINI_API_KEY，我们将使用它。但由于 oauth 相关操作本身就是交互式的，我们仍然期望它存在
   if (!selectedAuthType && !process.env.GEMINI_API_KEY) {
     console.error(
-      `Please set an Auth method in your ${USER_SETTINGS_PATH} OR specify GEMINI_API_KEY env variable file before running`,
+      `请在您的 ${USER_SETTINGS_PATH} 中设置认证方法，或在运行前指定 GEMINI_API_KEY 环境变量`,
     );
     process.exit(1);
   }

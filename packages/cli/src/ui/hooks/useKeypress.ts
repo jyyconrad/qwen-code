@@ -19,17 +19,14 @@ export interface Key {
 }
 
 /**
- * A hook that listens for keypress events from stdin, providing a
- * key object that mirrors the one from Node's `readline` module,
- * adding a 'paste' flag for characters input as part of a bracketed
- * paste (when enabled).
+ * 一个监听 stdin 按键事件的 hook，提供一个与 Node 的 `readline` 模块中类似的
+ * key 对象，并为以括号粘贴模式（bracketed paste）输入的字符添加 'paste' 标志。
  *
- * Pastes are currently sent as a single key event where the full paste
- * is in the sequence field.
+ * 当前粘贴内容作为单个按键事件发送，完整粘贴内容位于 sequence 字段中。
  *
- * @param onKeypress - The callback function to execute on each keypress.
- * @param options - Options to control the hook's behavior.
- * @param options.isActive - Whether the hook should be actively listening for input.
+ * @param onKeypress - 每次按键时执行的回调函数。
+ * @param options - 控制 hook 行为的选项。
+ * @param options.isActive - hook 是否应主动监听输入。
  */
 export function useKeypress(
   onKeypress: (key: Key) => void,
@@ -57,8 +54,8 @@ export function useKeypress(
       process.env['PASTE_WORKAROUND'] === '1' ||
       process.env['PASTE_WORKAROUND'] === 'true'
     ) {
-      // Prior to node 20, node's built-in readline does not support bracketed
-      // paste mode. We hack by detecting it with our own handler.
+      // 在 node 20 之前，Node 内建的 readline 不支持括号粘贴模式。
+      // 我们通过自己的处理程序检测它来进行 hack。
       usePassthrough = true;
     }
 
@@ -83,7 +80,7 @@ export function useKeypress(
         if (isPaste) {
           pasteBuffer = Buffer.concat([pasteBuffer, Buffer.from(key.sequence)]);
         } else {
-          // Handle special keys
+          // 处理特殊按键
           if (key.name === 'return' && key.sequence === '\x1B\r') {
             key.meta = true;
           }
@@ -101,7 +98,7 @@ export function useKeypress(
         const prefixPos = data.indexOf(PASTE_MODE_PREFIX, pos);
         const suffixPos = data.indexOf(PASTE_MODE_SUFFIX, pos);
 
-        // Determine which marker comes first, if any.
+        // 确定哪个标记先出现（如果有的话）。
         const isPrefixNext =
           prefixPos !== -1 && (suffixPos === -1 || prefixPos < suffixPos);
         const isSuffixNext =
@@ -167,7 +164,7 @@ export function useKeypress(
       rl.close();
       setRawMode(false);
 
-      // If we are in the middle of a paste, send what we have.
+      // 如果我们正处于粘贴过程中，则发送已有的内容。
       if (isPaste) {
         onKeypressRef.current({
           name: '',

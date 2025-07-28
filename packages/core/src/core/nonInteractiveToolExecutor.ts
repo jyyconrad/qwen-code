@@ -15,8 +15,8 @@ import { Config } from '../config/config.js';
 import { convertToFunctionResponse } from './coreToolScheduler.js';
 
 /**
- * Executes a single tool call non-interactively.
- * It does not handle confirmations, multiple calls, or live updates.
+ * 非交互式执行单个工具调用。
+ * 不处理确认、多次调用或实时更新。
  */
 export async function executeToolCall(
   config: Config,
@@ -29,7 +29,7 @@ export async function executeToolCall(
   const startTime = Date.now();
   if (!tool) {
     const error = new Error(
-      `Tool "${toolCallRequest.name}" not found in registry.`,
+      `工具 "${toolCallRequest.name}" 在注册表中未找到。`,
     );
     const durationMs = Date.now() - startTime;
     logToolCall(config, {
@@ -42,7 +42,7 @@ export async function executeToolCall(
       error: error.message,
       prompt_id: toolCallRequest.prompt_id,
     });
-    // Ensure the response structure matches what the API expects for an error
+    // 确保响应结构符合 API 对错误的预期
     return {
       callId: toolCallRequest.callId,
       responseParts: [
@@ -60,12 +60,12 @@ export async function executeToolCall(
   }
 
   try {
-    // Directly execute without confirmation or live output handling
+    // 直接执行，不进行确认或实时输出处理
     const effectiveAbortSignal = abortSignal ?? new AbortController().signal;
     const toolResult: ToolResult = await tool.execute(
       toolCallRequest.args,
       effectiveAbortSignal,
-      // No live output callback for non-interactive mode
+      // 非交互模式下无实时输出回调
     );
 
     const tool_output = toolResult.llmContent;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -14,9 +14,8 @@ import { useOverflowActions } from '../../contexts/OverflowContext.js';
 let enableDebugLog = false;
 
 /**
- * Minimum height for the MaxSizedBox component.
- * This ensures there is room for at least one line of content as well as the
- * message that content was truncated.
+ * MaxSizedBox 组件的最小高度。
+ * 这确保至少有一行内容的空间以及内容被截断的消息。
  */
 export const MINIMUM_MAX_HEIGHT = 2;
 
@@ -30,24 +29,24 @@ function debugReportError(message: string, element: React.ReactNode) {
   if (!React.isValidElement(element)) {
     console.error(
       message,
-      `Invalid element: '${String(element)}' typeof=${typeof element}`,
+      `无效元素: '${String(element)}' typeof=${typeof element}`,
     );
     return;
   }
 
-  let sourceMessage = '<Unknown file>';
+  let sourceMessage = '<未知文件>';
   try {
     const elementWithSource = element as {
       _source?: { fileName?: string; lineNumber?: number };
     };
     const fileName = elementWithSource._source?.fileName;
     const lineNumber = elementWithSource._source?.lineNumber;
-    sourceMessage = fileName ? `${fileName}:${lineNumber}` : '<Unknown file>';
+    sourceMessage = fileName ? `${fileName}:${lineNumber}` : '<未知文件>';
   } catch (error) {
-    console.error('Error while trying to get file name:', error);
+    console.error('尝试获取文件名时出错:', error);
   }
 
-  console.error(message, `${String(element.type)}. Source: ${sourceMessage}`);
+  console.error(message, `${String(element.type)}. 来源: ${sourceMessage}`);
 }
 interface MaxSizedBoxProps {
   children?: React.ReactNode;
@@ -58,40 +57,34 @@ interface MaxSizedBoxProps {
 }
 
 /**
- * A React component that constrains the size of its children and provides
- * content-aware truncation when the content exceeds the specified `maxHeight`.
+ * 一个 React 组件，用于限制其子元素的大小，并在内容超出指定的 `maxHeight` 时提供
+ * 内容感知的截断。
  *
- * `MaxSizedBox` requires a specific structure for its children to correctly
- * measure and render the content:
+ * `MaxSizedBox` 需要其子元素具有特定结构以正确测量和渲染内容：
  *
- * 1.  **Direct children must be `<Box>` elements.** Each `<Box>` represents a
- *     single row of content.
- * 2.  **Row `<Box>` elements must contain only `<Text>` elements.** These
- *     `<Text>` elements can be nested and there are no restrictions to Text
- *     element styling other than that non-wrapping text elements must be
- *     before wrapping text elements.
+ * 1.  **直接子元素必须是 `<Box>` 元素。** 每个 `<Box>` 代表一行内容。
+ * 2.  **行 `<Box>` 元素只能包含 `<Text>` 元素。** 这些 `<Text>` 元素可以嵌套，
+ *     除了非换行文本元素必须在换行文本元素之前外，对 Text 元素样式没有其他限制。
  *
- * **Constraints:**
- * - **Box Properties:** Custom properties on the child `<Box>` elements are
- *   ignored. In debug mode, runtime checks will report errors for any
- *   unsupported properties.
- * - **Text Wrapping:** Within a single row, `<Text>` elements with no wrapping
- *   (e.g., headers, labels) must appear before any `<Text>` elements that wrap.
- * - **Element Types:** Runtime checks will warn if unsupported element types
- *   are used as children.
+ * **约束条件：**
+ * - **Box 属性：** 子 `<Box>` 元素上的自定义属性将被忽略。在调试模式下，
+ *   运行时检查将报告任何不支持的属性错误。
+ * - **文本换行：** 在单行内，无换行的 `<Text>` 元素（例如标题、标签）
+ *   必须出现在任何会换行的 `<Text>` 元素之前。
+ * - **元素类型：** 如果使用了不支持的元素类型作为子元素，运行时检查将发出警告。
  *
  * @example
  * <MaxSizedBox maxWidth={80} maxHeight={10}>
  *   <Box>
- *     <Text>This is the first line.</Text>
+ *     <Text>这是第一行。</Text>
  *   </Box>
  *   <Box>
- *     <Text color="cyan" wrap="truncate">Non-wrapping Header: </Text>
- *     <Text>This is the rest of the line which will wrap if it's too long.</Text>
+ *     <Text color="cyan" wrap="truncate">非换行标题: </Text>
+ *     <Text>这是行的其余部分，如果太长将会换行。</Text>
  *   </Box>
  *   <Box>
  *     <Text>
- *       Line 3 with <Text color="yellow">nested styled text</Text> inside of it.
+ *       第3行包含<Text color="yellow">嵌套的样式文本</Text>。
  *     </Text>
  *   </Box>
  * </MaxSizedBox>
@@ -113,7 +106,7 @@ export const MaxSizedBox: React.FC<MaxSizedBoxProps> = ({
   );
 
   if (maxWidth === undefined) {
-    throw new Error('maxWidth must be defined when maxHeight is set.');
+    throw new Error('设置 maxHeight 时必须定义 maxWidth。');
   }
   function visitRows(element: React.ReactNode) {
     if (!React.isValidElement<{ children?: React.ReactNode }>(element)) {
@@ -130,7 +123,7 @@ export const MaxSizedBox: React.FC<MaxSizedBoxProps> = ({
       return;
     }
 
-    debugReportError('MaxSizedBox children must be <Box> elements', element);
+    debugReportError('MaxSizedBox 的子元素必须是 <Box> 元素', element);
   }
 
   React.Children.forEach(children, visitRows);
@@ -187,33 +180,30 @@ export const MaxSizedBox: React.FC<MaxSizedBoxProps> = ({
     <Box flexDirection="column" width={maxWidth} flexShrink={0}>
       {totalHiddenLines > 0 && overflowDirection === 'top' && (
         <Text color={Colors.Gray} wrap="truncate">
-          ... first {totalHiddenLines} line{totalHiddenLines === 1 ? '' : 's'}{' '}
-          hidden ...
+          ... 首 {totalHiddenLines} 行已隐藏 ...
         </Text>
       )}
       {visibleLines}
       {totalHiddenLines > 0 && overflowDirection === 'bottom' && (
         <Text color={Colors.Gray} wrap="truncate">
-          ... last {totalHiddenLines} line{totalHiddenLines === 1 ? '' : 's'}{' '}
-          hidden ...
+          ... 末 {totalHiddenLines} 行已隐藏 ...
         </Text>
       )}
     </Box>
   );
 };
 
-// Define a type for styled text segments
+// 为样式文本段定义类型
 interface StyledText {
   text: string;
   props: Record<string, unknown>;
 }
 
 /**
- * Single row of content within the MaxSizedBox.
+ * MaxSizedBox 内的单行内容。
  *
- * A row can contain segments that are not wrapped, followed by segments that
- * are. This is a minimal implementation that only supports the functionality
- * needed today.
+ * 一行可以包含未换行的段，后跟换行的段。这是一个最小实现，
+ * 仅支持当前所需的功能。
  */
 interface Row {
   noWrapSegments: StyledText[];
@@ -221,31 +211,29 @@ interface Row {
 }
 
 /**
- * Flattens the child elements of MaxSizedBox into an array of `Row` objects.
+ * 将 MaxSizedBox 的子元素展平为 `Row` 对象数组。
  *
- * This function expects a specific child structure to function correctly:
- * 1. The top-level child of `MaxSizedBox` should be a single `<Box>`. This
- *    outer box is primarily for structure and is not directly rendered.
- * 2. Inside the outer `<Box>`, there should be one or more children. Each of
- *    these children must be a `<Box>` that represents a row.
- * 3. Inside each "row" `<Box>`, the children must be `<Text>` components.
+ * 此函数期望特定的子结构才能正确运行：
+ * 1. `MaxSizedBox` 的顶级子元素应该是单个 `<Box>`。此外部框主要用于结构，
+ *    不会直接渲染。
+ * 2. 在外部 `<Box>` 内部，应该有一个或多个子元素。每个子元素必须是表示一行的 `<Box>`。
+ * 3. 在每个"行" `<Box>` 内部，子元素必须是 `<Text>` 组件。
  *
- * The structure should look like this:
+ * 结构应如下所示：
  * <MaxSizedBox>
- *   <Box> // Row 1
+ *   <Box> // 第1行
  *     <Text>...</Text>
  *     <Text>...</Text>
  *   </Box>
- *   <Box> // Row 2
+ *   <Box> // 第2行
  *     <Text>...</Text>
  *   </Box>
  * </MaxSizedBox>
  *
- * It is an error for a <Text> child without wrapping to appear after a
- * <Text> child with wrapping within the same row Box.
+ * 在同一行 Box 内，无换行的 <Text> 子元素出现在有换行的 <Text> 子元素之后是错误的。
  *
- * @param element The React node to flatten.
- * @returns An array of `Row` objects.
+ * @param element 要展平的 React 节点。
+ * @returns `Row` 对象数组。
  */
 function visitBoxRow(element: React.ReactNode): Row {
   if (
@@ -253,7 +241,7 @@ function visitBoxRow(element: React.ReactNode): Row {
     element.type !== Box
   ) {
     debugReportError(
-      `All children of MaxSizedBox must be <Box> elements`,
+      `MaxSizedBox 的所有子元素必须是 <Box> 元素`,
       element,
     );
     return {
@@ -272,10 +260,10 @@ function visitBoxRow(element: React.ReactNode): Row {
         | 'column-reverse'
         | undefined;
     };
-    // Ensure the Box has no props other than the default ones and key.
+    // 确保 Box 没有除默认属性和 key 之外的其他属性。
     let maxExpectedProps = 4;
     if (boxProps.children !== undefined) {
-      // Allow the key prop, which is automatically added by React.
+      // 允许 key 属性，该属性由 React 自动添加。
       maxExpectedProps += 1;
     }
     if (
@@ -283,13 +271,13 @@ function visitBoxRow(element: React.ReactNode): Row {
       boxProps.flexDirection !== 'row'
     ) {
       debugReportError(
-        'MaxSizedBox children must have flexDirection="row".',
+        'MaxSizedBox 的子元素必须具有 flexDirection="row"。',
         element,
       );
     }
     if (Object.keys(boxProps).length > maxExpectedProps) {
       debugReportError(
-        `Boxes inside MaxSizedBox must not have additional props. ${Object.keys(
+        `MaxSizedBox 内的 Box 不得有额外的属性。${Object.keys(
           boxProps,
         ).join(', ')}`,
         element,
@@ -313,14 +301,14 @@ function visitBoxRow(element: React.ReactNode): Row {
     }
     if (typeof element === 'string' || typeof element === 'number') {
       const text = String(element);
-      // Ignore empty strings as they don't need to be rendered.
+      // 忽略空字符串，因为它们不需要渲染。
       if (!text) {
         return;
       }
 
       const segment: StyledText = { text, props: parentProps ?? {} };
 
-      // Check the 'wrap' property from the merged props to decide the segment type.
+      // 检查合并属性中的 'wrap' 属性以决定段类型。
       if (parentProps === undefined || parentProps.wrap === 'wrap') {
         hasSeenWrapped = true;
         row.segments.push(segment);
@@ -328,10 +316,10 @@ function visitBoxRow(element: React.ReactNode): Row {
         if (!hasSeenWrapped) {
           row.noWrapSegments.push(segment);
         } else {
-          // put in the wrapped segment as the row is already stuck in wrapped mode.
+          // 放入换行段，因为行已处于换行模式。
           row.segments.push(segment);
           debugReportError(
-            'Text elements without wrapping cannot appear after elements with wrapping in the same row.',
+            '在同一行中，无换行的文本元素不能出现在有换行的元素之后。',
             element,
           );
         }
@@ -340,7 +328,7 @@ function visitBoxRow(element: React.ReactNode): Row {
     }
 
     if (!React.isValidElement<{ children?: React.ReactNode }>(element)) {
-      debugReportError('Invalid element.', element);
+      debugReportError('无效元素。', element);
       return;
     }
 
@@ -353,13 +341,13 @@ function visitBoxRow(element: React.ReactNode): Row {
 
     if (element.type !== Text) {
       debugReportError(
-        'Children of a row Box must be <Text> elements.',
+        '行 Box 的子元素必须是 <Text> 元素。',
         element,
       );
       return;
     }
 
-    // Merge props from parent <Text> elements. Child props take precedence.
+    // 从父 <Text> 元素合并属性。子属性优先。
     const { children, ...currentProps } = element.props;
     const mergedProps =
       parentProps === undefined
@@ -384,7 +372,7 @@ function layoutInkElementAsStyledText(
 ) {
   const row = visitBoxRow(element);
   if (row.segments.length === 0 && row.noWrapSegments.length === 0) {
-    // Return a single empty line if there are no segments to display
+    // 如果没有要显示的段，则返回单个空行
     output.push([]);
     return;
   }
@@ -393,15 +381,14 @@ function layoutInkElementAsStyledText(
   const nonWrappingContent: StyledText[] = [];
   let noWrappingWidth = 0;
 
-  // First, lay out the non-wrapping segments
+  // 首先，布局非换行段
   row.noWrapSegments.forEach((segment) => {
     nonWrappingContent.push(segment);
     noWrappingWidth += stringWidth(segment.text);
   });
 
   if (row.segments.length === 0) {
-    // This is a bit of a special case when there are no segments that allow
-    // wrapping. It would be ideal to unify.
+    // 当没有允许换行的段时，这是一个特殊情况。理想情况下应该统一。
     const lines: StyledText[][] = [];
     let currentLine: StyledText[] = [];
     nonWrappingContent.forEach((segment) => {
@@ -432,12 +419,12 @@ function layoutInkElementAsStyledText(
   const availableWidth = maxWidth - noWrappingWidth;
 
   if (availableWidth < 1) {
-    // No room to render the wrapping segments. TODO(jacob314): consider an alternative fallback strategy.
+    // 没有空间渲染换行段。TODO(jacob314): 考虑替代的回退策略。
     output.push(nonWrappingContent);
     return;
   }
 
-  // Now, lay out the wrapping segments
+  // 现在，布局换行段
   let wrappingPart: StyledText[] = [];
   let wrappingPartWidth = 0;
 
@@ -477,7 +464,7 @@ function layoutInkElementAsStyledText(
         addWrappingPartToLines();
       }
 
-      const words = lineText.split(/(\s+)/); // Split by whitespace
+      const words = lineText.split(/(\s+)/); // 按空白字符分割
 
       words.forEach((word) => {
         if (!word) return;
@@ -494,7 +481,7 @@ function layoutInkElementAsStyledText(
         }
 
         if (wordWidth > availableWidth) {
-          // Word is too long, needs to be split across lines
+          // 单词太长，需要跨行分割
           const wordAsCodePoints = toCodePoints(word);
           let remainingWordAsCodePoints = wordAsCodePoints;
           while (remainingWordAsCodePoints.length > 0) {
@@ -532,7 +519,7 @@ function layoutInkElementAsStyledText(
         }
       });
     });
-    // Split omits a trailing newline, so we need to handle it here
+    // split 会省略尾随换行符，所以我们需要在这里处理
     if (segment.text.endsWith('\n')) {
       addWrappingPartToLines();
     }

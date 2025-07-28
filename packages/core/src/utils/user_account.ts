@@ -27,11 +27,11 @@ async function readAccounts(filePath: string): Promise<UserAccounts> {
     return JSON.parse(content) as UserAccounts;
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      // File doesn't exist, which is fine.
+      // 文件不存在，这是正常的。
       return { active: null, old: [] };
     }
-    // File is corrupted or not valid JSON, start with a fresh object.
-    console.debug('Could not parse accounts file, starting fresh.', error);
+    // 文件已损坏或不是有效的 JSON，从新对象开始。
+    console.debug('无法解析账户文件，重新开始。', error);
     return { active: null, old: [] };
   }
 }
@@ -48,7 +48,7 @@ export async function cacheGoogleAccount(email: string): Promise<void> {
     }
   }
 
-  // If the new email was in the old list, remove it
+  // 如果新邮箱在旧列表中，则移除它
   accounts.old = accounts.old.filter((oldEmail) => oldEmail !== email);
 
   accounts.active = email;
@@ -68,7 +68,7 @@ export function getCachedGoogleAccount(): string | null {
     }
     return null;
   } catch (error) {
-    console.debug('Error reading cached Google Account:', error);
+    console.debug('读取缓存的 Google 账户时出错：', error);
     return null;
   }
 }
@@ -91,7 +91,7 @@ export function getLifetimeGoogleAccounts(): number {
     }
     return count;
   } catch (error) {
-    console.debug('Error reading lifetime Google Accounts:', error);
+    console.debug('读取历史 Google 账户时出错：', error);
     return 0;
   }
 }

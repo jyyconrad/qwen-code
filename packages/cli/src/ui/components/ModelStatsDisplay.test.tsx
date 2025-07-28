@@ -10,7 +10,7 @@ import { ModelStatsDisplay } from './ModelStatsDisplay.js';
 import * as SessionContext from '../contexts/SessionContext.js';
 import { SessionMetrics } from '../contexts/SessionContext.js';
 
-// Mock the context to provide controlled data for testing
+// 模拟上下文以提供受控数据用于测试
 vi.mock('../contexts/SessionContext.js', async (importOriginal) => {
   const actual = await importOriginal<typeof SessionContext>();
   return {
@@ -38,7 +38,7 @@ const renderWithMockedStats = (metrics: SessionMetrics) => {
 };
 
 describe('<ModelStatsDisplay />', () => {
-  it('should render "no API calls" message when there are no active models', () => {
+  it('当没有活动模型时应渲染 "no API calls" 消息', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {},
       tools: {
@@ -57,7 +57,7 @@ describe('<ModelStatsDisplay />', () => {
     expect(lastFrame()).toMatchSnapshot();
   });
 
-  it('should not display conditional rows if no model has data for them', () => {
+  it('如果没有模型具有相关数据，则不应显示条件行', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {
         'gemini-2.5-pro': {
@@ -89,7 +89,7 @@ describe('<ModelStatsDisplay />', () => {
     expect(output).toMatchSnapshot();
   });
 
-  it('should display conditional rows if at least one model has data', () => {
+  it('如果至少有一个模型具有数据，则应显示条件行', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {
         'gemini-2.5-pro': {
@@ -132,7 +132,7 @@ describe('<ModelStatsDisplay />', () => {
     expect(output).toMatchSnapshot();
   });
 
-  it('should display stats for multiple models correctly', () => {
+  it('应正确显示多个模型的统计信息', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {
         'gemini-2.5-pro': {
@@ -174,7 +174,7 @@ describe('<ModelStatsDisplay />', () => {
     expect(output).toMatchSnapshot();
   });
 
-  it('should handle large values without wrapping or overlapping', () => {
+  it('应处理大值而不换行或重叠', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {
         'gemini-2.5-pro': {
@@ -206,7 +206,7 @@ describe('<ModelStatsDisplay />', () => {
     expect(lastFrame()).toMatchSnapshot();
   });
 
-  it('should display a single model correctly', () => {
+  it('应正确显示单个模型', () => {
     const { lastFrame } = renderWithMockedStats({
       models: {
         'gemini-2.5-pro': {

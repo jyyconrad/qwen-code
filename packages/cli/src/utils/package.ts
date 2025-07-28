@@ -30,6 +30,7 @@ export async function getPackageJson(): Promise<PackageJson | undefined> {
   const result = await readPackageUp({ cwd: __dirname });
   if (!result) {
     // TODO: Maybe bubble this up as an error.
+    // TODO: 也许将此作为错误向上抛出。
     return;
   }
 

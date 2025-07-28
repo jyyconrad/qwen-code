@@ -15,15 +15,15 @@ const CONTENT_LOOP_THRESHOLD = 10;
 const SENTENCE_ENDING_PUNCTUATION_REGEX = /[.!?]+(?=\s|$)/;
 
 /**
- * Service for detecting and preventing infinite loops in AI responses.
- * Monitors tool call repetitions and content sentence repetitions.
+ * 用于检测和防止 AI 响应中无限循环的服务。
+ * 监控工具调用重复和内容句子重复。
  */
 export class LoopDetectionService {
-  // Tool call tracking
+  // 工具调用跟踪
   private lastToolCallKey: string | null = null;
   private toolCallRepetitionCount: number = 0;
 
-  // Content streaming tracking
+  // 内容流式传输跟踪
   private lastRepeatedSentence: string = '';
   private sentenceRepetitionCount: number = 0;
   private partialContent: string = '';
@@ -40,15 +40,14 @@ export class LoopDetectionService {
   }
 
   /**
-   * Processes a stream event and checks for loop conditions.
-   * @param event - The stream event to process
-   * @returns true if a loop is detected, false otherwise
+   * 处理流事件并检查循环条件。
+   * @param event - 要处理的流事件
+   * @returns 如果检测到循环则返回 true，否则返回 false
    */
   addAndCheck(event: ServerGeminiStreamEvent): boolean {
     switch (event.type) {
       case GeminiEventType.ToolCallRequest:
-        // content chanting only happens in one single stream, reset if there
-        // is a tool call in between
+        // 内容吟唱只发生在单一的流中，如果中间有工具调用则重置
         this.resetSentenceCount();
         return this.checkToolCallLoop(event.value);
       case GeminiEventType.Content:
@@ -120,7 +119,7 @@ export class LoopDetectionService {
   }
 
   /**
-   * Resets all loop detection state.
+   * 重置所有循环检测状态。
    */
   reset(): void {
     this.resetToolCallCount();

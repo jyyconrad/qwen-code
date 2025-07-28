@@ -9,17 +9,17 @@ import { ReadFileTool, ReadFileToolParams } from './read-file.js';
 import * as fileUtils from '../utils/fileUtils.js';
 import path from 'path';
 import os from 'os';
-import fs from 'fs'; // For actual fs operations in setup
+import fs from 'fs'; // 用于设置中的实际文件系统操作
 import { Config } from '../config/config.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 
-// Mock fileUtils.processSingleFileContent
+// 模拟 fileUtils.processSingleFileContent
 vi.mock('../utils/fileUtils', async () => {
   const actualFileUtils =
     await vi.importActual<typeof fileUtils>('../utils/fileUtils');
   return {
-    ...actualFileUtils, // Spread actual implementations
-    processSingleFileContent: vi.fn(), // Mock specific function
+    ...actualFileUtils, // 展开实际实现
+    processSingleFileContent: vi.fn(), // 模拟特定函数
   };
 });
 
@@ -31,7 +31,7 @@ describe('ReadFileTool', () => {
   const abortSignal = new AbortController().signal;
 
   beforeEach(() => {
-    // Create a unique temporary root directory for each test run
+    // 为每次测试运行创建一个唯一的临时根目录
     tempRootDir = fs.mkdtempSync(
       path.join(os.tmpdir(), 'read-file-tool-root-'),
     );
@@ -49,21 +49,21 @@ describe('ReadFileTool', () => {
   });
 
   afterEach(() => {
-    // Clean up the temporary root directory
+    // 清理临时根目录
     if (fs.existsSync(tempRootDir)) {
       fs.rmSync(tempRootDir, { recursive: true, force: true });
     }
   });
 
   describe('validateToolParams', () => {
-    it('should return null for valid params (absolute path within root)', () => {
+    it('应返回 null 表示参数有效（根目录内的绝对路径）', () => {
       const params: ReadFileToolParams = {
         absolute_path: path.join(tempRootDir, 'test.txt'),
       };
       expect(tool.validateToolParams(params)).toBeNull();
     });
 
-    it('should return null for valid params with offset and limit', () => {
+    it('应返回 null 表示带有 offset 和 limit 的有效参数', () => {
       const params: ReadFileToolParams = {
         absolute_path: path.join(tempRootDir, 'test.txt'),
         offset: 0,
@@ -72,40 +72,40 @@ describe('ReadFileTool', () => {
       expect(tool.validateToolParams(params)).toBeNull();
     });
 
-    it('should return error for relative path', () => {
+    it('应返回相对路径的错误', () => {
       const params: ReadFileToolParams = { absolute_path: 'test.txt' };
       expect(tool.validateToolParams(params)).toBe(
-        `File path must be absolute, but was relative: test.txt. You must provide an absolute path.`,
+        `文件路径必须是绝对路径，但却是相对路径：test.txt。你必须提供一个绝对路径。`,
       );
     });
 
-    it('should return error for path outside root', () => {
+    it('应返回路径在根目录外的错误', () => {
       const outsidePath = path.resolve(os.tmpdir(), 'outside-root.txt');
       const params: ReadFileToolParams = { absolute_path: outsidePath };
       expect(tool.validateToolParams(params)).toMatch(
-        /File path must be within the root directory/,
+        /文件路径必须在根目录内/,
       );
     });
 
-    it('should return error for negative offset', () => {
+    it('应返回负数 offset 的错误', () => {
       const params: ReadFileToolParams = {
         absolute_path: path.join(tempRootDir, 'test.txt'),
         offset: -1,
         limit: 10,
       };
       expect(tool.validateToolParams(params)).toBe(
-        'Offset must be a non-negative number',
+        'Offset 必须是非负数',
       );
     });
 
-    it('should return error for non-positive limit', () => {
+    it('应返回非正数 limit 的错误', () => {
       const paramsZero: ReadFileToolParams = {
         absolute_path: path.join(tempRootDir, 'test.txt'),
         offset: 0,
         limit: 0,
       };
       expect(tool.validateToolParams(paramsZero)).toBe(
-        'Limit must be a positive number',
+        'Limit 必须是正数',
       );
       const paramsNegative: ReadFileToolParams = {
         absolute_path: path.join(tempRootDir, 'test.txt'),
@@ -113,52 +113,52 @@ describe('ReadFileTool', () => {
         limit: -5,
       };
       expect(tool.validateToolParams(paramsNegative)).toBe(
-        'Limit must be a positive number',
+        'Limit 必须是正数',
       );
     });
 
-    it('should return error for schema validation failure (e.g. missing path)', () => {
+    it('应返回模式验证失败的错误（例如缺少路径）', () => {
       const params = { offset: 0 } as unknown as ReadFileToolParams;
       expect(tool.validateToolParams(params)).toBe(
-        `params must have required property 'absolute_path'`,
+        `params 必须包含必需属性 'absolute_path'`,
       );
     });
   });
 
   describe('getDescription', () => {
-    it('should return a shortened, relative path', () => {
+    it('应返回缩短的相对路径', () => {
       const filePath = path.join(tempRootDir, 'sub', 'dir', 'file.txt');
       const params: ReadFileToolParams = { absolute_path: filePath };
-      // Assuming tempRootDir is something like /tmp/read-file-tool-root-XXXXXX
-      // The relative path would be sub/dir/file.txt
+      // 假设 tempRootDir 类似于 /tmp/read-file-tool-root-XXXXXX
+      // 相对路径将是 sub/dir/file.txt
       expect(tool.getDescription(params)).toBe('sub/dir/file.txt');
     });
 
-    it('should return . if path is the root directory', () => {
+    it('如果路径是根目录则应返回 .', () => {
       const params: ReadFileToolParams = { absolute_path: tempRootDir };
       expect(tool.getDescription(params)).toBe('.');
     });
   });
 
   describe('execute', () => {
-    it('should return validation error if params are invalid', async () => {
+    it('如果参数无效应返回验证错误', async () => {
       const params: ReadFileToolParams = { absolute_path: 'relative/path.txt' };
       const result = await tool.execute(params, abortSignal);
       expect(result.llmContent).toBe(
-        'Error: Invalid parameters provided. Reason: File path must be absolute, but was relative: relative/path.txt. You must provide an absolute path.',
+        '错误：提供了无效参数。原因：文件路径必须是绝对路径，但却是相对路径：relative/path.txt。你必须提供一个绝对路径。',
       );
       expect(result.returnDisplay).toBe(
-        'File path must be absolute, but was relative: relative/path.txt. You must provide an absolute path.',
+        '文件路径必须是绝对路径，但却是相对路径：relative/path.txt。你必须提供一个绝对路径。',
       );
     });
 
-    it('should return error from processSingleFileContent if it fails', async () => {
+    it('如果 processSingleFileContent 失败应返回其错误', async () => {
       const filePath = path.join(tempRootDir, 'error.txt');
       const params: ReadFileToolParams = { absolute_path: filePath };
-      const errorMessage = 'Simulated read error';
+      const errorMessage = '模拟读取错误';
       mockProcessSingleFileContent.mockResolvedValue({
-        llmContent: `Error reading file ${filePath}: ${errorMessage}`,
-        returnDisplay: `Error reading file ${filePath}: ${errorMessage}`,
+        llmContent: `读取文件 ${filePath} 出错：${errorMessage}`,
+        returnDisplay: `读取文件 ${filePath} 出错：${errorMessage}`,
         error: errorMessage,
       });
 
@@ -173,13 +173,13 @@ describe('ReadFileTool', () => {
       expect(result.returnDisplay).toContain(errorMessage);
     });
 
-    it('should return success result for a text file', async () => {
+    it('应为文本文件返回成功结果', async () => {
       const filePath = path.join(tempRootDir, 'textfile.txt');
-      const fileContent = 'This is a test file.';
+      const fileContent = '这是一个测试文件。';
       const params: ReadFileToolParams = { absolute_path: filePath };
       mockProcessSingleFileContent.mockResolvedValue({
         llmContent: fileContent,
-        returnDisplay: `Read text file: ${path.basename(filePath)}`,
+        returnDisplay: `读取文本文件：${path.basename(filePath)}`,
       });
 
       const result = await tool.execute(params, abortSignal);
@@ -191,11 +191,11 @@ describe('ReadFileTool', () => {
       );
       expect(result.llmContent).toBe(fileContent);
       expect(result.returnDisplay).toBe(
-        `Read text file: ${path.basename(filePath)}`,
+        `读取文本文件：${path.basename(filePath)}`,
       );
     });
 
-    it('should return success result for an image file', async () => {
+    it('应为图像文件返回成功结果', async () => {
       const filePath = path.join(tempRootDir, 'image.png');
       const imageData = {
         inlineData: { mimeType: 'image/png', data: 'base64...' },
@@ -203,7 +203,7 @@ describe('ReadFileTool', () => {
       const params: ReadFileToolParams = { absolute_path: filePath };
       mockProcessSingleFileContent.mockResolvedValue({
         llmContent: imageData,
-        returnDisplay: `Read image file: ${path.basename(filePath)}`,
+        returnDisplay: `读取图像文件：${path.basename(filePath)}`,
       });
 
       const result = await tool.execute(params, abortSignal);
@@ -215,11 +215,11 @@ describe('ReadFileTool', () => {
       );
       expect(result.llmContent).toEqual(imageData);
       expect(result.returnDisplay).toBe(
-        `Read image file: ${path.basename(filePath)}`,
+        `读取图像文件：${path.basename(filePath)}`,
       );
     });
 
-    it('should pass offset and limit to processSingleFileContent', async () => {
+    it('应将 offset 和 limit 传递给 processSingleFileContent', async () => {
       const filePath = path.join(tempRootDir, 'paginated.txt');
       const params: ReadFileToolParams = {
         absolute_path: filePath,
@@ -227,8 +227,8 @@ describe('ReadFileTool', () => {
         limit: 5,
       };
       mockProcessSingleFileContent.mockResolvedValue({
-        llmContent: 'some lines',
-        returnDisplay: 'Read text file (paginated)',
+        llmContent: '一些行',
+        returnDisplay: '读取文本文件（分页）',
       });
 
       await tool.execute(params, abortSignal);
@@ -240,7 +240,7 @@ describe('ReadFileTool', () => {
       );
     });
 
-    it('should return error if path is ignored by a .geminiignore pattern', async () => {
+    it('如果路径被 .geminiignore 模式忽略应返回错误', async () => {
       const params: ReadFileToolParams = {
         absolute_path: path.join(tempRootDir, 'foo.bar'),
       };

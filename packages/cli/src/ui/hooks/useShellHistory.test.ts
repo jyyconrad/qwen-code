@@ -47,7 +47,7 @@ describe('useShellHistory', () => {
     mockedCrypto.createHash.mockReturnValue(hashMock as never);
   });
 
-  it('should initialize and read the history file from the correct path', async () => {
+  it('应初始化并从正确的路径读取历史文件', async () => {
     mockedFs.readFile.mockResolvedValue('cmd1\ncmd2');
     const { result } = renderHook(() => useShellHistory(MOCKED_PROJECT_ROOT));
 
@@ -63,11 +63,11 @@ describe('useShellHistory', () => {
       command = result.current.getPreviousCommand();
     });
 
-    // History is loaded newest-first: ['cmd2', 'cmd1']
+    // 历史记录按最新优先加载: ['cmd2', 'cmd1']
     expect(command).toBe('cmd2');
   });
 
-  it('should handle a non-existent history file gracefully', async () => {
+  it('应优雅地处理不存在的历史文件', async () => {
     const error = new Error('File not found') as NodeJS.ErrnoException;
     error.code = 'ENOENT';
     mockedFs.readFile.mockRejectedValue(error);
@@ -86,7 +86,7 @@ describe('useShellHistory', () => {
     expect(command).toBe(null);
   });
 
-  it('should add a command and write to the history file', async () => {
+  it('应添加命令并写入历史文件', async () => {
     const { result } = renderHook(() => useShellHistory(MOCKED_PROJECT_ROOT));
 
     await waitFor(() => expect(mockedFs.readFile).toHaveBeenCalled());
@@ -101,7 +101,7 @@ describe('useShellHistory', () => {
       });
       expect(mockedFs.writeFile).toHaveBeenCalledWith(
         MOCKED_HISTORY_FILE,
-        'new_command', // Written to file oldest-first.
+        'new_command', // 按最旧优先写入文件。
       );
     });
 
@@ -112,11 +112,11 @@ describe('useShellHistory', () => {
     expect(command).toBe('new_command');
   });
 
-  it('should navigate history correctly with previous/next commands', async () => {
+  it('应正确地使用上一个/下一个命令导航历史', async () => {
     mockedFs.readFile.mockResolvedValue('cmd1\ncmd2\ncmd3');
     const { result } = renderHook(() => useShellHistory(MOCKED_PROJECT_ROOT));
 
-    // Wait for history to be loaded: ['cmd3', 'cmd2', 'cmd1']
+    // 等待历史加载: ['cmd3', 'cmd2', 'cmd1']
     await waitFor(() => expect(mockedFs.readFile).toHaveBeenCalled());
 
     let command: string | null = null;
@@ -136,7 +136,7 @@ describe('useShellHistory', () => {
     });
     expect(command).toBe('cmd1');
 
-    // Should stay at the oldest command
+    // 应停留在最旧的命令
     act(() => {
       command = result.current.getPreviousCommand();
     });
@@ -152,14 +152,14 @@ describe('useShellHistory', () => {
     });
     expect(command).toBe('cmd3');
 
-    // Should return to the "new command" line (represented as empty string)
+    // 应返回到"新命令"行（表示为空字符串）
     act(() => {
       command = result.current.getNextCommand();
     });
     expect(command).toBe('');
   });
 
-  it('should not add empty or whitespace-only commands to history', async () => {
+  it('不应将空或仅包含空白字符的命令添加到历史中', async () => {
     const { result } = renderHook(() => useShellHistory(MOCKED_PROJECT_ROOT));
     await waitFor(() => expect(mockedFs.readFile).toHaveBeenCalled());
 
@@ -170,7 +170,7 @@ describe('useShellHistory', () => {
     expect(mockedFs.writeFile).not.toHaveBeenCalled();
   });
 
-  it('should truncate history to MAX_HISTORY_LENGTH (100)', async () => {
+  it('应将历史记录截断为 MAX_HISTORY_LENGTH (100)', async () => {
     const oldCommands = Array.from({ length: 120 }, (_, i) => `old_cmd_${i}`);
     mockedFs.readFile.mockResolvedValue(oldCommands.join('\n'));
 
@@ -181,34 +181,34 @@ describe('useShellHistory', () => {
       result.current.addCommandToHistory('new_cmd');
     });
 
-    // Wait for the async write to happen and then inspect the arguments.
+    // 等待异步写入发生然后检查参数。
     await waitFor(() => expect(mockedFs.writeFile).toHaveBeenCalled());
 
-    // The hook stores history newest-first.
-    // Initial state: ['old_cmd_119', ..., 'old_cmd_0']
-    // After adding 'new_cmd': ['new_cmd', 'old_cmd_119', ..., 'old_cmd_21'] (100 items)
-    // Written to file (reversed): ['old_cmd_21', ..., 'old_cmd_119', 'new_cmd']
+    // 钩子按最新优先存储历史。
+    // 初始状态: ['old_cmd_119', ..., 'old_cmd_0']
+    // 添加 'new_cmd' 后: ['new_cmd', 'old_cmd_119', ..., 'old_cmd_21'] (100 项)
+    // 写入文件（反转）: ['old_cmd_21', ..., 'old_cmd_119', 'new_cmd']
     const writtenContent = mockedFs.writeFile.mock.calls[0][1] as string;
     const writtenLines = writtenContent.split('\n');
 
     expect(writtenLines.length).toBe(100);
-    expect(writtenLines[0]).toBe('old_cmd_21'); // New oldest command
-    expect(writtenLines[99]).toBe('new_cmd'); // Newest command
+    expect(writtenLines[0]).toBe('old_cmd_21'); // 新的最旧命令
+    expect(writtenLines[99]).toBe('new_cmd'); // 最新命令
   });
 
-  it('should move an existing command to the top when re-added', async () => {
+  it('应在重新添加时将现有命令移动到顶部', async () => {
     mockedFs.readFile.mockResolvedValue('cmd1\ncmd2\ncmd3');
     const { result } = renderHook(() => useShellHistory(MOCKED_PROJECT_ROOT));
 
-    // Initial state: ['cmd3', 'cmd2', 'cmd1']
+    // 初始状态: ['cmd3', 'cmd2', 'cmd1']
     await waitFor(() => expect(mockedFs.readFile).toHaveBeenCalled());
 
     act(() => {
       result.current.addCommandToHistory('cmd1');
     });
 
-    // After re-adding 'cmd1': ['cmd1', 'cmd3', 'cmd2']
-    // Written to file (reversed): ['cmd2', 'cmd3', 'cmd1']
+    // 重新添加 'cmd1' 后: ['cmd1', 'cmd3', 'cmd2']
+    // 写入文件（反转）: ['cmd2', 'cmd3', 'cmd1']
     await waitFor(() => expect(mockedFs.writeFile).toHaveBeenCalled());
 
     const writtenContent = mockedFs.writeFile.mock.calls[0][1] as string;

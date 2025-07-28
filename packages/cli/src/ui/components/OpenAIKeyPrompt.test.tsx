@@ -9,7 +9,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { OpenAIKeyPrompt } from './OpenAIKeyPrompt.js';
 
 describe('OpenAIKeyPrompt', () => {
-  it('should render the prompt correctly', () => {
+  it('应正确渲染提示信息', () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
@@ -17,14 +17,14 @@ describe('OpenAIKeyPrompt', () => {
       <OpenAIKeyPrompt onSubmit={onSubmit} onCancel={onCancel} />,
     );
 
-    expect(lastFrame()).toContain('OpenAI Configuration Required');
+    expect(lastFrame()).toContain('需要 OpenAI 配置');
     expect(lastFrame()).toContain('https://platform.openai.com/api-keys');
     expect(lastFrame()).toContain(
-      'Press Enter to continue, Tab/↑↓ to navigate, Esc to cancel',
+      '按 Enter 继续，Tab/↑↓ 导航，Esc 取消',
     );
   });
 
-  it('should show the component with proper styling', () => {
+  it('应以正确的样式显示组件', () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
@@ -33,16 +33,16 @@ describe('OpenAIKeyPrompt', () => {
     );
 
     const output = lastFrame();
-    expect(output).toContain('OpenAI Configuration Required');
-    expect(output).toContain('API Key:');
-    expect(output).toContain('Base URL:');
-    expect(output).toContain('Model:');
+    expect(output).toContain('需要 OpenAI 配置');
+    expect(output).toContain('API 密钥:');
+    expect(output).toContain('基础 URL:');
+    expect(output).toContain('模型:');
     expect(output).toContain(
-      'Press Enter to continue, Tab/↑↓ to navigate, Esc to cancel',
+      '按 Enter 继续，Tab/↑↓ 导航，Esc 取消',
     );
   });
 
-  it('should handle paste with control characters', async () => {
+  it('应处理包含控制字符的粘贴操作', async () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
@@ -50,15 +50,14 @@ describe('OpenAIKeyPrompt', () => {
       <OpenAIKeyPrompt onSubmit={onSubmit} onCancel={onCancel} />,
     );
 
-    // Simulate paste with control characters
+    // 模拟包含控制字符的粘贴操作
     const pasteWithControlChars = '\x1b[200~sk-test123\x1b[201~';
     stdin.write(pasteWithControlChars);
 
-    // Wait a bit for processing
+    // 等待一段时间以完成处理
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // The component should have filtered out the control characters
-    // and only kept 'sk-test123'
-    expect(onSubmit).not.toHaveBeenCalled(); // Should not submit yet
+    // 组件应过滤掉控制字符，仅保留 'sk-test123'
+    expect(onSubmit).not.toHaveBeenCalled(); // 此时尚未提交
   });
 });

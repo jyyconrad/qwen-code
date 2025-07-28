@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -34,7 +34,7 @@ import {
 
 const rootDir = path.resolve(os.tmpdir(), 'gemini-cli-test-root');
 
-// --- MOCKS ---
+// --- 模拟 ---
 vi.mock('../core/client.js');
 vi.mock('../utils/editCorrector.js');
 
@@ -42,18 +42,18 @@ let mockGeminiClientInstance: Mocked<GeminiClient>;
 const mockEnsureCorrectEdit = vi.fn<typeof ensureCorrectEdit>();
 const mockEnsureCorrectFileContent = vi.fn<typeof ensureCorrectFileContent>();
 
-// Wire up the mocked functions to be used by the actual module imports
+// 连接模拟函数以供实际模块导入使用
 vi.mocked(ensureCorrectEdit).mockImplementation(mockEnsureCorrectEdit);
 vi.mocked(ensureCorrectFileContent).mockImplementation(
   mockEnsureCorrectFileContent,
 );
 
-// Mock Config
+// 模拟 Config
 const mockConfigInternal = {
   getTargetDir: () => rootDir,
   getApprovalMode: vi.fn(() => ApprovalMode.DEFAULT),
   setApprovalMode: vi.fn(),
-  getGeminiClient: vi.fn(), // Initialize as a plain mock function
+  getGeminiClient: vi.fn(), // 初始化为普通模拟函数
   getApiKey: () => 'test-key',
   getModel: () => 'test-model',
   getSandbox: () => false,
@@ -76,52 +76,52 @@ const mockConfigInternal = {
     }) as unknown as ToolRegistry,
 };
 const mockConfig = mockConfigInternal as unknown as Config;
-// --- END MOCKS ---
+// --- 结束模拟 ---
 
 describe('WriteFileTool', () => {
   let tool: WriteFileTool;
   let tempDir: string;
 
   beforeEach(() => {
-    // Create a unique temporary directory for files created outside the root
+    // 为在根目录外创建的文件创建唯一的临时目录
     tempDir = fs.mkdtempSync(
       path.join(os.tmpdir(), 'write-file-test-external-'),
     );
-    // Ensure the rootDir for the tool exists
+    // 确保工具的 rootDir 存在
     if (!fs.existsSync(rootDir)) {
       fs.mkdirSync(rootDir, { recursive: true });
     }
 
-    // Setup GeminiClient mock
+    // 设置 GeminiClient 模拟
     mockGeminiClientInstance = new (vi.mocked(GeminiClient))(
       mockConfig,
     ) as Mocked<GeminiClient>;
     vi.mocked(GeminiClient).mockImplementation(() => mockGeminiClientInstance);
 
-    // Now that mockGeminiClientInstance is initialized, set the mock implementation for getGeminiClient
+    // 现在 mockGeminiClientInstance 已初始化，为 getGeminiClient 设置模拟实现
     mockConfigInternal.getGeminiClient.mockReturnValue(
       mockGeminiClientInstance,
     );
 
     tool = new WriteFileTool(mockConfig);
 
-    // Reset mocks before each test
+    // 在每次测试前重置模拟
     mockConfigInternal.getApprovalMode.mockReturnValue(ApprovalMode.DEFAULT);
     mockConfigInternal.setApprovalMode.mockClear();
     mockEnsureCorrectEdit.mockReset();
     mockEnsureCorrectFileContent.mockReset();
 
-    // Default mock implementations that return valid structures
+    // 默认模拟实现，返回有效结构
     mockEnsureCorrectEdit.mockImplementation(
       async (
         filePath: string,
         _currentContent: string,
         params: EditToolParams,
         _client: GeminiClient,
-        signal?: AbortSignal, // Make AbortSignal optional to match usage
+        signal?: AbortSignal, // 使 AbortSignal 可选以匹配使用情况
       ): Promise<CorrectedEditResult> => {
         if (signal?.aborted) {
-          return Promise.reject(new Error('Aborted'));
+          return Promise.reject(new Error('已中止'));
         }
         return Promise.resolve({
           params: { ...params, new_string: params.new_string ?? '' },
@@ -135,9 +135,9 @@ describe('WriteFileTool', () => {
         _client: GeminiClient,
         signal?: AbortSignal,
       ): Promise<string> => {
-        // Make AbortSignal optional
+        // 使 AbortSignal 可选
         if (signal?.aborted) {
-          return Promise.reject(new Error('Aborted'));
+          return Promise.reject(new Error('已中止'));
         }
         return Promise.resolve(content ?? '');
       },
@@ -145,7 +145,7 @@ describe('WriteFileTool', () => {
   });
 
   afterEach(() => {
-    // Clean up the temporary directories
+    // 清理临时目录
     if (fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -156,7 +156,7 @@ describe('WriteFileTool', () => {
   });
 
   describe('validateToolParams', () => {
-    it('should return null for valid absolute path within root', () => {
+    it('应为根目录内的有效绝对路径返回 null', () => {
       const params = {
         file_path: path.join(rootDir, 'test.txt'),
         content: 'hello',
@@ -164,25 +164,25 @@ describe('WriteFileTool', () => {
       expect(tool.validateToolParams(params)).toBeNull();
     });
 
-    it('should return error for relative path', () => {
+    it('应为相对路径返回错误', () => {
       const params = { file_path: 'test.txt', content: 'hello' };
       expect(tool.validateToolParams(params)).toMatch(
-        /File path must be absolute/,
+        /文件路径必须是绝对路径/,
       );
     });
 
-    it('should return error for path outside root', () => {
+    it('应为根目录外的路径返回错误', () => {
       const outsidePath = path.resolve(tempDir, 'outside-root.txt');
       const params = {
         file_path: outsidePath,
         content: 'hello',
       };
       expect(tool.validateToolParams(params)).toMatch(
-        /File path must be within the root directory/,
+        /文件路径必须在根目录内/,
       );
     });
 
-    it('should return error if path is a directory', () => {
+    it('如果路径是目录则应返回错误', () => {
       const dirAsFilePath = path.join(rootDir, 'a_directory');
       fs.mkdirSync(dirAsFilePath);
       const params = {
@@ -190,21 +190,21 @@ describe('WriteFileTool', () => {
         content: 'hello',
       };
       expect(tool.validateToolParams(params)).toMatch(
-        `Path is a directory, not a file: ${dirAsFilePath}`,
+        `路径是目录，不是文件: ${dirAsFilePath}`,
       );
     });
   });
 
   describe('_getCorrectedFileContent', () => {
-    it('should call ensureCorrectFileContent for a new file', async () => {
+    it('应为新文件调用 ensureCorrectFileContent', async () => {
       const filePath = path.join(rootDir, 'new_corrected_file.txt');
-      const proposedContent = 'Proposed new content.';
-      const correctedContent = 'Corrected new content.';
+      const proposedContent = '建议的新内容。';
+      const correctedContent = '修正的新内容。';
       const abortSignal = new AbortController().signal;
-      // Ensure the mock is set for this specific test case if needed, or rely on beforeEach
+      // 如果需要，确保为此特定测试用例设置模拟，或依赖 beforeEach
       mockEnsureCorrectFileContent.mockResolvedValue(correctedContent);
 
-      // @ts-expect-error _getCorrectedFileContent is private
+      // @ts-expect-error _getCorrectedFileContent 是私有的
       const result = await tool._getCorrectedFileContent(
         filePath,
         proposedContent,
@@ -223,15 +223,15 @@ describe('WriteFileTool', () => {
       expect(result.error).toBeUndefined();
     });
 
-    it('should call ensureCorrectEdit for an existing file', async () => {
+    it('应为现有文件调用 ensureCorrectEdit', async () => {
       const filePath = path.join(rootDir, 'existing_corrected_file.txt');
-      const originalContent = 'Original existing content.';
-      const proposedContent = 'Proposed replacement content.';
-      const correctedProposedContent = 'Corrected replacement content.';
+      const originalContent = '原始现有内容。';
+      const proposedContent = '建议的替换内容。';
+      const correctedProposedContent = '修正的替换内容。';
       const abortSignal = new AbortController().signal;
       fs.writeFileSync(filePath, originalContent, 'utf8');
 
-      // Ensure this mock is active and returns the correct structure
+      // 确保此模拟处于活动状态并返回正确的结构
       mockEnsureCorrectEdit.mockResolvedValue({
         params: {
           file_path: filePath,
@@ -241,7 +241,7 @@ describe('WriteFileTool', () => {
         occurrences: 1,
       } as CorrectedEditResult);
 
-      // @ts-expect-error _getCorrectedFileContent is private
+      // @ts-expect-error _getCorrectedFileContent 是私有的
       const result = await tool._getCorrectedFileContent(
         filePath,
         proposedContent,
@@ -266,19 +266,19 @@ describe('WriteFileTool', () => {
       expect(result.error).toBeUndefined();
     });
 
-    it('should return error if reading an existing file fails (e.g. permissions)', async () => {
+    it('如果读取现有文件失败（例如权限）则应返回错误', async () => {
       const filePath = path.join(rootDir, 'unreadable_file.txt');
-      const proposedContent = 'some content';
+      const proposedContent = '一些内容';
       const abortSignal = new AbortController().signal;
       fs.writeFileSync(filePath, 'content', { mode: 0o000 });
 
-      const readError = new Error('Permission denied');
+      const readError = new Error('权限被拒绝');
       const originalReadFileSync = fs.readFileSync;
       vi.spyOn(fs, 'readFileSync').mockImplementationOnce(() => {
         throw readError;
       });
 
-      // @ts-expect-error _getCorrectedFileContent is private
+      // @ts-expect-error _getCorrectedFileContent 是私有的
       const result = await tool._getCorrectedFileContent(
         filePath,
         proposedContent,
@@ -292,7 +292,7 @@ describe('WriteFileTool', () => {
       expect(result.originalContent).toBe('');
       expect(result.fileExists).toBe(true);
       expect(result.error).toEqual({
-        message: 'Permission denied',
+        message: '权限被拒绝',
         code: undefined,
       });
 
@@ -303,25 +303,25 @@ describe('WriteFileTool', () => {
 
   describe('shouldConfirmExecute', () => {
     const abortSignal = new AbortController().signal;
-    it('should return false if params are invalid (relative path)', async () => {
+    it('如果参数无效（相对路径）应返回 false', async () => {
       const params = { file_path: 'relative.txt', content: 'test' };
       const confirmation = await tool.shouldConfirmExecute(params, abortSignal);
       expect(confirmation).toBe(false);
     });
 
-    it('should return false if params are invalid (outside root)', async () => {
+    it('如果参数无效（根目录外）应返回 false', async () => {
       const outsidePath = path.resolve(tempDir, 'outside-root.txt');
       const params = { file_path: outsidePath, content: 'test' };
       const confirmation = await tool.shouldConfirmExecute(params, abortSignal);
       expect(confirmation).toBe(false);
     });
 
-    it('should return false if _getCorrectedFileContent returns an error', async () => {
+    it('如果 _getCorrectedFileContent 返回错误应返回 false', async () => {
       const filePath = path.join(rootDir, 'confirm_error_file.txt');
-      const params = { file_path: filePath, content: 'test content' };
+      const params = { file_path: filePath, content: '测试内容' };
       fs.writeFileSync(filePath, 'original', { mode: 0o000 });
 
-      const readError = new Error('Simulated read error for confirmation');
+      const readError = new Error('用于确认的模拟读取错误');
       const originalReadFileSync = fs.readFileSync;
       vi.spyOn(fs, 'readFileSync').mockImplementationOnce(() => {
         throw readError;
@@ -334,11 +334,11 @@ describe('WriteFileTool', () => {
       fs.chmodSync(filePath, 0o600);
     });
 
-    it('should request confirmation with diff for a new file (with corrected content)', async () => {
+    it('应请求确认并显示新文件的差异（带修正内容）', async () => {
       const filePath = path.join(rootDir, 'confirm_new_file.txt');
-      const proposedContent = 'Proposed new content for confirmation.';
-      const correctedContent = 'Corrected new content for confirmation.';
-      mockEnsureCorrectFileContent.mockResolvedValue(correctedContent); // Ensure this mock is active
+      const proposedContent = '用于确认的建议新内容。';
+      const correctedContent = '用于确认的修正新内容。';
+      mockEnsureCorrectFileContent.mockResolvedValue(correctedContent); // 确保此模拟处于活动状态
 
       const params = { file_path: filePath, content: proposedContent };
       const confirmation = (await tool.shouldConfirmExecute(
@@ -353,25 +353,25 @@ describe('WriteFileTool', () => {
       );
       expect(confirmation).toEqual(
         expect.objectContaining({
-          title: `Confirm Write: ${path.basename(filePath)}`,
+          title: `确认写入: ${path.basename(filePath)}`,
           fileName: 'confirm_new_file.txt',
           fileDiff: expect.stringContaining(correctedContent),
         }),
       );
       expect(confirmation.fileDiff).toMatch(
-        /--- confirm_new_file.txt\tCurrent/,
+        /--- confirm_new_file.txt\t当前/,
       );
       expect(confirmation.fileDiff).toMatch(
-        /\+\+\+ confirm_new_file.txt\tProposed/,
+        /\+\+\+ confirm_new_file.txt\t建议/,
       );
     });
 
-    it('should request confirmation with diff for an existing file (with corrected content)', async () => {
+    it('应请求确认并显示现有文件的差异（带修正内容）', async () => {
       const filePath = path.join(rootDir, 'confirm_existing_file.txt');
-      const originalContent = 'Original content for confirmation.';
-      const proposedContent = 'Proposed replacement for confirmation.';
+      const originalContent = '用于确认的原始内容。';
+      const proposedContent = '用于确认的建议替换。';
       const correctedProposedContent =
-        'Corrected replacement for confirmation.';
+        '用于确认的修正替换。';
       fs.writeFileSync(filePath, originalContent, 'utf8');
 
       mockEnsureCorrectEdit.mockResolvedValue({
@@ -402,7 +402,7 @@ describe('WriteFileTool', () => {
       );
       expect(confirmation).toEqual(
         expect.objectContaining({
-          title: `Confirm Write: ${path.basename(filePath)}`,
+          title: `确认写入: ${path.basename(filePath)}`,
           fileName: 'confirm_existing_file.txt',
           fileDiff: expect.stringContaining(correctedProposedContent),
         }),
@@ -415,48 +415,48 @@ describe('WriteFileTool', () => {
 
   describe('execute', () => {
     const abortSignal = new AbortController().signal;
-    it('should return error if params are invalid (relative path)', async () => {
+    it('如果参数无效（相对路径）应返回错误', async () => {
       const params = { file_path: 'relative.txt', content: 'test' };
       const result = await tool.execute(params, abortSignal);
-      expect(result.llmContent).toMatch(/Error: Invalid parameters provided/);
-      expect(result.returnDisplay).toMatch(/Error: File path must be absolute/);
+      expect(result.llmContent).toMatch(/错误: 提供的参数无效/);
+      expect(result.returnDisplay).toMatch(/错误: 文件路径必须是绝对路径/);
     });
 
-    it('should return error if params are invalid (path outside root)', async () => {
+    it('如果参数无效（路径在根目录外）应返回错误', async () => {
       const outsidePath = path.resolve(tempDir, 'outside-root.txt');
       const params = { file_path: outsidePath, content: 'test' };
       const result = await tool.execute(params, abortSignal);
-      expect(result.llmContent).toMatch(/Error: Invalid parameters provided/);
+      expect(result.llmContent).toMatch(/错误: 提供的参数无效/);
       expect(result.returnDisplay).toMatch(
-        /Error: File path must be within the root directory/,
+        /错误: 文件路径必须在根目录内/,
       );
     });
 
-    it('should return error if _getCorrectedFileContent returns an error during execute', async () => {
+    it('如果在执行期间 _getCorrectedFileContent 返回错误应返回错误', async () => {
       const filePath = path.join(rootDir, 'execute_error_file.txt');
-      const params = { file_path: filePath, content: 'test content' };
+      const params = { file_path: filePath, content: '测试内容' };
       fs.writeFileSync(filePath, 'original', { mode: 0o000 });
 
-      const readError = new Error('Simulated read error for execute');
+      const readError = new Error('用于执行的模拟读取错误');
       const originalReadFileSync = fs.readFileSync;
       vi.spyOn(fs, 'readFileSync').mockImplementationOnce(() => {
         throw readError;
       });
 
       const result = await tool.execute(params, abortSignal);
-      expect(result.llmContent).toMatch(/Error checking existing file/);
+      expect(result.llmContent).toMatch(/检查现有文件时出错/);
       expect(result.returnDisplay).toMatch(
-        /Error checking existing file: Simulated read error for execute/,
+        /检查现有文件时出错: 用于执行的模拟读取错误/,
       );
 
       vi.spyOn(fs, 'readFileSync').mockImplementation(originalReadFileSync);
       fs.chmodSync(filePath, 0o600);
     });
 
-    it('should write a new file with corrected content and return diff', async () => {
+    it('应写入新文件并返回修正内容和差异', async () => {
       const filePath = path.join(rootDir, 'execute_new_corrected_file.txt');
-      const proposedContent = 'Proposed new content for execute.';
-      const correctedContent = 'Corrected new content for execute.';
+      const proposedContent = '用于执行的建议新内容。';
+      const correctedContent = '用于执行的修正新内容。';
       mockEnsureCorrectFileContent.mockResolvedValue(correctedContent);
 
       const params = { file_path: filePath, content: proposedContent };
@@ -477,31 +477,31 @@ describe('WriteFileTool', () => {
         abortSignal,
       );
       expect(result.llmContent).toMatch(
-        /Successfully created and wrote to new file/,
+        /成功创建并写入新文件/,
       );
       expect(fs.existsSync(filePath)).toBe(true);
       expect(fs.readFileSync(filePath, 'utf8')).toBe(correctedContent);
       const display = result.returnDisplay as FileDiff;
       expect(display.fileName).toBe('execute_new_corrected_file.txt');
       expect(display.fileDiff).toMatch(
-        /--- execute_new_corrected_file.txt\tOriginal/,
+        /--- execute_new_corrected_file.txt\t原始/,
       );
       expect(display.fileDiff).toMatch(
-        /\+\+\+ execute_new_corrected_file.txt\tWritten/,
+        /\+\+\+ execute_new_corrected_file.txt\t已写入/,
       );
       expect(display.fileDiff).toMatch(
         correctedContent.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'),
       );
     });
 
-    it('should overwrite an existing file with corrected content and return diff', async () => {
+    it('应覆盖现有文件并返回修正内容和差异', async () => {
       const filePath = path.join(
         rootDir,
         'execute_existing_corrected_file.txt',
       );
-      const initialContent = 'Initial content for execute.';
-      const proposedContent = 'Proposed overwrite for execute.';
-      const correctedProposedContent = 'Corrected overwrite for execute.';
+      const initialContent = '用于执行的初始内容。';
+      const proposedContent = '用于执行的建议覆盖。';
+      const correctedProposedContent = '用于执行的修正覆盖。';
       fs.writeFileSync(filePath, initialContent, 'utf8');
 
       mockEnsureCorrectEdit.mockResolvedValue({
@@ -536,7 +536,7 @@ describe('WriteFileTool', () => {
         mockGeminiClientInstance,
         abortSignal,
       );
-      expect(result.llmContent).toMatch(/Successfully overwrote file/);
+      expect(result.llmContent).toMatch(/成功覆盖文件/);
       expect(fs.readFileSync(filePath, 'utf8')).toBe(correctedProposedContent);
       const display = result.returnDisplay as FileDiff;
       expect(display.fileName).toBe('execute_existing_corrected_file.txt');
@@ -548,14 +548,14 @@ describe('WriteFileTool', () => {
       );
     });
 
-    it('should create directory if it does not exist', async () => {
+    it('如果目录不存在则应创建目录', async () => {
       const dirPath = path.join(rootDir, 'new_dir_for_write');
       const filePath = path.join(dirPath, 'file_in_new_dir.txt');
-      const content = 'Content in new directory';
-      mockEnsureCorrectFileContent.mockResolvedValue(content); // Ensure this mock is active
+      const content = '新目录中的内容';
+      mockEnsureCorrectFileContent.mockResolvedValue(content); // 确保此模拟处于活动状态
 
       const params = { file_path: filePath, content };
-      // Simulate confirmation if your logic requires it before execute, or remove if not needed for this path
+      // 如果您的逻辑在执行前需要确认，则模拟确认，否则如果不需要则移除
       const confirmDetails = await tool.shouldConfirmExecute(
         params,
         abortSignal,
@@ -572,9 +572,9 @@ describe('WriteFileTool', () => {
       expect(fs.readFileSync(filePath, 'utf8')).toBe(content);
     });
 
-    it('should include modification message when proposed content is modified', async () => {
+    it('当建议内容被修改时应包含修改消息', async () => {
       const filePath = path.join(rootDir, 'new_file_modified.txt');
-      const content = 'New file content modified by user';
+      const content = '用户修改的新文件内容';
       mockEnsureCorrectFileContent.mockResolvedValue(content);
 
       const params = {
@@ -584,12 +584,12 @@ describe('WriteFileTool', () => {
       };
       const result = await tool.execute(params, abortSignal);
 
-      expect(result.llmContent).toMatch(/User modified the `content`/);
+      expect(result.llmContent).toMatch(/用户修改了 `content`/);
     });
 
-    it('should not include modification message when proposed content is not modified', async () => {
+    it('当建议内容未被修改时不包含修改消息', async () => {
       const filePath = path.join(rootDir, 'new_file_unmodified.txt');
-      const content = 'New file content not modified';
+      const content = '未被修改的新文件内容';
       mockEnsureCorrectFileContent.mockResolvedValue(content);
 
       const params = {
@@ -599,12 +599,12 @@ describe('WriteFileTool', () => {
       };
       const result = await tool.execute(params, abortSignal);
 
-      expect(result.llmContent).not.toMatch(/User modified the `content`/);
+      expect(result.llmContent).not.toMatch(/用户修改了 `content`/);
     });
 
-    it('should not include modification message when modified_by_user is not provided', async () => {
+    it('当未提供 modified_by_user 时不包含修改消息', async () => {
       const filePath = path.join(rootDir, 'new_file_unmodified.txt');
-      const content = 'New file content not modified';
+      const content = '未被修改的新文件内容';
       mockEnsureCorrectFileContent.mockResolvedValue(content);
 
       const params = {
@@ -613,7 +613,7 @@ describe('WriteFileTool', () => {
       };
       const result = await tool.execute(params, abortSignal);
 
-      expect(result.llmContent).not.toMatch(/User modified the `content`/);
+      expect(result.llmContent).not.toMatch(/用户修改了 `content`/);
     });
   });
 });

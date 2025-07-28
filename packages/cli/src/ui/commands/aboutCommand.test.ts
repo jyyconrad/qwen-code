@@ -56,14 +56,14 @@ describe('aboutCommand', () => {
     vi.clearAllMocks();
   });
 
-  it('should have the correct name and description', () => {
+  it('应具有正确的名称和描述', () => {
     expect(aboutCommand.name).toBe('about');
-    expect(aboutCommand.description).toBe('show version info');
+    expect(aboutCommand.description).toBe('显示版本信息');
   });
 
-  it('should call addItem with all version info', async () => {
+  it('应使用所有版本信息调用 addItem', async () => {
     if (!aboutCommand.action) {
-      throw new Error('The about command must have an action.');
+      throw new Error('about 命令必须具有一个 action。');
     }
 
     await aboutCommand.action(mockContext, '');
@@ -82,10 +82,10 @@ describe('aboutCommand', () => {
     );
   });
 
-  it('should show the correct sandbox environment variable', async () => {
+  it('应显示正确的沙箱环境变量', async () => {
     process.env.SANDBOX = 'gemini-sandbox';
     if (!aboutCommand.action) {
-      throw new Error('The about command must have an action.');
+      throw new Error('about 命令必须具有一个 action。');
     }
 
     await aboutCommand.action(mockContext, '');
@@ -98,11 +98,11 @@ describe('aboutCommand', () => {
     );
   });
 
-  it('should show sandbox-exec profile when applicable', async () => {
+  it('应在适用时显示 sandbox-exec 配置文件', async () => {
     process.env.SANDBOX = 'sandbox-exec';
     process.env.SEATBELT_PROFILE = 'test-profile';
     if (!aboutCommand.action) {
-      throw new Error('The about command must have an action.');
+      throw new Error('about 命令必须具有一个 action。');
     }
 
     await aboutCommand.action(mockContext, '');

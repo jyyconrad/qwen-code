@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,9 +13,9 @@ export const GOOGLE_ACCOUNTS_FILENAME = 'google_accounts.json';
 const TMP_DIR_NAME = 'tmp';
 
 /**
- * Replaces the home directory with a tilde.
- * @param path - The path to tildeify.
- * @returns The tildeified path.
+ * 将主目录替换为波浪号。
+ * @param path - 要替换的路径。
+ * @returns 替换后的路径。
  */
 export function tildeifyPath(path: string): string {
   const homeDir = os.homedir();
@@ -26,8 +26,8 @@ export function tildeifyPath(path: string): string {
 }
 
 /**
- * Shortens a path string if it exceeds maxLen, prioritizing the start and end segments.
- * Example: /path/to/a/very/long/file.txt -> /path/.../long/file.txt
+ * 如果路径字符串超过 maxLen，则缩短它，优先保留开始和结束部分。
+ * 示例：/path/to/a/very/long/file.txt -> /path/.../long/file.txt
  */
 export function shortenPath(filePath: string, maxLen: number = 35): string {
   if (filePath.length <= maxLen) {
@@ -38,15 +38,15 @@ export function shortenPath(filePath: string, maxLen: number = 35): string {
   const root = parsedPath.root;
   const separator = path.sep;
 
-  // Get segments of the path *after* the root
+  // 获取根目录*之后*的路径段
   const relativePath = filePath.substring(root.length);
-  const segments = relativePath.split(separator).filter((s) => s !== ''); // Filter out empty segments
+  const segments = relativePath.split(separator).filter((s) => s !== ''); // 过滤掉空段
 
-  // Handle cases with no segments after root (e.g., "/", "C:\") or only one segment
+  // 处理根目录后没有段（例如 "/", "C:\"）或只有一个段的情况
   if (segments.length <= 1) {
-    // Fallback to simple start/end truncation for very short paths or single segments
+    // 对于非常短的路径或单个段，回退到简单的开始/结束截断
     const keepLen = Math.floor((maxLen - 3) / 2);
-    // Ensure keepLen is not negative if maxLen is very small
+    // 确保 keepLen 不为负数（如果 maxLen 非常小）
     if (keepLen <= 0) {
       return filePath.substring(0, maxLen - 3) + '...';
     }
@@ -60,17 +60,17 @@ export function shortenPath(filePath: string, maxLen: number = 35): string {
   const startComponent = root + firstDir;
 
   const endPartSegments: string[] = [];
-  // Base length: separator + "..." + lastDir
+  // 基础长度：分隔符 + "..." + 最后一个目录
   let currentLength = separator.length + lastSegment.length;
 
-  // Iterate backwards through segments (excluding the first one)
+  // 反向遍历段（不包括第一个）
   for (let i = segments.length - 2; i >= 0; i--) {
     const segment = segments[i];
-    // Length needed if we add this segment: current + separator + segment
+    // 如果添加此段所需的长度：当前长度 + 分隔符 + 段长度
     const lengthWithSegment = currentLength + separator.length + segment.length;
 
     if (lengthWithSegment <= maxLen) {
-      endPartSegments.unshift(segment); // Add to the beginning of the end part
+      endPartSegments.unshift(segment); // 添加到结束部分的开头
       currentLength = lengthWithSegment;
     } else {
       break;
@@ -83,11 +83,11 @@ export function shortenPath(filePath: string, maxLen: number = 35): string {
     return result;
   }
 
-  // Construct the final path
+  // 构造最终路径
   result = startComponent + separator + result;
 
-  // As a final check, if the result is somehow still too long
-  // truncate the result string from the beginning, prefixing with "...".
+  // 最终检查，如果结果仍然太长
+  // 从开头截断结果字符串，并加上前缀 "..."。
   if (result.length > maxLen) {
     return '...' + result.substring(result.length - maxLen - 3);
   }
@@ -96,13 +96,13 @@ export function shortenPath(filePath: string, maxLen: number = 35): string {
 }
 
 /**
- * Calculates the relative path from a root directory to a target path.
- * Ensures both paths are resolved before calculating.
- * Returns '.' if the target path is the same as the root directory.
+ * 计算从根目录到目标路径的相对路径。
+ * 确保在计算前解析两个路径。
+ * 如果目标路径与根目录相同，则返回 '.'。
  *
- * @param targetPath The absolute or relative path to make relative.
- * @param rootDirectory The absolute path of the directory to make the target path relative to.
- * @returns The relative path from rootDirectory to targetPath.
+ * @param targetPath 目标路径（绝对或相对）。
+ * @param rootDirectory 根目录的绝对路径。
+ * @returns 从 rootDirectory 到 targetPath 的相对路径。
  */
 export function makeRelative(
   targetPath: string,
@@ -113,17 +113,17 @@ export function makeRelative(
 
   const relativePath = path.relative(resolvedRootDirectory, resolvedTargetPath);
 
-  // If the paths are the same, path.relative returns '', return '.' instead
+  // 如果路径相同，path.relative 返回 ''，此时返回 '.' 
   return relativePath || '.';
 }
 
 /**
- * Escapes spaces in a file path.
+ * 转义文件路径中的空格。
  */
 export function escapePath(filePath: string): string {
   let result = '';
   for (let i = 0; i < filePath.length; i++) {
-    // Only escape spaces that are not already escaped.
+    // 只转义尚未转义的空格。
     if (filePath[i] === ' ' && (i === 0 || filePath[i - 1] !== '\\')) {
       result += '\\ ';
     } else {
@@ -134,25 +134,25 @@ export function escapePath(filePath: string): string {
 }
 
 /**
- * Unescapes spaces in a file path.
+ * 取消转义文件路径中的空格。
  */
 export function unescapePath(filePath: string): string {
   return filePath.replace(/\\ /g, ' ');
 }
 
 /**
- * Generates a unique hash for a project based on its root path.
- * @param projectRoot The absolute path to the project's root directory.
- * @returns A SHA256 hash of the project root path.
+ * 基于项目根路径生成项目的唯一哈希值。
+ * @param projectRoot 项目根目录的绝对路径。
+ * @returns 项目根路径的 SHA256 哈希值。
  */
 export function getProjectHash(projectRoot: string): string {
   return crypto.createHash('sha256').update(projectRoot).digest('hex');
 }
 
 /**
- * Generates a unique temporary directory path for a project.
- * @param projectRoot The absolute path to the project's root directory.
- * @returns The path to the project's temporary directory.
+ * 为项目生成唯一的临时目录路径。
+ * @param projectRoot 项目根目录的绝对路径。
+ * @returns 项目临时目录的路径。
  */
 export function getProjectTempDir(projectRoot: string): string {
   const hash = getProjectHash(projectRoot);

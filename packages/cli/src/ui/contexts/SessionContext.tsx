@@ -19,7 +19,7 @@ import {
   ModelMetrics,
 } from '@iflytek/iflycode-core';
 
-// --- Interface Definitions ---
+// --- 接口定义 ---
 
 export type { SessionMetrics, ModelMetrics };
 
@@ -44,21 +44,21 @@ export interface ComputedSessionStats {
   totalPromptTokens: number;
 }
 
-// Defines the final "value" of our context, including the state
-// and the functions to update it.
+// 定义我们上下文的最终“值”，包括状态
+// 以及更新状态的函数。
 interface SessionStatsContextValue {
   stats: SessionStatsState;
   startNewPrompt: () => void;
   getPromptCount: () => number;
 }
 
-// --- Context Definition ---
+// --- 上下文定义 ---
 
 const SessionStatsContext = createContext<SessionStatsContextValue | undefined>(
   undefined,
 );
 
-// --- Provider Component ---
+// --- 提供者组件 ---
 
 export const SessionStatsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -86,7 +86,7 @@ export const SessionStatsProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     uiTelemetryService.on('update', handleUpdate);
-    // Set initial state
+    // 设置初始状态
     handleUpdate({
       metrics: uiTelemetryService.getMetrics(),
       lastPromptTokenCount: uiTelemetryService.getLastPromptTokenCount(),
@@ -125,13 +125,13 @@ export const SessionStatsProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-// --- Consumer Hook ---
+// --- 消费者 Hook ---
 
 export const useSessionStats = () => {
   const context = useContext(SessionStatsContext);
   if (context === undefined) {
     throw new Error(
-      'useSessionStats must be used within a SessionStatsProvider',
+      'useSessionStats 必须在 SessionStatsProvider 内部使用',
     );
   }
   return context;

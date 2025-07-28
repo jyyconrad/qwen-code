@@ -21,19 +21,18 @@ export const GeminiPrivacyNotice = ({ onExit }: GeminiPrivacyNoticeProps) => {
   return (
     <Box flexDirection="column" marginBottom={1}>
       <Text bold color={Colors.AccentPurple}>
-        Gemini API Key Notice
+        Gemini API 密钥声明
       </Text>
       <Newline />
       <Text>
-        By using the Gemini API<Text color={Colors.AccentBlue}>[1]</Text>,
+        通过使用 Gemini API<Text color={Colors.AccentBlue}>[1]</Text>、
         Google AI Studio
-        <Text color={Colors.AccentRed}>[2]</Text>, and the other Google
-        developer services that reference these terms (collectively, the
-        &quot;APIs&quot; or &quot;Services&quot;), you are agreeing to Google
-        APIs Terms of Service (the &quot;API Terms&quot;)
-        <Text color={Colors.AccentGreen}>[3]</Text>, and the Gemini API
-        Additional Terms of Service (the &quot;Additional Terms&quot;)
-        <Text color={Colors.AccentPurple}>[4]</Text>.
+        <Text color={Colors.AccentRed}>[2]</Text>，以及引用这些条款的其他 Google
+        开发者服务（统称为“API”或“服务”），您同意遵守 Google
+        APIs 服务条款（“API 条款”）
+        <Text color={Colors.AccentGreen}>[3]</Text>，以及 Gemini API
+        补充服务条款（“补充条款”）
+        <Text color={Colors.AccentPurple}>[4]</Text>。
       </Text>
       <Newline />
       <Text>
@@ -52,7 +51,7 @@ export const GeminiPrivacyNotice = ({ onExit }: GeminiPrivacyNoticeProps) => {
         https://ai.google.dev/gemini-api/terms
       </Text>
       <Newline />
-      <Text color={Colors.Gray}>Press Esc to exit.</Text>
+      <Text color={Colors.Gray}>按 Esc 键退出。</Text>
     </Box>
   );
 };

@@ -8,13 +8,13 @@ import { test } from 'node:test';
 import { strict as assert } from 'assert';
 import { TestRig } from './test-helper.js';
 
-test.skip('should be able to read multiple files', async (t) => {
+test.skip('应该能够读取多个文件', async (t) => {
   const rig = new TestRig();
   rig.setup(t.name);
   rig.createFile('file1.txt', 'file 1 content');
   rig.createFile('file2.txt', 'file 2 content');
 
-  const prompt = `Read the files in this directory, list them and print them to the screen`;
+  const prompt = `读取此目录中的文件，列出它们并打印到屏幕上`;
   const result = await rig.run(prompt);
 
   assert.ok(result.includes('file 1 content'));

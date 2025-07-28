@@ -22,17 +22,17 @@ export async function startIDEServer(_context: vscode.ExtensionContext) {
   mcpServer.connect(transport);
 
   app.post('/mcp', async (req: Request, res: Response) => {
-    console.log('Received MCP request:', req.body);
+    console.log('收到 MCP 请求:', req.body);
     try {
       await transport.handleRequest(req, res, req.body);
     } catch (error) {
-      console.error('Error handling MCP request:', error);
+      console.error('处理 MCP 请求时出错:', error);
       if (!res.headersSent) {
         res.status(500).json({
           jsonrpc: '2.0',
           error: {
             code: -32603,
-            message: 'Internal server error',
+            message: '内部服务器错误',
           },
           id: null,
         });
@@ -40,22 +40,22 @@ export async function startIDEServer(_context: vscode.ExtensionContext) {
     }
   });
 
-  // Handle GET requests for SSE streams
+  // 处理 SSE 流的 GET 请求
   app.get('/mcp', async (req: Request, res: Response) => {
-    res.status(405).set('Allow', 'POST').send('Method Not Allowed');
+    res.status(405).set('Allow', 'POST').send('方法不被允许');
   });
 
-  // Start the server
-  // TODO(#3918): Generate dynamically and write to env variable
+  // 启动服务器
+  // TODO(#3918): 动态生成并写入环境变量
   const PORT = 3000;
   app.listen(PORT, (error) => {
     if (error) {
-      console.error('Failed to start server:', error);
+      console.error('启动服务器失败:', error);
       vscode.window.showErrorMessage(
-        `Companion server failed to start on port ${PORT}: ${error.message}`,
+        `Companion 服务器启动失败，端口 ${PORT}: ${error.message}`,
       );
     }
-    console.log(`MCP Streamable HTTP Server listening on port ${PORT}`);
+    console.log(`MCP 可流式 HTTP 服务器正在监听端口 ${PORT}`);
   });
 }
 
@@ -68,7 +68,7 @@ const createMcpServer = () => {
     'getActiveFile',
     {
       description:
-        '(IDE Tool) Get the path of the file currently active in VS Code.',
+        '(IDE 工具) 获取 VS Code 中当前活动文件的路径。',
       inputSchema: {},
     },
     async () => {
@@ -79,14 +79,14 @@ const createMcpServer = () => {
           : undefined;
         if (filePath) {
           return {
-            content: [{ type: 'text', text: `Active file: ${filePath}` }],
+            content: [{ type: 'text', text: `活动文件: ${filePath}` }],
           };
         } else {
           return {
             content: [
               {
                 type: 'text',
-                text: 'No file is currently active in the editor.',
+                text: '编辑器中当前没有活动文件。',
               },
             ],
           };
@@ -96,8 +96,8 @@ const createMcpServer = () => {
           content: [
             {
               type: 'text',
-              text: `Failed to get active file: ${
-                (error as Error).message || 'Unknown error'
+              text: `获取活动文件失败: ${
+                (error as Error).message || '未知错误'
               }`,
             },
           ],

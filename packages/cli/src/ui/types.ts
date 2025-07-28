@@ -9,18 +9,18 @@ import {
   ToolResultDisplay,
 } from '@iflytek/iflycode-core';
 
-// Only defining the state enum needed by the UI
+// 仅定义UI所需的状态枚举
 export enum StreamingState {
   Idle = 'idle',
   Responding = 'responding',
   WaitingForConfirmation = 'waiting_for_confirmation',
 }
 
-// Copied from server/src/core/turn.ts for CLI usage
+// 从 server/src/core/turn.ts 复制用于CLI使用
 export enum GeminiEventType {
   Content = 'content',
   ToolCallRequest = 'tool_call_request',
-  // Add other event types if the UI hook needs to handle them
+  // 如果UI钩子需要处理其他事件类型，请添加
 }
 
 export enum ToolCallStatus {
@@ -59,7 +59,7 @@ export interface CompressionProps {
 }
 
 export interface HistoryItemBase {
-  text?: string; // Text content for user/gemini/info/error messages
+  text?: string; // 用户/gemini/信息/错误消息的文本内容
 }
 
 export type HistoryItemUser = HistoryItemBase & {
@@ -130,10 +130,9 @@ export type HistoryItemCompression = HistoryItemBase & {
   compression: CompressionProps;
 };
 
-// Using Omit<HistoryItem, 'id'> seems to have some issues with typescript's
-// type inference e.g. historyItem.type === 'tool_group' isn't auto-inferring that
-// 'tools' in historyItem.
-// Individually exported types extending HistoryItemBase
+// 使用 Omit<HistoryItem, 'id'> 似乎在TypeScript的类型推断中有一些问题，
+// 例如 historyItem.type === 'tool_group' 并不会自动推断出 historyItem 中的 'tools'。
+// 单独导出扩展自 HistoryItemBase 的类型
 export type HistoryItemWithoutId =
   | HistoryItemUser
   | HistoryItemUserShell
@@ -151,7 +150,7 @@ export type HistoryItemWithoutId =
 
 export type HistoryItem = HistoryItemWithoutId & { id: number };
 
-// Message types used by internal command feedback (subset of HistoryItem types)
+// 内部命令反馈使用的消息类型（HistoryItem 类型的子集）
 export enum MessageType {
   INFO = 'info',
   ERROR = 'error',
@@ -165,11 +164,11 @@ export enum MessageType {
   COMPRESSION = 'compression',
 }
 
-// Simplified message structure for internal feedback
+// 用于内部反馈的简化消息结构
 export type Message =
   | {
       type: MessageType.INFO | MessageType.ERROR | MessageType.USER;
-      content: string; // Renamed from text for clarity in this context
+      content: string; // 为在此上下文中更清晰而从 text 重命名
       timestamp: Date;
     }
   | {
@@ -181,7 +180,7 @@ export type Message =
       modelVersion: string;
       selectedAuthType: string;
       gcpProject: string;
-      content?: string; // Optional content, not really used for ABOUT
+      content?: string; // 可选内容，ABOUT 中实际上未使用
     }
   | {
       type: MessageType.STATS;
@@ -218,7 +217,7 @@ export interface ConsoleMessageItem {
 }
 
 /**
- * Defines the result of the slash command processor for its consumer (useGeminiStream).
+ * 定义斜杠命令处理器为其使用者（useGeminiStream）返回的结果。
  */
 export type SlashCommandProcessorResult =
   | {
@@ -227,5 +226,5 @@ export type SlashCommandProcessorResult =
       toolArgs: Record<string, unknown>;
     }
   | {
-      type: 'handled'; // Indicates the command was processed and no further action is needed.
+      type: 'handled'; // 表示命令已被处理，无需进一步操作。
     };

@@ -1,33 +1,33 @@
-// Test file to verify React optimization improvements
+// 测试文件用于验证 React 优化改进
 import React, { useState, memo, useCallback } from 'react';
 
-// Bad example: Component that can't be optimized due to inline object prop
+// 错误示例：由于内联对象属性而无法优化的组件
 const BadComponent = memo(({ data }) => {
   return (
     <div>
-      <h2>Bad Component</h2>
-      <ItemList items={data.items} onItemClick={(id) => console.log('Clicked', id)} />
+      <h2>错误组件</h2>
+      <ItemList items={data.items} onItemClick={(id) => console.log('已点击', id)} />
     </div>
   );
 });
 
-// Good example: Optimized component with memoized callback
+// 正确示例：使用记忆化回调优化的组件
 const GoodComponent = memo(({ data }) => {
   const handleItemClick = useCallback((id) => {
-    console.log('Clicked', id);
+    console.log('已点击', id);
   }, []);
 
   return (
     <div>
-      <h2>Good Component</h2>
+      <h2>正确组件</h2>
       <ItemList items={data.items} onItemClick={handleItemClick} />
     </div>
   );
 });
 
-// ItemList component that renders a list of items
+// ItemList 组件用于渲染项目列表
 const ItemList = memo(({ items, onItemClick }) => {
-  console.log('ItemList rendered');
+  console.log('ItemList 已渲染');
   return (
     <ul>
       {items.map(item => (
@@ -37,9 +37,9 @@ const ItemList = memo(({ items, onItemClick }) => {
   );
 });
 
-// Item component that handles individual items
+// Item 组件用于处理单个项目
 const Item = memo(({ item, onClick }) => {
-  console.log('Item rendered', item.id);
+  console.log('Item 已渲染', item.id);
   return (
     <li onClick={() => onClick(item.id)}>
       {item.name}
@@ -47,7 +47,7 @@ const Item = memo(({ item, onClick }) => {
   );
 });
 
-// Main App component
+// 主 App 组件
 const App = () => {
   const [data] = useState({
     items: [
@@ -61,9 +61,9 @@ const App = () => {
 
   return (
     <div>
-      <h1>React Optimization Test</h1>
-      <p>Count: {count}</p>
-      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <h1>React 优化测试</h1>
+      <p>计数: {count}</p>
+      <button onClick={() => setCount(count + 1)}>增加</button>
       <BadComponent data={data} />
       <GoodComponent data={data} />
     </div>

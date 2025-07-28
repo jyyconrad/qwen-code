@@ -73,20 +73,20 @@ export const ansiTheme: ColorsTheme = {
 
 export class Theme {
   /**
-   * The default foreground color for text when no specific highlight rule applies.
-   * This is an Ink-compatible color string (hex or name).
+   * 当没有特定高亮规则适用时，文本的默认前景色。
+   * 这是一个与 Ink 兼容的颜色字符串（十六进制或名称）。
    */
   readonly defaultColor: string;
   /**
-   * Stores the mapping from highlight.js class names (e.g., 'hljs-keyword')
-   * to Ink-compatible color strings (hex or name).
+   * 存储从 highlight.js 类名（例如 'hljs-keyword'）
+   * 到与 Ink 兼容的颜色字符串（十六进制或名称）的映射。
    */
   protected readonly _colorMap: Readonly<Record<string, string>>;
 
-  // --- Static Helper Data ---
+  // --- 静态辅助数据 ---
 
-  // Mapping from common CSS color names (lowercase) to hex codes (lowercase)
-  // Excludes names directly supported by Ink
+  // 常见 CSS 颜色名称（小写）到十六进制代码（小写）的映射
+  // 不包括 Ink 直接支持的名称
   private static readonly cssNameToHexMap: Readonly<Record<string, string>> = {
     aliceblue: '#f0f8ff',
     antiquewhite: '#faebd7',
@@ -228,7 +228,7 @@ export class Theme {
     yellowgreen: '#9acd32',
   };
 
-  // Define the set of Ink's named colors for quick lookup
+  // 定义 Ink 的命名颜色集合，用于快速查找
   private static readonly inkSupportedNames = new Set([
     'black',
     'red',
@@ -251,9 +251,9 @@ export class Theme {
   ]);
 
   /**
-   * Creates a new Theme instance.
-   * @param name The name of the theme.
-   * @param rawMappings The raw CSSProperties mappings from a react-syntax-highlighter theme object.
+   * 创建一个新的 Theme 实例。
+   * @param name 主题的名称。
+   * @param rawMappings 来自 react-syntax-highlighter 主题对象的原始 CSSProperties 映射。
    */
   constructor(
     readonly name: string,
@@ -261,80 +261,80 @@ export class Theme {
     rawMappings: Record<string, CSSProperties>,
     readonly colors: ColorsTheme,
   ) {
-    this._colorMap = Object.freeze(this._buildColorMap(rawMappings)); // Build and freeze the map
+    this._colorMap = Object.freeze(this._buildColorMap(rawMappings)); // 构建并冻结映射
 
-    // Determine the default foreground color
+    // 确定默认前景色
     const rawDefaultColor = rawMappings['hljs']?.color;
     this.defaultColor =
       (rawDefaultColor ? Theme._resolveColor(rawDefaultColor) : undefined) ??
-      ''; // Default to empty string if not found or resolvable
+      ''; // 如果未找到或无法解析，则默认为空字符串
   }
 
   /**
-   * Gets the Ink-compatible color string for a given highlight.js class name.
-   * @param hljsClass The highlight.js class name (e.g., 'hljs-keyword', 'hljs-string').
-   * @returns The corresponding Ink color string (hex or name) if it exists.
+   * 获取给定 highlight.js 类名的与 Ink 兼容的颜色字符串。
+   * @param hljsClass highlight.js 类名（例如 'hljs-keyword', 'hljs-string'）。
+   * @returns 对应的 Ink 颜色字符串（十六进制或名称），如果存在的话。
    */
   getInkColor(hljsClass: string): string | undefined {
     return this._colorMap[hljsClass];
   }
 
   /**
-   * Resolves a CSS color value (name or hex) into an Ink-compatible color string.
-   * @param colorValue The raw color string (e.g., 'blue', '#ff0000', 'darkkhaki').
-   * @returns An Ink-compatible color string (hex or name), or undefined if not resolvable.
+   * 将 CSS 颜色值（名称或十六进制）解析为与 Ink 兼容的颜色字符串。
+   * @param colorValue 原始颜色字符串（例如 'blue', '#ff0000', 'darkkhaki'）。
+   * @returns 与 Ink 兼容的颜色字符串（十六进制或名称），如果无法解析则返回 undefined。
    */
   private static _resolveColor(colorValue: string): string | undefined {
     const lowerColor = colorValue.toLowerCase();
 
-    // 1. Check if it's already a hex code
+    // 1. 检查是否已经是十六进制代码
     if (lowerColor.startsWith('#')) {
-      return lowerColor; // Use hex directly
+      return lowerColor; // 直接使用十六进制
     }
-    // 2. Check if it's an Ink supported name (lowercase)
+    // 2. 检查是否是 Ink 支持的名称（小写）
     else if (Theme.inkSupportedNames.has(lowerColor)) {
-      return lowerColor; // Use Ink name directly
+      return lowerColor; // 直接使用 Ink 名称
     }
-    // 3. Check if it's a known CSS name we can map to hex
+    // 3. 检查是否是我们可以映射到十六进制的已知 CSS 名称
     else if (Theme.cssNameToHexMap[lowerColor]) {
-      return Theme.cssNameToHexMap[lowerColor]; // Use mapped hex
+      return Theme.cssNameToHexMap[lowerColor]; // 使用映射的十六进制
     }
 
-    // 4. Could not resolve
+    // 4. 无法解析
     console.warn(
-      `[Theme] Could not resolve color "${colorValue}" to an Ink-compatible format.`,
+      `[Theme] 无法将颜色 "${colorValue}" 解析为与 Ink 兼容的格式。`,
     );
     return undefined;
   }
 
   /**
-   * Builds the internal map from highlight.js class names to Ink-compatible color strings.
-   * This method is protected and primarily intended for use by the constructor.
-   * @param hljsTheme The raw CSSProperties mappings from a react-syntax-highlighter theme object.
-   * @returns An Ink-compatible theme map (Record<string, string>).
+   * 构建从 highlight.js 类名到与 Ink 兼容的颜色字符串的内部映射。
+   * 此方法是受保护的，主要供构造函数使用。
+   * @param hljsTheme 来自 react-syntax-highlighter 主题对象的原始 CSSProperties 映射。
+   * @returns 与 Ink 兼容的主题映射（Record<string, string>）。
    */
   protected _buildColorMap(
     hljsTheme: Record<string, CSSProperties>,
   ): Record<string, string> {
     const inkTheme: Record<string, string> = {};
     for (const key in hljsTheme) {
-      // Ensure the key starts with 'hljs-' or is 'hljs' for the base style
+      // 确保键以 'hljs-' 开头或为 'hljs' 以表示基础样式
       if (!key.startsWith('hljs-') && key !== 'hljs') {
-        continue; // Skip keys not related to highlighting classes
+        continue; // 跳过与高亮类无关的键
       }
 
       const style = hljsTheme[key];
       if (style?.color) {
         const resolvedColor = Theme._resolveColor(style.color);
         if (resolvedColor !== undefined) {
-          // Use the original key from the hljsTheme (e.g., 'hljs-keyword')
+          // 使用 hljsTheme 中的原始键（例如 'hljs-keyword'）
           inkTheme[key] = resolvedColor;
         }
-        // If color is not resolvable, it's omitted from the map,
-        // allowing fallback to the default foreground color.
+        // 如果颜色无法解析，则从映射中省略，
+        // 允许回退到默认前景色。
       }
-      // We currently only care about the 'color' property for Ink rendering.
-      // Other properties like background, fontStyle, etc., are ignored.
+      // 我们目前只关心用于 Ink 渲染的 'color' 属性。
+      // 忽略其他属性如 background、fontStyle 等。
     }
     return inkTheme;
   }

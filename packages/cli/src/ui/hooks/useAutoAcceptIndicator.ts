@@ -40,7 +40,7 @@ export function useAutoAcceptIndicator({
 
     if (nextApprovalMode) {
       config.setApprovalMode(nextApprovalMode);
-      // Update local state immediately for responsiveness
+      // 立即更新本地状态以提高响应速度 (Update local state immediately for responsiveness)
       setShowAutoAcceptIndicator(nextApprovalMode);
     }
   });

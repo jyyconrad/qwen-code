@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,7 +12,7 @@ test('should be able to search the web', async (t) => {
   const rig = new TestRig();
   rig.setup(t.name);
 
-  const prompt = `what planet do we live on`;
+  const prompt = `我们住在哪个星球上`;
   const result = await rig.run(prompt);
 
   assert.ok(result.toLowerCase().includes('earth'));

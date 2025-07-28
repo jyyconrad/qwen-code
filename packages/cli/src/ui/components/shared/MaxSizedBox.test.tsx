@@ -11,10 +11,10 @@ import { Box, Text } from 'ink';
 import { describe, it, expect } from 'vitest';
 
 describe('<MaxSizedBox />', () => {
-  // Make sure MaxSizedBox logs errors on invalid configurations.
-  // This is useful for debugging issues with the component.
-  // It should be set to false in production for performance and to avoid
-  // cluttering the console if there are ignorable issues.
+  // 确保 MaxSizedBox 在配置无效时记录错误。
+  // 这对于调试组件问题很有用。
+  // 在生产环境中应设为 false 以提高性能，并避免
+  // 如果有可忽略的问题时控制台被杂乱信息充斥。
   setMaxSizedBoxDebugging(true);
 
   it('renders children without truncation when they fit', () => {
@@ -224,8 +224,8 @@ Line 3`);
       </OverflowProvider>,
     );
 
-    // "你好" has a visual width of 4. "世界" has a visual width of 4.
-    // With maxWidth=5, it should wrap after the second character.
+    // "你好" 的视觉宽度为 4。"世界" 的视觉宽度为 4。
+    // 当 maxWidth=5 时，应在第二个字符后换行。
     expect(lastFrame()).equals(`你好
 世界`);
   });
@@ -241,8 +241,8 @@ Line 3`);
       </OverflowProvider>,
     );
 
-    // Each "🐶" has a visual width of 2.
-    // With maxWidth=5, it should wrap every 2 emojis.
+    // 每个 "🐶" 的视觉宽度为 2。
+    // 当 maxWidth=5 时，应每 2 个表情符号换行一次。
     expect(lastFrame()).equals(`🐶🐶
 🐶🐶
 🐶`);
@@ -264,7 +264,7 @@ Line 3`);
         </MaxSizedBox>
       </OverflowProvider>,
     );
-    // 1 line is hidden by overflow, 5 are additionally hidden.
+    // 1 行被溢出隐藏，5 行额外隐藏。
     expect(lastFrame()).equals(`... first 7 lines hidden ...
 Line 3`);
   });

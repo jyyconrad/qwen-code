@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -17,15 +17,15 @@ import { OAuth2Client } from 'google-auth-library';
 export class ProjectIdRequiredError extends Error {
   constructor() {
     super(
-      'This account requires setting the GOOGLE_CLOUD_PROJECT env var. See https://goo.gle/gemini-cli-auth-docs#workspace-gca',
+      '此账户需要设置 GOOGLE_CLOUD_PROJECT 环境变量。请参阅 https://goo.gle/gemini-cli-auth-docs#workspace-gca',
     );
   }
 }
 
 /**
  *
- * @param projectId the user's project id, if any
- * @returns the user's actual project id
+ * @param projectId 用户的项目 ID（如有）
+ * @returns 用户的实际项目 ID
  */
 export async function setupUser(client: OAuth2Client): Promise<string> {
   let projectId = process.env.GOOGLE_CLOUD_PROJECT || undefined;
@@ -58,7 +58,7 @@ export async function setupUser(client: OAuth2Client): Promise<string> {
     metadata: clientMetadata,
   };
 
-  // Poll onboardUser until long running operation is complete.
+  // 持续轮询 onboardUser 直到长时间运行的操作完成。
   let lroRes = await caServer.onboardUser(onboardReq);
   while (!lroRes.done) {
     await new Promise((f) => setTimeout(f, 5000));

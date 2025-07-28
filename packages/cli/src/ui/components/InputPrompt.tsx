@@ -50,7 +50,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
   config,
   slashCommands,
   commandContext,
-  placeholder = '  Type your message or @path/to/file',
+  placeholder = '  输入您的消息或 @路径/到/文件',
   focus = true,
   inputWidth,
   suggestionsWidth,
@@ -75,8 +75,8 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
       if (shellModeActive) {
         shellHistory.addCommandToHistory(submittedValue);
       }
-      // Clear the buffer *before* calling onSubmit to prevent potential re-submission
-      // if onSubmit triggers a re-render while the buffer still holds the old value.
+      // 在调用 onSubmit 之前清除缓冲区，以防止在缓冲区仍持有旧值时，
+      // onSubmit 触发重新渲染而导致的重复提交。
       buffer.setText('');
       onSubmit(submittedValue);
       resetCompletionState();
@@ -100,7 +100,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
     onChange: customSetTextAndResetCompletionSignal,
   });
 
-  // Effect to reset completion if history navigation just occurred and set the text
+  // 效果：如果刚刚发生了历史导航，则重置补全状态并设置文本
   useEffect(() => {
     if (justNavigatedHistory) {
       resetCompletionState();
@@ -131,8 +131,8 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
           .filter(Boolean);
 
         let isParentPath = false;
-        // If there's no trailing space, we need to check if the current query
-        // is already a complete path to a parent command.
+        // 如果没有尾随空格，我们需要检查当前查询
+        // 是否已经是父命令的完整路径。
         if (!hasTrailingSpace) {
           let currentLevel: SlashCommand[] | undefined = slashCommands;
           for (let i = 0; i < parts.length; i++) {
@@ -147,17 +147,17 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
               }
               currentLevel = found.subCommands;
             } else {
-              // Path is invalid, so it can't be a parent path.
+              // 路径无效，因此不能是父路径。
               currentLevel = undefined;
               break;
             }
           }
         }
 
-        // Determine the base path of the command.
-        // - If there's a trailing space, the whole command is the base.
-        // - If it's a known parent path, the whole command is the base.
-        // - Otherwise, the base is everything EXCEPT the last partial part.
+        // 确定命令的基本路径。
+        // - 如果有尾随空格，则整个命令就是基本路径。
+        // - 如果是已知的父路径，则整个命令就是基本路径。
+        // - 否则，基本路径是除了最后一个部分之外的所有内容。
         const basePath =
           hasTrailingSpace || isParentPath ? parts : parts.slice(0, -1);
         const newValue = `/${[...basePath, suggestion].join(' ')} `;
@@ -183,33 +183,33 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
     [resetCompletionState, buffer, completionSuggestions, slashCommands],
   );
 
-  // Handle clipboard image pasting with Ctrl+V
+  // 使用 Ctrl+V 处理剪贴板图像粘贴
   const handleClipboardImage = useCallback(async () => {
     try {
       if (await clipboardHasImage()) {
         const imagePath = await saveClipboardImage(config.getTargetDir());
         if (imagePath) {
-          // Clean up old images
+          // 清理旧图像
           cleanupOldClipboardImages(config.getTargetDir()).catch(() => {
-            // Ignore cleanup errors
+            // 忽略清理错误
           });
 
-          // Get relative path from current directory
+          // 获取相对于当前目录的路径
           const relativePath = path.relative(config.getTargetDir(), imagePath);
 
-          // Insert @path reference at cursor position
+          // 在光标位置插入 @path 引用
           const insertText = `@${relativePath}`;
           const currentText = buffer.text;
           const [row, col] = buffer.cursor;
 
-          // Calculate offset from row/col
+          // 根据行列计算偏移量
           let offset = 0;
           for (let i = 0; i < row; i++) {
-            offset += buffer.lines[i].length + 1; // +1 for newline
+            offset += buffer.lines[i].length + 1; // +1 表示换行符
           }
           offset += col;
 
-          // Add spaces around the path if needed
+          // 如需要，在路径前后添加空格
           let textToInsert = insertText;
           const charBefore = offset > 0 ? currentText[offset - 1] : '';
           const charAfter =
@@ -222,12 +222,12 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
             textToInsert = textToInsert + ' ';
           }
 
-          // Insert at cursor position
+          // 在光标位置插入
           buffer.replaceRangeByOffset(offset, offset, textToInsert);
         }
       }
     } catch (error) {
-      console.error('Error handling clipboard image:', error);
+      console.error('处理剪贴板图像时出错:', error);
     }
   }, [buffer, config]);
 
@@ -243,7 +243,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
         !completion.showSuggestions
       ) {
         setShellModeActive(!shellModeActive);
-        buffer.setText(''); // Clear the '!' from input
+        buffer.setText(''); // 清除输入中的 '!'
         return;
       }
 
@@ -278,7 +278,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
           if (completion.suggestions.length > 0) {
             const targetIndex =
               completion.activeSuggestionIndex === -1
-                ? 0 // Default to the first if none is active
+                ? 0 // 如果没有激活的项，则默认为第一个
                 : completion.activeSuggestionIndex;
             if (targetIndex < completion.suggestions.length) {
               handleAutocomplete(targetIndex);
@@ -296,7 +296,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
             inputHistory.navigateDown();
             return;
           }
-          // Handle arrow-up/down for history on single-line or at edges
+          // 处理单行或边缘处的历史记录上下箭头
           if (
             key.name === 'up' &&
             (buffer.allVisualLines.length === 1 ||
@@ -314,7 +314,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
             return;
           }
         } else {
-          // Shell History Navigation
+          // Shell 历史导航
           if (key.name === 'up') {
             const prevCommand = shellHistory.getPreviousCommand();
             if (prevCommand !== null) buffer.setText(prevCommand);
@@ -343,7 +343,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
         }
       }
 
-      // Newline insertion
+      // 插入新行
       if (key.name === 'return' && (key.ctrl || key.meta || key.paste)) {
         buffer.newline();
         return;
@@ -359,7 +359,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
         return;
       }
 
-      // Kill line commands
+      // 删除行命令
       if (key.ctrl && key.name === 'k') {
         buffer.killLineRight();
         return;
@@ -369,20 +369,20 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
         return;
       }
 
-      // External editor
+      // 外部编辑器
       const isCtrlX = key.ctrl && (key.name === 'x' || key.sequence === '\x18');
       if (isCtrlX) {
         buffer.openInExternalEditor();
         return;
       }
 
-      // Ctrl+V for clipboard image paste
+      // Ctrl+V 用于剪贴板图像粘贴
       if (key.ctrl && key.name === 'v') {
         handleClipboardImage();
         return;
       }
 
-      // Fallback to the text buffer's default input handling for all other keys
+      // 对于所有其他按键，回退到文本缓冲区的默认输入处理
       buffer.handleInput(key);
     },
     [

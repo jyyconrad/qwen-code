@@ -43,7 +43,7 @@ describe('telemetry', () => {
   });
 
   afterEach(async () => {
-    // Ensure we shut down telemetry even if a test fails.
+    // 确保即使测试失败也关闭遥测服务
     if (isTelemetrySdkInitialized()) {
       await shutdownTelemetry();
     }

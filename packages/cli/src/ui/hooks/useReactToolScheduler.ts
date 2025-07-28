@@ -178,7 +178,7 @@ export function useReactToolScheduler(
 }
 
 /**
- * Maps a CoreToolScheduler status to the UI's ToolCallStatus enum.
+ * 将 CoreToolScheduler 状态映射到 UI 的 ToolCallStatus 枚举。
  */
 function mapCoreStatusToDisplayStatus(coreStatus: CoreStatus): ToolCallStatus {
   switch (coreStatus) {
@@ -198,14 +198,14 @@ function mapCoreStatusToDisplayStatus(coreStatus: CoreStatus): ToolCallStatus {
       return ToolCallStatus.Pending;
     default: {
       const exhaustiveCheck: never = coreStatus;
-      console.warn(`Unknown core status encountered: ${exhaustiveCheck}`);
+      console.warn(`遇到未知的核心状态: ${exhaustiveCheck}`);
       return ToolCallStatus.Error;
     }
   }
 }
 
 /**
- * Transforms `TrackedToolCall` objects into `HistoryItemToolGroup` objects for UI display.
+ * 将 `TrackedToolCall` 对象转换为 `HistoryItemToolGroup` 对象以供 UI 显示。
  */
 export function mapToDisplay(
   toolOrTools: TrackedToolCall[] | TrackedToolCall,
@@ -293,10 +293,10 @@ export function mapToDisplay(
           const exhaustiveCheck: never = trackedCall;
           return {
             callId: (exhaustiveCheck as TrackedToolCall).request.callId,
-            name: 'Unknown Tool',
-            description: 'Encountered an unknown tool call state.',
+            name: '未知工具',
+            description: '遇到未知的工具调用状态。',
             status: ToolCallStatus.Error,
-            resultDisplay: 'Unknown tool call state',
+            resultDisplay: '未知工具调用状态',
             confirmationDetails: undefined,
             renderOutputAsMarkdown: false,
           };

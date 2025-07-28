@@ -15,10 +15,10 @@ import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
 import { PartListUnion } from '@google/genai';
 
 /**
- * A function that summarizes the result of a tool execution.
+ * 用于总结工具执行结果的函数。
  *
- * @param result The result of the tool execution.
- * @returns The summary of the result.
+ * @param result 工具执行的结果。
+ * @returns 结果的摘要。
  */
 export type Summarizer = (
   result: ToolResult,
@@ -27,12 +27,12 @@ export type Summarizer = (
 ) => Promise<string>;
 
 /**
- * The default summarizer for tool results.
+ * 工具结果的默认摘要器。
  *
- * @param result The result of the tool execution.
- * @param geminiClient The Gemini client to use for summarization.
- * @param abortSignal The abort signal to use for summarization.
- * @returns The summary of the result.
+ * @param result 工具执行的结果。
+ * @param geminiClient 用于摘要的 Gemini 客户端。
+ * @param abortSignal 用于摘要的中止信号。
+ * @returns 结果的摘要。
  */
 export const defaultSummarizer: Summarizer = (
   result: ToolResult,
@@ -40,7 +40,7 @@ export const defaultSummarizer: Summarizer = (
   _abortSignal: AbortSignal,
 ) => Promise.resolve(JSON.stringify(result.llmContent));
 
-// TODO: Move both these functions to utils
+// TODO: 将这两个函数移到 utils 中
 function partToString(part: PartListUnion): string {
   if (!part) {
     return '';
@@ -79,18 +79,18 @@ const toolOutputSummarizerConfig: GenerateContentConfig = {
   maxOutputTokens: 2000,
 };
 
-const SUMMARIZE_TOOL_OUTPUT_PROMPT = `Summarize the following tool output to be a maximum of {maxLength} characters. The summary should be concise and capture the main points of the tool output.
+const SUMMARIZE_TOOL_OUTPUT_PROMPT = `将以下工具输出总结为最多 {maxLength} 个字符。摘要应简洁并捕捉工具输出的主要要点。
 
-The summarization should be done based on the content that is provided. Here are the basic rules to follow:
-1. If the text is a directory listing or any output that is structural, use the history of the conversation to understand the context. Using this context try to understand what information we need from the tool output and return that as a response.
-2. If the text is text content and there is nothing structural that we need, summarize the text.
-3. If the text is the output of a shell command, use the history of the conversation to understand the context. Using this context try to understand what information we need from the tool output and return a summarization along with the stack trace of any error within the <error></error> tags. The stack trace should be complete and not truncated. If there are warnings, you should include them in the summary within <warning></warning> tags.
+摘要应基于提供的内容进行。以下是需要遵循的基本规则：
+1. 如果文本是目录列表或任何结构性输出，请使用对话历史来理解上下文。使用此上下文尝试理解我们需要从工具输出中获取什么信息，并将其作为响应返回。
+2. 如果文本是文本内容且我们不需要任何结构性内容，请总结文本。
+3. 如果文本是 shell 命令的输出，请使用对话历史来理解上下文。使用此上下文尝试理解我们需要从工具输出中获取什么信息，并返回一个摘要以及 <error></error> 标签内的任何错误的完整堆栈跟踪。堆栈跟踪应该是完整的，不能被截断。如果有警告，您应该在摘要中包含它们，并用 <warning></warning> 标签标记。
 
 
-Text to summarize:
+需要总结的文本：
 "{textToSummarize}"
 
-Return the summary string which should first contain an overall summarization of text followed by the full stack trace of errors and warnings in the tool output.
+返回摘要字符串，该字符串应首先包含文本的整体摘要，然后是工具输出中错误和警告的完整堆栈跟踪。
 `;
 
 export const llmSummarizer: Summarizer = (result, geminiClient, abortSignal) =>
@@ -125,7 +125,7 @@ export async function summarizeToolOutput(
     )) as unknown as GenerateContentResponse;
     return getResponseText(parsedResponse) || textToSummarize;
   } catch (error) {
-    console.error('Failed to summarize tool output.', error);
+    console.error('无法总结工具输出。', error);
     return textToSummarize;
   }
 }

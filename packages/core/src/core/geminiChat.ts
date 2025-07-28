@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// DISCLAIMER: This is a copied version of https://github.com/googleapis/js-genai/blob/main/src/chats.ts with the intention of working around a key bug
-// where function responses are not treated as "valid" responses: https://b.corp.google.com/issues/420354090
+// 免责声明：这是 https://github.com/googleapis/js-genai/blob/main/src/chats.ts 的复制版本，目的是解决一个关键错误
+// 即函数响应未被视为“有效”响应：https://b.corp.google.com/issues/420354090
 
 import {
   GenerateContentResponse,
@@ -37,7 +37,7 @@ import {
 import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
 
 /**
- * Returns true if the response is valid, false otherwise.
+ * 如果响应有效则返回 true，否则返回 false。
  */
 function isValidResponse(response: GenerateContentResponse): boolean {
   if (response.candidates === undefined || response.candidates.length === 0) {
@@ -66,26 +66,25 @@ function isValidContent(content: Content): boolean {
 }
 
 /**
- * Validates the history contains the correct roles.
+ * 验证历史记录包含正确的角色。
  *
- * @throws Error if the history does not start with a user turn.
- * @throws Error if the history contains an invalid role.
+ * @throws Error 如果历史记录未以用户回合开始。
+ * @throws Error 如果历史记录包含无效角色。
  */
 function validateHistory(history: Content[]) {
   for (const content of history) {
     if (content.role !== 'user' && content.role !== 'model') {
-      throw new Error(`Role must be user or model, but got ${content.role}.`);
+      throw new Error(`角色必须是 user 或 model，但得到的是 ${content.role}。`);
     }
   }
 }
 
 /**
- * Extracts the curated (valid) history from a comprehensive history.
+ * 从完整历史记录中提取精选（有效）的历史记录。
  *
  * @remarks
- * The model may sometimes generate invalid or empty contents(e.g., due to safety
- * filters or recitation). Extracting valid turns from the history
- * ensures that subsequent requests could be accepted by the model.
+ * 模型有时可能会生成无效或空的内容（例如，由于安全过滤器或引用）。从历史记录中提取有效回合
+ * 可确保后续请求能被模型接受。
  */
 function extractCuratedHistory(comprehensiveHistory: Content[]): Content[] {
   if (comprehensiveHistory === undefined || comprehensiveHistory.length === 0) {
@@ -111,7 +110,7 @@ function extractCuratedHistory(comprehensiveHistory: Content[]): Content[] {
       if (isValid) {
         curatedHistory.push(...modelOutput);
       } else {
-        // Remove the last user input when model content is invalid.
+        // 当模型内容无效时，移除最后一个用户输入。
         curatedHistory.pop();
       }
     }
@@ -120,15 +119,13 @@ function extractCuratedHistory(comprehensiveHistory: Content[]): Content[] {
 }
 
 /**
- * Chat session that enables sending messages to the model with previous
- * conversation context.
+ * 聊天会话，支持在之前的对话上下文中向模型发送消息。
  *
  * @remarks
- * The session maintains all the turns between user and model.
+ * 会话维护用户和模型之间的所有回合。
  */
 export class GeminiChat {
-  // A promise to represent the current state of the message being sent to the
-  // model.
+  // 一个 Promise，表示当前发送给模型的消息的状态。
   private sendPromise: Promise<void> = Promise.resolve();
 
   constructor(
@@ -201,14 +198,14 @@ export class GeminiChat {
   }
 
   /**
-   * Handles fallback to Flash model when persistent 429 errors occur for OAuth users.
-   * Uses a fallback handler if provided by the config, otherwise returns null.
+   * 当 OAuth 用户持续出现 429 错误时，处理回退到 Flash 模型。
+   * 如果配置提供了回退处理程序，则使用它，否则返回 null。
    */
   private async handleFlashFallback(
     authType?: string,
     error?: unknown,
   ): Promise<string | null> {
-    // Only handle fallback for OAuth users
+    // 仅处理 OAuth 用户的回退
     if (authType !== AuthType.LOGIN_WITH_GOOGLE) {
       return null;
     }
@@ -216,12 +213,12 @@ export class GeminiChat {
     const currentModel = this.config.getModel();
     const fallbackModel = DEFAULT_GEMINI_FLASH_MODEL;
 
-    // Don't fallback if already using Flash model
+    // 如果已经在使用 Flash 模型，则不回退
     if (currentModel === fallbackModel) {
       return null;
     }
 
-    // Check if config has a fallback handler (set by CLI package)
+    // 检查配置是否有回退处理程序（由 CLI 包设置）
     const fallbackHandler = this.config.flashFallbackHandler;
     if (typeof fallbackHandler === 'function') {
       try {
@@ -234,12 +231,12 @@ export class GeminiChat {
           this.config.setModel(fallbackModel);
           return fallbackModel;
         }
-        // Check if the model was switched manually in the handler
+        // 检查处理程序中是否手动切换了模型
         if (this.config.getModel() === fallbackModel) {
-          return null; // Model was switched but don't continue with current prompt
+          return null; // 模型已切换但不继续当前提示
         }
       } catch (error) {
-        console.warn('Flash fallback handler failed:', error);
+        console.warn('Flash 回退处理程序失败:', error);
       }
     }
 
@@ -247,21 +244,20 @@ export class GeminiChat {
   }
 
   /**
-   * Sends a message to the model and returns the response.
+   * 向模型发送消息并返回响应。
    *
    * @remarks
-   * This method will wait for the previous message to be processed before
-   * sending the next message.
+   * 此方法将等待前一条消息处理完成后再发送下一条消息。
    *
-   * @see {@link Chat#sendMessageStream} for streaming method.
-   * @param params - parameters for sending messages within a chat session.
-   * @returns The model's response.
+   * @see {@link Chat#sendMessageStream} 获取流式方法。
+   * @param params - 在聊天会话中发送消息的参数。
+   * @returns 模型的响应。
    *
    * @example
    * ```ts
    * const chat = ai.chats.create({model: 'gemini-2.0-flash'});
    * const response = await chat.sendMessage({
-   *   message: 'Why is the sky blue?'
+   *   message: '为什么天空是蓝色的？'
    * });
    * console.log(response.text);
    * ```
@@ -283,13 +279,13 @@ export class GeminiChat {
       const apiCall = () => {
         const modelToUse = this.config.getModel() || DEFAULT_GEMINI_FLASH_MODEL;
 
-        // Prevent Flash model calls immediately after quota error
+        // 防止在配额错误后立即调用 Flash 模型
         if (
           this.config.getQuotaErrorOccurred() &&
           modelToUse === DEFAULT_GEMINI_FLASH_MODEL
         ) {
           throw new Error(
-            'Please submit a new query to continue with the Flash model.',
+            '请提交新查询以继续使用 Flash 模型。',
           );
         }
 
@@ -322,9 +318,8 @@ export class GeminiChat {
 
       this.sendPromise = (async () => {
         const outputContent = response.candidates?.[0]?.content;
-        // Because the AFC input contains the entire curated chat history in
-        // addition to the new user input, we need to truncate the AFC history
-        // to deduplicate the existing chat history.
+        // 因为 AFC 输入包含完整的精选聊天历史记录以及新的用户输入，我们需要截断 AFC 历史记录
+        // 以去重现有的聊天历史。
         const fullAutomaticFunctionCallingHistory =
           response.automaticFunctionCallingHistory;
         const index = this.getHistory(true).length;
@@ -341,7 +336,7 @@ export class GeminiChat {
         );
       })();
       await this.sendPromise.catch(() => {
-        // Resets sendPromise to avoid subsequent calls failing
+        // 重置 sendPromise 以避免后续调用失败
         this.sendPromise = Promise.resolve();
       });
       return response;
@@ -354,21 +349,20 @@ export class GeminiChat {
   }
 
   /**
-   * Sends a message to the model and returns the response in chunks.
+   * 向模型发送消息并以块的形式返回响应。
    *
    * @remarks
-   * This method will wait for the previous message to be processed before
-   * sending the next message.
+   * 此方法将等待前一条消息处理完成后再发送下一条消息。
    *
-   * @see {@link Chat#sendMessage} for non-streaming method.
-   * @param params - parameters for sending the message.
-   * @return The model's response.
+   * @see {@link Chat#sendMessage} 获取非流式方法。
+   * @param params - 发送消息的参数。
+   * @return 模型的响应。
    *
    * @example
    * ```ts
    * const chat = ai.chats.create({model: 'gemini-2.0-flash'});
    * const response = await chat.sendMessageStream({
-   *   message: 'Why is the sky blue?'
+   *   message: '为什么天空是蓝色的？'
    * });
    * for await (const chunk of response) {
    *   console.log(chunk.text);
@@ -390,13 +384,13 @@ export class GeminiChat {
       const apiCall = () => {
         const modelToUse = this.config.getModel();
 
-        // Prevent Flash model calls immediately after quota error
+        // 防止在配额错误后立即调用 Flash 模型
         if (
           this.config.getQuotaErrorOccurred() &&
           modelToUse === DEFAULT_GEMINI_FLASH_MODEL
         ) {
           throw new Error(
-            'Please submit a new query to continue with the Flash model.',
+            '请提交新查询以继续使用 Flash 模型。',
           );
         }
 
@@ -407,27 +401,25 @@ export class GeminiChat {
         });
       };
 
-      // Note: Retrying streams can be complex. If generateContentStream itself doesn't handle retries
-      // for transient issues internally before yielding the async generator, this retry will re-initiate
-      // the stream. For simple 429/500 errors on initial call, this is fine.
-      // If errors occur mid-stream, this setup won't resume the stream; it will restart it.
+      // 注意：重试流可能很复杂。如果 generateContentStream 本身在产生异步生成器之前不处理重试
+      // 用于瞬态问题，此重试将重新启动流。对于初始调用时的简单 429/500 错误，这没有问题。
+      // 如果错误发生在流中间，此设置不会恢复流；它会重新启动流。
       const streamResponse = await retryWithBackoff(apiCall, {
         shouldRetry: (error: Error) => {
-          // Check error messages for status codes, or specific error names if known
+          // 检查错误消息中的状态码，或已知的特定错误名称
           if (error && error.message) {
             if (error.message.includes('429')) return true;
             if (error.message.match(/5\d{2}/)) return true;
           }
-          return false; // Don't retry other errors by default
+          return false; // 默认不重试其他错误
         },
         onPersistent429: async (authType?: string, error?: unknown) =>
           await this.handleFlashFallback(authType, error),
         authType: this.config.getContentGeneratorConfig()?.authType,
       });
 
-      // Resolve the internal tracking of send completion promise - `sendPromise`
-      // for both success and failure response. The actual failure is still
-      // propagated by the `await streamResponse`.
+      // 解析内部跟踪发送完成承诺 - `sendPromise`
+      // 无论成功还是失败响应。实际失败仍通过 `await streamResponse` 传播。
       this.sendPromise = Promise.resolve(streamResponse)
         .then(() => undefined)
         .catch(() => undefined);
@@ -448,48 +440,42 @@ export class GeminiChat {
   }
 
   /**
-   * Returns the chat history.
+   * 返回聊天历史记录。
    *
    * @remarks
-   * The history is a list of contents alternating between user and model.
+   * 历史记录是用户和模型之间交替的内容列表。
    *
-   * There are two types of history:
-   * - The `curated history` contains only the valid turns between user and
-   * model, which will be included in the subsequent requests sent to the model.
-   * - The `comprehensive history` contains all turns, including invalid or
-   *   empty model outputs, providing a complete record of the history.
+   * 有两种类型的历史记录：
+   * - `精选历史记录` 仅包含用户和模型之间的有效回合，这些回合将包含在发送给模型的后续请求中。
+   * - `完整历史记录` 包含所有回合，包括无效或空的模型输出，提供完整的历史记录。
    *
-   * The history is updated after receiving the response from the model,
-   * for streaming response, it means receiving the last chunk of the response.
+   * 历史记录在收到模型响应后更新，
+   * 对于流式响应，这意味着收到响应的最后一个块。
    *
-   * The `comprehensive history` is returned by default. To get the `curated
-   * history`, set the `curated` parameter to `true`.
+   * 默认返回 `完整历史记录`。要获取 `精选历史记录`，请将 `curated` 参数设置为 `true`。
    *
-   * @param curated - whether to return the curated history or the comprehensive
-   *     history.
-   * @return History contents alternating between user and model for the entire
-   *     chat session.
+   * @param curated - 是否返回精选历史记录或完整历史记录。
+   * @return 整个聊天会话中用户和模型交替的历史内容。
    */
   getHistory(curated: boolean = false): Content[] {
     const history = curated
       ? extractCuratedHistory(this.history)
       : this.history;
-    // Deep copy the history to avoid mutating the history outside of the
-    // chat session.
+    // 深度复制历史记录以避免在聊天会话外部修改历史记录。
     return structuredClone(history);
   }
 
   /**
-   * Clears the chat history.
+   * 清除聊天历史记录。
    */
   clearHistory(): void {
     this.history = [];
   }
 
   /**
-   * Adds a new entry to the chat history.
+   * 向聊天历史记录添加新条目。
    *
-   * @param content - The content to add to the history.
+   * @param content - 要添加到历史记录的内容。
    */
   addHistory(content: Content): void {
     this.history.push(content);
@@ -576,12 +562,12 @@ export class GeminiChat {
     ) {
       outputContents = nonThoughtModelOutput;
     } else if (nonThoughtModelOutput.length === 0 && modelOutput.length > 0) {
-      // This case handles when the model returns only a thought.
-      // We don't want to add an empty model response in this case.
+      // 此情况处理模型仅返回思考的情况。
+      // 在这种情况下，我们不想添加空的模型响应。
     } else {
-      // When not a function response appends an empty content when model returns empty response, so that the
-      // history is always alternating between user and model.
-      // Workaround for: https://b.corp.google.com/issues/420354090
+      // 当不是函数响应时，如果模型返回空响应则追加空内容，这样
+      // 历史记录始终在用户和模型之间交替。
+      // 解决方案：https://b.corp.google.com/issues/420354090
       if (!isFunctionResponse(userInput)) {
         outputContents.push({
           role: 'model',
@@ -600,7 +586,7 @@ export class GeminiChat {
       this.history.push(userInput);
     }
 
-    // Consolidate adjacent model roles in outputContents
+    // 合并 outputContents 中相邻的模型角色
     const consolidatedOutputContents: Content[] = [];
     for (const content of outputContents) {
       if (this.isThoughtContent(content)) {
@@ -609,8 +595,8 @@ export class GeminiChat {
       const lastContent =
         consolidatedOutputContents[consolidatedOutputContents.length - 1];
       if (this.isTextContent(lastContent) && this.isTextContent(content)) {
-        // If both current and last are text, combine their text into the lastContent's first part
-        // and append any other parts from the current content.
+        // 如果当前和最后一个是文本，将它们的文本合并到最后一个内容的第一个部分中
+        // 并将当前内容的其他部分附加到其中。
         lastContent.parts[0].text += content.parts[0].text || '';
         if (content.parts.length > 1) {
           lastContent.parts.push(...content.parts.slice(1));
@@ -631,8 +617,8 @@ export class GeminiChat {
         this.isTextContent(lastHistoryEntry) &&
         this.isTextContent(consolidatedOutputContents[0])
       ) {
-        // If both current and last are text, combine their text into the lastHistoryEntry's first part
-        // and append any other parts from the current content.
+        // 如果当前和最后一个是文本，将它们的文本合并到最后一个历史条目的第一个部分中
+        // 并将当前内容的其他部分附加到其中。
         lastHistoryEntry.parts[0].text +=
           consolidatedOutputContents[0].parts[0].text || '';
         if (consolidatedOutputContents[0].parts.length > 1) {
@@ -640,7 +626,7 @@ export class GeminiChat {
             ...consolidatedOutputContents[0].parts.slice(1),
           );
         }
-        consolidatedOutputContents.shift(); // Remove the first element as it's merged
+        consolidatedOutputContents.shift(); // 移除第一个元素，因为它已被合并
       }
       this.history.push(...consolidatedOutputContents);
     }

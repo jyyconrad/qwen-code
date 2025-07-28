@@ -39,7 +39,7 @@ describe('getUserStartupWarnings', () => {
   });
 
   describe('home directory check', () => {
-    it('should return a warning when running in home directory', async () => {
+    it('当在主目录中运行时应返回警告', async () => {
       vi.mocked(fs.realpath)
         .mockResolvedValueOnce(homeDir)
         .mockResolvedValueOnce(homeDir);
@@ -51,7 +51,7 @@ describe('getUserStartupWarnings', () => {
       );
     });
 
-    it('should not return a warning when running in a project directory', async () => {
+    it('当在项目目录中运行时不返回警告', async () => {
       vi.mocked(fs.realpath)
         .mockResolvedValueOnce('/some/project/path')
         .mockResolvedValueOnce(homeDir);
@@ -62,7 +62,7 @@ describe('getUserStartupWarnings', () => {
       );
     });
 
-    it('should handle errors when checking directory', async () => {
+    it('处理检查目录时的错误', async () => {
       vi.mocked(fs.realpath)
         .mockRejectedValueOnce(new Error('FS error'))
         .mockResolvedValueOnce(homeDir);
@@ -83,7 +83,7 @@ describe('getUserStartupWarnings', () => {
       setNodeVersionMajor(20);
     });
 
-    it('should return a warning if Node.js version is less than minMajor', async () => {
+    it('如果 Node.js 版本低于 minMajor 应返回警告', async () => {
       setNodeVersionMajor(18);
       const warnings = await getUserStartupWarnings('');
       expect(warnings).toHaveLength(1);
@@ -91,19 +91,19 @@ describe('getUserStartupWarnings', () => {
       expect(warnings[0]).toContain('requires Node.js 20 or higher');
     });
 
-    it('should not return a warning if Node.js version is equal to minMajor', async () => {
+    it('如果 Node.js 版本等于 minMajor 不返回警告', async () => {
       setNodeVersionMajor(20);
       const warnings = await getUserStartupWarnings('');
       expect(warnings).toEqual([]);
     });
 
-    it('should not return a warning if Node.js version is greater than minMajor', async () => {
+    it('如果 Node.js 版本大于 minMajor 不返回警告', async () => {
       setNodeVersionMajor(22);
       const warnings = await getUserStartupWarnings('');
       expect(warnings).toEqual([]);
     });
 
-    it('should use default minMajor=20 if not provided', async () => {
+    it('如果未提供则使用默认 minMajor=20', async () => {
       setNodeVersionMajor(18);
       const warnings = await getUserStartupWarnings('');
       expect(warnings).toHaveLength(1);
@@ -112,9 +112,9 @@ describe('getUserStartupWarnings', () => {
     });
   });
 
-  // // Example of how to add a new check:
+  // // 添加新检查的示例：
   // describe('node version check', () => {
-  //   // Tests for node version check would go here
-  //   // This shows how easy it is to add new test sections
+  //   // node 版本检查的测试将在这里进行
+  //   // 这展示了添加新测试部分是多么容易
   // });
 });

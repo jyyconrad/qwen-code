@@ -19,7 +19,7 @@ interface MockConfig {
   getFileService: () => FileDiscoveryService | null;
 }
 
-// Mock dependencies
+// 模拟依赖项
 vi.mock('fs/promises');
 vi.mock('@iflytek/iflycode-core', async () => {
   const actual = await vi.importActual('@iflytek/iflycode-core');
@@ -44,7 +44,7 @@ describe('useCompletion git-aware filtering integration', () => {
     { name: 'clear', description: 'Clear screen', action: vi.fn() },
   ];
 
-  // A minimal mock is sufficient for these tests.
+  // 对于这些测试，一个最小的模拟就足够了。
   const mockCommandContext = {} as CommandContext;
 
   const mockSlashCommands: SlashCommand[] = [
@@ -62,7 +62,7 @@ describe('useCompletion git-aware filtering integration', () => {
     {
       name: 'memory',
       description: 'Manage memory',
-      // This command is a parent, no action.
+      // 此命令是父命令，无操作。
       subCommands: [
         {
           name: 'show',
@@ -89,7 +89,7 @@ describe('useCompletion git-aware filtering integration', () => {
           name: 'resume',
           description: 'Resume a saved chat',
           action: vi.fn(),
-          // This command provides its own argument completions
+          // 此命令提供自己的参数补全
           completion: vi
             .fn()
             .mockResolvedValue([
@@ -134,7 +134,7 @@ describe('useCompletion git-aware filtering integration', () => {
     const globResults = [`${testCwd}/data`, `${testCwd}/dist`];
     vi.mocked(glob).mockResolvedValue(globResults);
 
-    // Mock git ignore service to ignore certain files
+    // 模拟 git ignore 服务以忽略某些文件
     mockFileDiscoveryService.shouldGitIgnoreFile.mockImplementation(
       (path: string) => path.includes('dist'),
     );
@@ -158,9 +158,9 @@ describe('useCompletion git-aware filtering integration', () => {
       ),
     );
 
-    // Wait for async operations to complete
+    // 等待异步操作完成
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 150)); // Account for debounce
+      await new Promise((resolve) => setTimeout(resolve, 150)); // 考虑防抖
     });
 
     expect(result.current.suggestions).toHaveLength(1);
@@ -171,7 +171,7 @@ describe('useCompletion git-aware filtering integration', () => {
   });
 
   it('should filter git-ignored directories from @ completions', async () => {
-    // Mock fs.readdir to return both regular and git-ignored directories
+    // 模拟 fs.readdir 以返回常规和 git-ignored 目录
     vi.mocked(fs.readdir).mockResolvedValue([
       { name: 'src', isDirectory: () => true },
       { name: 'node_modules', isDirectory: () => true },
@@ -180,7 +180,7 @@ describe('useCompletion git-aware filtering integration', () => {
       { name: '.env', isDirectory: () => false },
     ] as unknown as Awaited<ReturnType<typeof fs.readdir>>);
 
-    // Mock git ignore service to ignore certain files
+    // 模拟 git ignore 服务以忽略某些文件
     mockFileDiscoveryService.shouldGitIgnoreFile.mockImplementation(
       (path: string) =>
         path.includes('node_modules') ||
@@ -207,9 +207,9 @@ describe('useCompletion git-aware filtering integration', () => {
       ),
     );
 
-    // Wait for async operations to complete
+    // 等待异步操作完成
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 150)); // Account for debounce
+      await new Promise((resolve) => setTimeout(resolve, 150)); // 考虑防抖
     });
 
     expect(result.current.suggestions).toHaveLength(2);
@@ -223,7 +223,7 @@ describe('useCompletion git-aware filtering integration', () => {
   });
 
   it('should handle recursive search with git-aware filtering', async () => {
-    // Mock the recursive file search scenario
+    // 模拟递归文件搜索场景
     vi.mocked(fs.readdir).mockImplementation(
       async (dirPath: string | Buffer | URL) => {
         if (dirPath === testCwd) {
@@ -249,7 +249,7 @@ describe('useCompletion git-aware filtering integration', () => {
       },
     );
 
-    // Mock git ignore service
+    // 模拟 git ignore 服务
     mockFileDiscoveryService.shouldGitIgnoreFile.mockImplementation(
       (path: string) => path.includes('node_modules') || path.includes('temp'),
     );
@@ -273,12 +273,12 @@ describe('useCompletion git-aware filtering integration', () => {
       ),
     );
 
-    // Wait for async operations to complete
+    // 等待异步操作完成
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
-    // Should not include anything from node_modules or dist
+    // 不应包含 node_modules 或 dist 中的任何内容
     const suggestionLabels = result.current.suggestions.map((s) => s.label);
     expect(suggestionLabels).not.toContain('temp/');
     expect(suggestionLabels.some((l) => l.includes('node_modules'))).toBe(
@@ -290,7 +290,7 @@ describe('useCompletion git-aware filtering integration', () => {
     const globResults = [`${testCwd}/data`, `${testCwd}/dist`];
     vi.mocked(glob).mockResolvedValue(globResults);
 
-    // Disable recursive search in the mock config
+    // 在模拟配置中禁用递归搜索
     const mockConfigNoRecursive = {
       ...mockConfig,
       getEnableRecursiveFileSearch: vi.fn(() => false),
@@ -316,9 +316,9 @@ describe('useCompletion git-aware filtering integration', () => {
       await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
-    // `glob` should not be called because recursive search is disabled
+    // 由于递归搜索被禁用，不应调用 `glob`
     expect(glob).not.toHaveBeenCalled();
-    // `fs.readdir` should be called for the top-level directory instead
+    // 应调用 `fs.readdir` 来读取顶级目录
     expect(fs.readdir).toHaveBeenCalledWith(testCwd, { withFileTypes: true });
   });
 
@@ -344,7 +344,7 @@ describe('useCompletion git-aware filtering integration', () => {
       await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
-    // Without config, should include all files
+    // 没有配置时，应包含所有文件
     expect(result.current.suggestions).toHaveLength(3);
     expect(result.current.suggestions).toEqual(
       expect.arrayContaining([
@@ -378,10 +378,10 @@ describe('useCompletion git-aware filtering integration', () => {
       await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
-    // Since we use centralized service, initialization errors are handled at config level
-    // This test should verify graceful fallback behavior
+    // 由于我们使用集中式服务，初始化错误在配置级别处理
+    // 此测试应验证优雅的回退行为
     expect(result.current.suggestions.length).toBeGreaterThanOrEqual(0);
-    // Should still show completions even if git discovery fails
+    // 即使 git 发现失败也应显示补全
     expect(result.current.suggestions.length).toBeGreaterThan(0);
 
     consoleSpy.mockRestore();
@@ -421,7 +421,7 @@ describe('useCompletion git-aware filtering integration', () => {
       await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
-    // Should filter out .log files but include matching .tsx files
+    // 应过滤掉 .log 文件但包含匹配的 .tsx 文件
     expect(result.current.suggestions).toEqual([
       { label: 'component.tsx', value: 'component.tsx' },
     ]);
@@ -451,7 +451,7 @@ describe('useCompletion git-aware filtering integration', () => {
       dot: false,
       nocase: true,
     });
-    expect(fs.readdir).not.toHaveBeenCalled(); // Ensure glob is used instead of readdir
+    expect(fs.readdir).not.toHaveBeenCalled(); // 确保使用 glob 而不是 readdir
     expect(result.current.suggestions).toEqual([
       { label: 'README.md', value: 'README.md' },
       { label: 'src/index.ts', value: 'src/index.ts' },
@@ -648,7 +648,7 @@ describe('useCompletion git-aware filtering integration', () => {
   it('should suggest sub-commands for a fully typed parent command without a trailing space', async () => {
     const { result } = renderHook(() =>
       useCompletion(
-        '/memory', // Note: no trailing space
+        '/memory', // 注意：无尾随空格
         '/test/cwd',
         true,
         mockSlashCommands,
@@ -656,7 +656,7 @@ describe('useCompletion git-aware filtering integration', () => {
       ),
     );
 
-    // Assert that suggestions for sub-commands are shown immediately
+    // 断言立即显示子命令建议
     expect(result.current.suggestions).toHaveLength(2);
     expect(result.current.suggestions).toEqual(
       expect.arrayContaining([
@@ -670,7 +670,7 @@ describe('useCompletion git-aware filtering integration', () => {
   it('should NOT provide suggestions for a perfectly typed command that is a leaf node', async () => {
     const { result } = renderHook(() =>
       useCompletion(
-        '/clear', // No trailing space
+        '/clear', // 无尾随空格
         '/test/cwd',
         true,
         mockSlashCommands,
@@ -704,7 +704,7 @@ describe('useCompletion git-aware filtering integration', () => {
 
     const { result } = renderHook(() =>
       useCompletion(
-        '/chat resume ', // Trailing space, no partial argument
+        '/chat resume ', // 尾随空格，无部分参数
         '/test/cwd',
         true,
         isolatedMockCommands,

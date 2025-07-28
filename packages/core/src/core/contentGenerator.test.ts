@@ -66,14 +66,14 @@ describe('createContentGeneratorConfig', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    // Reset modules to re-evaluate imports and environment variables
+    // 重置模块以重新评估导入和环境变量
     vi.resetModules();
-    // Restore process.env before each test
+    // 在每个测试前恢复 process.env
     process.env = { ...originalEnv };
   });
 
   afterAll(() => {
-    // Restore original process.env after all tests
+    // 在所有测试后恢复原始的 process.env
     process.env = originalEnv;
   });
 

@@ -10,25 +10,25 @@ import { GeminiClient } from '../core/client.js';
 import { GeminiChat } from '../core/geminiChat.js';
 import { isFunctionResponse } from './messageInspectors.js';
 
-const CHECK_PROMPT = `Analyze *only* the content and structure of your immediately preceding response (your last turn in the conversation history). Based *strictly* on that response, determine who should logically speak next: the 'user' or the 'model' (you).
-**Decision Rules (apply in order):**
-1.  **Model Continues:** If your last response explicitly states an immediate next action *you* intend to take (e.g., "Next, I will...", "Now I'll process...", "Moving on to analyze...", indicates an intended tool call that didn't execute), OR if the response seems clearly incomplete (cut off mid-thought without a natural conclusion), then the **'model'** should speak next.
-2.  **Question to User:** If your last response ends with a direct question specifically addressed *to the user*, then the **'user'** should speak next.
-3.  **Waiting for User:** If your last response completed a thought, statement, or task *and* does not meet the criteria for Rule 1 (Model Continues) or Rule 2 (Question to User), it implies a pause expecting user input or reaction. In this case, the **'user'** should speak next.
-**Output Format:**
-Respond *only* in JSON format according to the following schema. Do not include any text outside the JSON structure.
+const CHECK_PROMPT = `分析*仅*你紧接在前的响应的内容和结构（你在对话历史中的上一个回合）。基于*严格*该响应，确定逻辑上应该由谁接下来发言：'user'（用户）还是'model'（你）。
+**决策规则（按顺序应用）：**
+1.  **模型继续：** 如果你的上一个响应明确说明了*你*打算立即采取的下一个行动（例如："接下来，我将..."，"现在我将处理..."，"继续分析..."，表示一个未执行的预期工具调用），或者响应明显不完整（在没有自然结论的情况下中途被截断），则应由**'model'**发言。
+2.  **向用户提问：** 如果你的上一个响应以一个直接针对*用户*的具体问题结束，则应由**'user'**发言。
+3.  **等待用户：** 如果你的上一个响应完成了一个想法、陈述或任务*并且*不满足规则1（模型继续）或规则2（向用户提问）的条件，则意味着暂停以期待用户输入或反应。在这种情况下，应由**'user'**发言。
+**输出格式：**
+*仅*按照以下模式以JSON格式响应。不要在JSON结构之外包含任何文本。
 \`\`\`json
 {
   "type": "object",
   "properties": {
     "reasoning": {
         "type": "string",
-        "description": "Brief explanation justifying the 'next_speaker' choice based *strictly* on the applicable rule and the content/structure of the preceding turn."
+        "description": "基于适用规则和前一个回合的内容/结构，简要说明选择'next_speaker'的理由。"
     },
     "next_speaker": {
       "type": "string",
       "enum": ["user", "model"],
-      "description": "Who should speak next based *only* on the preceding turn and the decision rules."
+      "description": "基于前一个回合和决策规则，确定应该由谁发言。"
     }
   },
   "required": ["next_speaker", "reasoning"]
@@ -42,13 +42,13 @@ const RESPONSE_SCHEMA: SchemaUnion = {
     reasoning: {
       type: Type.STRING,
       description:
-        "Brief explanation justifying the 'next_speaker' choice based *strictly* on the applicable rule and the content/structure of the preceding turn.",
+        "基于适用规则和前一个回合的内容/结构，简要说明选择'next_speaker'的理由。",
     },
     next_speaker: {
       type: Type.STRING,
       enum: ['user', 'model'],
       description:
-        'Who should speak next based *only* on the preceding turn and the decision rules',
+        '基于前一个回合和决策规则，确定应该由谁发言',
     },
   },
   required: ['reasoning', 'next_speaker'],
@@ -64,37 +64,37 @@ export async function checkNextSpeaker(
   geminiClient: GeminiClient,
   abortSignal: AbortSignal,
 ): Promise<NextSpeakerResponse | null> {
-  // We need to capture the curated history because there are many moments when the model will return invalid turns
-  // that when passed back up to the endpoint will break subsequent calls. An example of this is when the model decides
-  // to respond with an empty part collection if you were to send that message back to the server it will respond with
-  // a 400 indicating that model part collections MUST have content.
+  // 我们需要捕获经过筛选的历史记录，因为有很多时候模型会返回无效的回合
+  // 如果将这些回合传回端点，将会破坏后续调用。例如，当模型决定
+  // 以空部分集合响应时，如果你将该消息发送回服务器，它会响应
+  // 400错误，表明模型部分集合必须包含内容。
   const curatedHistory = chat.getHistory(/* curated */ true);
 
-  // Ensure there's a model response to analyze
+  // 确保有待分析的模型响应
   if (curatedHistory.length === 0) {
-    // Cannot determine next speaker if history is empty.
+    // 如果历史记录为空，则无法确定下一个发言者。
     return null;
   }
 
   const comprehensiveHistory = chat.getHistory();
-  // If comprehensiveHistory is empty, there is no last message to check.
-  // This case should ideally be caught by the curatedHistory.length check earlier,
-  // but as a safeguard:
+  // 如果完整历史记录为空，则没有最后一条消息可检查。
+  // 这种情况理想情况下应由前面的curatedHistory.length检查捕获，
+  // 但作为安全措施：
   if (comprehensiveHistory.length === 0) {
     return null;
   }
   const lastComprehensiveMessage =
     comprehensiveHistory[comprehensiveHistory.length - 1];
 
-  // If the last message is a user message containing only function_responses,
-  // then the model should speak next.
+  // 如果最后一条消息是仅包含function_responses的用户消息，
+  // 则模型应该接下来发言。
   if (
     lastComprehensiveMessage &&
     isFunctionResponse(lastComprehensiveMessage)
   ) {
     return {
       reasoning:
-        'The last message was a function response, so the model should speak next.',
+        '最后一条消息是函数响应，因此模型应该接下来发言。',
       next_speaker: 'model',
     };
   }
@@ -108,17 +108,17 @@ export async function checkNextSpeaker(
     lastComprehensiveMessage.parts.push({ text: '' });
     return {
       reasoning:
-        'The last message was a filler model message with no content (nothing for user to act on), model should speak next.',
+        '最后一条消息是一个没有内容的填充模型消息（用户无法对此采取行动），模型应该接下来发言。',
       next_speaker: 'model',
     };
   }
 
-  // Things checked out. Let's proceed to potentially making an LLM request.
+  // 检查通过。让我们继续可能进行LLM请求。
 
   const lastMessage = curatedHistory[curatedHistory.length - 1];
   if (!lastMessage || lastMessage.role !== 'model') {
-    // Cannot determine next speaker if the last turn wasn't from the model
-    // or if history is empty.
+    // 如果最后一个回合不是来自模型
+    // 或者历史记录为空，则无法确定下一个发言者。
     return null;
   }
 
@@ -145,7 +145,7 @@ export async function checkNextSpeaker(
     return null;
   } catch (error) {
     console.warn(
-      'Failed to talk to Gemini endpoint when seeing if conversation should continue.',
+      '在检查对话是否应继续时，与Gemini端点通信失败。',
       error,
     );
     return null;

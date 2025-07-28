@@ -1,51 +1,51 @@
-# Integration Tests
+# 集成测试
 
-This document provides information about the integration testing framework used in this project.
+本文档提供了有关本项目中使用的集成测试框架的信息。
 
-## Overview
+## 概述
 
-The integration tests are designed to validate the end-to-end functionality of the Gemini CLI. They execute the built binary in a controlled environment and verify that it behaves as expected when interacting with the file system.
+集成测试旨在验证 Gemini CLI 的端到端功能。它们在一个受控环境中执行构建后的二进制文件，并验证其与文件系统交互时是否按预期运行。
 
-These tests are located in the `integration-tests` directory and are run using a custom test runner.
+这些测试位于 `integration-tests` 目录中，并通过自定义测试运行器执行。
 
-## Running the tests
+## 运行测试
 
-The integration tests are not run as part of the default `npm run test` command. They must be run explicitly using the `npm run test:integration:all` script.
+集成测试不会作为默认的 `npm run test` 命令的一部分运行。必须使用 `npm run test:integration:all` 脚本显式运行它们。
 
-The integration tests can also be run using the following shortcut:
+也可以使用以下快捷方式运行集成测试：
 
 ```bash
 npm run test:e2e
 ```
 
-## Running a specific set of tests
+## 运行特定的测试集
 
-To run a subset of test files, you can use `npm run <integration test command> <file_name1> ....` where <integration test command> is either `test:e2e` or `test:integration*` and `<file_name>` is any of the `.test.js` files in the `integration-tests/` directory. For example, the following command runs `list_directory.test.js` and `write_file.test.js`:
+要运行部分测试文件，可以使用 `npm run <integration test command> <file_name1> ...`，其中 `<integration test command>` 可以是 `test:e2e` 或 `test:integration*`，而 `<file_name>` 是 `integration-tests/` 目录中的任意 `.test.js` 文件。例如，以下命令运行 `list_directory.test.js` 和 `write_file.test.js`：
 
 ```bash
 npm run test:e2e list_directory write_file
 ```
 
-### Running a single test by name
+### 按名称运行单个测试
 
-To run a single test by its name, use the `--test-name-pattern` flag:
+要按名称运行单个测试，请使用 `--test-name-pattern` 标志：
 
 ```bash
 npm run test:e2e -- --test-name-pattern "reads a file"
 ```
 
-### Running all tests
+### 运行所有测试
 
-To run the entire suite of integration tests, use the following command:
+要运行完整的集成测试套件，请使用以下命令：
 
 ```bash
 npm run test:integration:all
 ```
 
-### Sandbox matrix
+### 沙箱矩阵
 
-The `all` command will run tests for `no sandboxing`, `docker` and `podman`.
-Each individual type can be run using the following commands:
+`all` 命令将运行 `no sandboxing`、`docker` 和 `podman` 的测试。  
+每个单独的类型都可以使用以下命令运行：
 
 ```bash
 npm run test:integration:sandbox:none
@@ -59,37 +59,37 @@ npm run test:integration:sandbox:docker
 npm run test:integration:sandbox:podman
 ```
 
-## Diagnostics
+## 诊断
 
-The integration test runner provides several options for diagnostics to help track down test failures.
+集成测试运行器提供了多种诊断选项，以帮助追踪测试失败的原因。
 
-### Keeping test output
+### 保留测试输出
 
-You can preserve the temporary files created during a test run for inspection. This is useful for debugging issues with file system operations.
+您可以保留测试运行期间创建的临时文件以供检查。这对于调试文件系统操作问题非常有用。
 
-To keep the test output, you can either use the `--keep-output` flag or set the `KEEP_OUTPUT` environment variable to `true`.
+要保留测试输出，可以使用 `--keep-output` 标志，或将 `KEEP_OUTPUT` 环境变量设置为 `true`。
 
 ```bash
-# Using the flag
+# 使用标志
 npm run test:integration:sandbox:none -- --keep-output
 
-# Using the environment variable
+# 使用环境变量
 KEEP_OUTPUT=true npm run test:integration:sandbox:none
 ```
 
-When output is kept, the test runner will print the path to the unique directory for the test run.
+当保留输出时，测试运行器会打印测试运行的唯一目录路径。
 
-### Verbose output
+### 详细输出
 
-For more detailed debugging, the `--verbose` flag streams the real-time output from the `gemini` command to the console.
+为了更详细的调试，`--verbose` 标志会将 `gemini` 命令的实时输出流式传输到控制台。
 
 ```bash
 npm run test:integration:sandbox:none -- --verbose
 ```
 
-When using `--verbose` and `--keep-output` in the same command, the output is streamed to the console and also saved to a log file within the test's temporary directory.
+在同一个命令中使用 `--verbose` 和 `--keep-output` 时，输出会流式传输到控制台，并同时保存到测试的临时目录中的日志文件内。
 
-The verbose output is formatted to clearly identify the source of the logs:
+详细输出的格式清晰地标识了日志的来源：
 
 ```
 --- TEST: <file-name-without-js>:<test-name> ---
@@ -97,29 +97,29 @@ The verbose output is formatted to clearly identify the source of the logs:
 --- END TEST: <file-name-without-js>:<test-name> ---
 ```
 
-## Linting and formatting
+## 检查和格式化
 
-To ensure code quality and consistency, the integration test files are linted as part of the main build process. You can also manually run the linter and auto-fixer.
+为了确保代码质量和一致性，集成测试文件会在主构建过程中进行 lint 检查。您也可以手动运行 linter 和自动修复工具。
 
-### Running the linter
+### 运行 linter
 
-To check for linting errors, run the following command:
+要检查 lint 错误，请运行以下命令：
 
 ```bash
 npm run lint
 ```
 
-You can include the `--fix` flag in the command to automatically fix any fixable linting errors:
+您可以在命令中添加 `--fix` 标志，以自动修复所有可修复的 lint 错误：
 
 ```bash
-npm run lint --fix
+npm run lint -- --fix
 ```
 
-## Directory structure
+## 目录结构
 
-The integration tests create a unique directory for each test run inside the `.integration-tests` directory. Within this directory, a subdirectory is created for each test file, and within that, a subdirectory is created for each individual test case.
+集成测试会在 `.integration-tests` 目录内的每次测试运行中创建一个唯一目录。在该目录中，每个测试文件会创建一个子目录，每个子目录中又为每个单独的测试用例创建一个子目录。
 
-This structure makes it easy to locate the artifacts for a specific test run, file, or case.
+这种结构使得定位特定测试运行、文件或用例的产物变得简单。
 
 ```
 .integration-tests/
@@ -130,12 +130,12 @@ This structure makes it easy to locate the artifacts for a specific test run, fi
             └── ...other test artifacts...
 ```
 
-## Continuous integration
+## 持续集成
 
-To ensure the integration tests are always run, a GitHub Actions workflow is defined in `.github/workflows/e2e.yml`. This workflow automatically runs the integration tests on every pull request and push to the `main` branch.
+为了确保始终运行集成测试，在 `.github/workflows/e2e.yml` 中定义了一个 GitHub Actions 工作流。该工作流会在每次拉取请求和推送到 `main` 分支时自动运行集成测试。
 
-The workflow runs the tests in different sandboxing environments to ensure Gemini CLI is tested across each:
+该工作流在不同的沙箱环境中运行测试，以确保 Gemini CLI 在每种环境下都经过测试：
 
-- `sandbox:none`: Runs the tests without any sandboxing.
-- `sandbox:docker`: Runs the tests in a Docker container.
-- `sandbox:podman`: Runs the tests in a Podman container.
+- `sandbox:none`：不使用任何沙箱运行测试。
+- `sandbox:docker`：在 Docker 容器中运行测试。
+- `sandbox:podman`：在 Podman 容器中运行测试。

@@ -10,19 +10,18 @@ import {
 } from '../config/models.js';
 
 /**
- * Checks if the default "pro" model is rate-limited and returns a fallback "flash"
- * model if necessary. This function is designed to be silent.
- * @param apiKey The API key to use for the check.
- * @param currentConfiguredModel The model currently configured in settings.
- * @returns An object indicating the model to use, whether a switch occurred,
- *          and the original model if a switch happened.
+ * 检查默认的 "pro" 模型是否被限速，如果需要则返回备用的 "flash" 模型。此函数设计为静默运行。
+ * @param apiKey 用于检查的 API 密钥。
+ * @param currentConfiguredModel 当前在设置中配置的模型。
+ * @returns 一个对象，指示要使用的模型、是否发生了切换，
+ *          以及如果发生切换时的原始模型。
  */
 export async function getEffectiveModel(
   apiKey: string,
   currentConfiguredModel: string,
 ): Promise<string> {
   if (currentConfiguredModel !== DEFAULT_GEMINI_MODEL) {
-    // Only check if the user is trying to use the specific pro model we want to fallback from.
+    // 仅当用户尝试使用我们想要回退的特定 pro 模型时才检查。
     return currentConfiguredModel;
   }
 
@@ -54,15 +53,15 @@ export async function getEffectiveModel(
 
     if (response.status === 429) {
       console.log(
-        `[INFO] Your configured model (${modelToTest}) was temporarily unavailable. Switched to ${fallbackModel} for this session.`,
+        `[INFO] 您配置的模型 (${modelToTest}) 暂时不可用。本次会话已切换到 ${fallbackModel}。`,
       );
       return fallbackModel;
     }
-    // For any other case (success, other error codes), we stick to the original model.
+    // 对于任何其他情况（成功、其他错误代码），我们坚持使用原始模型。
     return currentConfiguredModel;
   } catch (_error) {
     clearTimeout(timeoutId);
-    // On timeout or any other fetch error, stick to the original model.
+    // 超时或任何其他获取错误时，坚持使用原始模型。
     return currentConfiguredModel;
   }
 }

@@ -20,34 +20,34 @@ interface GroundingChunkWeb {
 
 interface GroundingChunkItem {
   web?: GroundingChunkWeb;
-  // Other properties might exist if needed in the future
+  // 其他属性可能在未来需要时存在
 }
 
 interface GroundingSupportSegment {
   startIndex: number;
   endIndex: number;
-  text?: string; // text is optional as per the example
+  text?: string; // 根据示例，text 是可选的
 }
 
 interface GroundingSupportItem {
   segment?: GroundingSupportSegment;
   groundingChunkIndices?: number[];
-  confidenceScores?: number[]; // Optional as per example
+  confidenceScores?: number[]; // 根据示例是可选的
 }
 
 /**
- * Parameters for the WebSearchTool.
+ * WebSearchTool 的参数。
  */
 export interface WebSearchToolParams {
   /**
-   * The search query.
+   * 搜索查询。
    */
 
   query: string;
 }
 
 /**
- * Extends ToolResult to include sources for web search.
+ * 扩展 ToolResult 以包含网络搜索的来源。
  */
 export interface WebSearchToolResult extends ToolResult {
   sources?: GroundingMetadata extends { groundingChunks: GroundingChunkItem[] }
@@ -56,7 +56,7 @@ export interface WebSearchToolResult extends ToolResult {
 }
 
 /**
- * A tool to perform web searches using Google Search via the Gemini API.
+ * 一个通过 Gemini API 使用 Google 搜索执行网络搜索的工具。
  */
 export class WebSearchTool extends BaseTool<
   WebSearchToolParams,
@@ -68,13 +68,13 @@ export class WebSearchTool extends BaseTool<
     super(
       WebSearchTool.Name,
       'GoogleSearch',
-      'Performs a web search using Google Search (via the Gemini API) and returns the results. This tool is useful for finding information on the internet based on a query.',
+      '使用 Google 搜索（通过 Gemini API）执行网络搜索并返回结果。此工具适用于基于查询在互联网上查找信息。',
       {
         type: Type.OBJECT,
         properties: {
           query: {
             type: Type.STRING,
-            description: 'The search query to find information on the web.',
+            description: '用于在网页上查找信息的搜索查询。',
           },
         },
         required: ['query'],
@@ -83,9 +83,9 @@ export class WebSearchTool extends BaseTool<
   }
 
   /**
-   * Validates the parameters for the WebSearchTool.
-   * @param params The parameters to validate
-   * @returns An error message string if validation fails, null if valid
+   * 验证 WebSearchTool 的参数。
+   * @param params 要验证的参数
+   * @returns 如果验证失败则返回错误消息字符串，如果有效则返回 null
    */
   validateParams(params: WebSearchToolParams): string | null {
     const errors = SchemaValidator.validate(this.schema.parameters, params);
@@ -94,13 +94,13 @@ export class WebSearchTool extends BaseTool<
     }
 
     if (!params.query || params.query.trim() === '') {
-      return "The 'query' parameter cannot be empty.";
+      return "'query' 参数不能为空。";
     }
     return null;
   }
 
   getDescription(params: WebSearchToolParams): string {
-    return `Searching the web for: "${params.query}"`;
+    return `正在网络上搜索："${params.query}"`;
   }
 
   async execute(
@@ -110,7 +110,7 @@ export class WebSearchTool extends BaseTool<
     const validationError = this.validateToolParams(params);
     if (validationError) {
       return {
-        llmContent: `Error: Invalid parameters provided. Reason: ${validationError}`,
+        llmContent: `错误：提供了无效的参数。原因：${validationError}`,
         returnDisplay: validationError,
       };
     }
@@ -134,8 +134,8 @@ export class WebSearchTool extends BaseTool<
 
       if (!responseText || !responseText.trim()) {
         return {
-          llmContent: `No search results or information found for query: "${params.query}"`,
-          returnDisplay: 'No information found.',
+          llmContent: `未找到查询 "${params.query}" 的搜索结果或信息`,
+          returnDisplay: '未找到信息。',
         };
       }
 
@@ -144,8 +144,8 @@ export class WebSearchTool extends BaseTool<
 
       if (sources && sources.length > 0) {
         sources.forEach((source: GroundingChunkItem, index: number) => {
-          const title = source.web?.title || 'Untitled';
-          const uri = source.web?.uri || 'No URI';
+          const title = source.web?.title || '无标题';
+          const uri = source.web?.uri || '无 URI';
           sourceListFormatted.push(`[${index + 1}] ${title} (${uri})`);
         });
 
@@ -163,34 +163,34 @@ export class WebSearchTool extends BaseTool<
             }
           });
 
-          // Sort insertions by index in descending order to avoid shifting subsequent indices
+          // 按索引降序排序插入，以避免后续索引偏移
           insertions.sort((a, b) => b.index - a.index);
 
-          const responseChars = modifiedResponseText.split(''); // Use new variable
+          const responseChars = modifiedResponseText.split(''); // 使用新变量
           insertions.forEach((insertion) => {
-            // Fixed arrow function syntax
+            // 修复箭头函数语法
             responseChars.splice(insertion.index, 0, insertion.marker);
           });
-          modifiedResponseText = responseChars.join(''); // Assign back to modifiedResponseText
+          modifiedResponseText = responseChars.join(''); // 重新赋值给 modifiedResponseText
         }
 
         if (sourceListFormatted.length > 0) {
           modifiedResponseText +=
-            '\n\nSources:\n' + sourceListFormatted.join('\n'); // Fixed string concatenation
+            '\n\n来源：\n' + sourceListFormatted.join('\n'); // 修复字符串连接
         }
       }
 
       return {
-        llmContent: `Web search results for "${params.query}":\n\n${modifiedResponseText}`,
-        returnDisplay: `Search results for "${params.query}" returned.`,
+        llmContent: `"${params.query}" 的网络搜索结果：\n\n${modifiedResponseText}`,
+        returnDisplay: `"${params.query}" 的搜索结果已返回。`,
         sources,
       };
     } catch (error: unknown) {
-      const errorMessage = `Error during web search for query "${params.query}": ${getErrorMessage(error)}`;
+      const errorMessage = `查询 "${params.query}" 的网络搜索期间出错：${getErrorMessage(error)}`;
       console.error(errorMessage, error);
       return {
-        llmContent: `Error: ${errorMessage}`,
-        returnDisplay: `Error performing web search.`,
+        llmContent: `错误：${errorMessage}`,
+        returnDisplay: `执行网络搜索时出错。`,
       };
     }
   }

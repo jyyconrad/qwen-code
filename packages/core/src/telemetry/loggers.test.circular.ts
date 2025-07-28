@@ -5,7 +5,7 @@
  */
 
 /**
- * Test to verify circular reference handling in telemetry logging
+ * 测试以验证遥测日志中对循环引用的处理
  */
 
 import { describe, it, expect } from 'vitest';
@@ -16,9 +16,9 @@ import { CompletedToolCall } from '../core/coreToolScheduler.js';
 import { ToolCallRequestInfo, ToolCallResponseInfo } from '../core/turn.js';
 import { Tool } from '../tools/tools.js';
 
-describe('Circular Reference Handling', () => {
-  it('should handle circular references in tool function arguments', () => {
-    // Create a mock config
+describe('循环引用处理', () => {
+  it('应处理工具函数参数中的循环引用', () => {
+    // 创建一个模拟配置
     const mockConfig = {
       getTelemetryEnabled: () => true,
       getUsageStatisticsEnabled: () => true,
@@ -28,22 +28,22 @@ describe('Circular Reference Handling', () => {
       getDebugMode: () => false,
     } as unknown as Config;
 
-    // Create an object with circular references (similar to HttpsProxyAgent)
+    // 创建一个包含循环引用的对象（类似于 HttpsProxyAgent）
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const circularObject: any = {
       sockets: {},
       agent: null,
     };
-    circularObject.agent = circularObject; // Create circular reference
+    circularObject.agent = circularObject; // 创建循环引用
     circularObject.sockets['test-host'] = [
       { _httpMessage: { agent: circularObject } },
     ];
 
-    // Create a mock CompletedToolCall with circular references in function_args
+    // 创建一个在 function_args 中包含循环引用的模拟 CompletedToolCall
     const mockRequest: ToolCallRequestInfo = {
       callId: 'test-call-id',
       name: 'ReadFile',
-      args: circularObject, // This would cause the original error
+      args: circularObject, // 这会导致原始错误
       isClientInitiated: false,
       prompt_id: 'test-prompt-id',
     };
@@ -52,7 +52,7 @@ describe('Circular Reference Handling', () => {
       callId: 'test-call-id',
       responseParts: [{ text: 'test result' }],
       resultDisplay: undefined,
-      error: undefined, // undefined means success
+      error: undefined, // undefined 表示成功
     };
 
     const mockCompletedToolCall: CompletedToolCall = {
@@ -63,16 +63,16 @@ describe('Circular Reference Handling', () => {
       durationMs: 100,
     };
 
-    // Create a tool call event with circular references in function_args
+    // 创建一个在 function_args 中包含循环引用的工具调用事件
     const event = new ToolCallEvent(mockCompletedToolCall);
 
-    // This should not throw an error
+    // 这不应抛出错误
     expect(() => {
       logToolCall(mockConfig, event);
     }).not.toThrow();
   });
 
-  it('should handle normal objects without circular references', () => {
+  it('应处理不包含循环引用的普通对象', () => {
     const mockConfig = {
       getTelemetryEnabled: () => true,
       getUsageStatisticsEnabled: () => true,
@@ -99,7 +99,7 @@ describe('Circular Reference Handling', () => {
       callId: 'test-call-id',
       responseParts: [{ text: 'test result' }],
       resultDisplay: undefined,
-      error: undefined, // undefined means success
+      error: undefined, // undefined 表示成功
     };
 
     const mockCompletedToolCall: CompletedToolCall = {

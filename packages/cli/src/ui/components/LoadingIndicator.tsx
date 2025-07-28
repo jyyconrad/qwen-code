@@ -36,7 +36,7 @@ export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
 
   return (
     <Box marginTop={1} paddingLeft={0} flexDirection="column">
-      {/* Main loading line */}
+      {/* 主加载行 */}
       <Box>
         <Box marginRight={1}>
           <GeminiRespondingSpinner
@@ -51,9 +51,9 @@ export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
         <Text color={Colors.Gray}>
           {streamingState === StreamingState.WaitingForConfirmation
             ? ''
-            : ` (esc to cancel, ${elapsedTime < 60 ? `${elapsedTime}s` : formatDuration(elapsedTime * 1000)})`}
+            : ` (esc 取消, ${elapsedTime < 60 ? `${elapsedTime}s` : formatDuration(elapsedTime * 1000)})`}
         </Text>
-        <Box flexGrow={1}>{/* Spacer */}</Box>
+        <Box flexGrow={1}>{/* 间隔器 */}</Box>
         {rightContent && <Box>{rightContent}</Box>}
       </Box>
     </Box>

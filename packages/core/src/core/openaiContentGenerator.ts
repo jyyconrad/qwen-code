@@ -96,17 +96,17 @@ export class OpenAIContentGenerator implements ContentGenerator {
     this.config = config;
     const baseURL = process.env.OPENAI_BASE_URL || '';
 
-    // Configure timeout settings - using progressive timeouts
+    // 配置超时设置 - 使用渐进式超时
     const timeoutConfig = {
-      // Base timeout for most requests (2 minutes)
+      // 大多数请求的基础超时时间（2分钟）
       timeout: 120000,
-      // Maximum retries for failed requests
+      // 请求失败的最大重试次数
       maxRetries: 3,
-      // HTTP client options
-      httpAgent: undefined, // Let the client use default agent
+      // HTTP 客户端选项
+      httpAgent: undefined, // 让客户端使用默认代理
     };
 
-    // Allow config to override timeout settings
+    // 允许配置覆盖超时设置
     const contentGeneratorConfig = this.config.getContentGeneratorConfig();
     if (contentGeneratorConfig?.timeout) {
       timeoutConfig.timeout = contentGeneratorConfig.timeout;
@@ -124,7 +124,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Check if an error is a timeout error
+   * 检查错误是否为超时错误
    */
   private isTimeoutError(error: unknown): boolean {
     if (!error) return false;
@@ -138,19 +138,19 @@ export class OpenAIContentGenerator implements ContentGenerator {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const errorType = (error as any)?.type;
 
-    // Check for common timeout indicators
+    // 检查常见的超时指示符
     return (
       errorMessage.includes('timeout') ||
       errorMessage.includes('timed out') ||
       errorMessage.includes('connection timeout') ||
       errorMessage.includes('request timeout') ||
       errorMessage.includes('read timeout') ||
-      errorMessage.includes('etimedout') || // Include ETIMEDOUT in message check
-      errorMessage.includes('esockettimedout') || // Include ESOCKETTIMEDOUT in message check
+      errorMessage.includes('etimedout') || // 在消息检查中包含 ETIMEDOUT
+      errorMessage.includes('esockettimedout') || // 在消息检查中包含 ESOCKETTIMEDOUT
       errorCode === 'ETIMEDOUT' ||
       errorCode === 'ESOCKETTIMEDOUT' ||
       errorType === 'timeout' ||
-      // OpenAI specific timeout indicators
+      // OpenAI 特定的超时指示符
       errorMessage.includes('request timed out') ||
       errorMessage.includes('deadline exceeded')
     );
@@ -163,10 +163,10 @@ export class OpenAIContentGenerator implements ContentGenerator {
     const messages = this.convertToOpenAIFormat(request);
 
     try {
-      // Build sampling parameters with clear priority:
-      // 1. Request-level parameters (highest priority)
-      // 2. Config-level sampling parameters (medium priority)
-      // 3. Default values (lowest priority)
+      // 构建采样参数，明确优先级：
+      // 1. 请求级别的参数（最高优先级）
+      // 2. 配置级别的采样参数（中等优先级）
+      // 3. 默认值（最低优先级）
       const samplingParams = this.buildSamplingParameters(request);
 
       const createParams: Parameters<
@@ -190,18 +190,18 @@ export class OpenAIContentGenerator implements ContentGenerator {
       const response = this.convertToGeminiFormat(completion);
       const durationMs = Date.now() - startTime;
 
-      // Log API response event for UI telemetry
+      // 记录 API 响应事件用于 UI 遥测
       const responseEvent = new ApiResponseEvent(
         this.model,
         durationMs,
-        `openai-${Date.now()}`, // Generate a prompt ID
+        `openai-${Date.now()}`, // 生成提示 ID
         this.config.getContentGeneratorConfig()?.authType,
         response.usageMetadata,
       );
 
       logApiResponse(this.config, responseEvent);
 
-      // Log interaction if enabled
+      // 如果启用则记录交互
       if (this.config.getContentGeneratorConfig()?.enableOpenAILogging) {
         const openaiRequest = await this.convertGeminiRequestToOpenAI(request);
         const openaiResponse = this.convertGeminiResponseToOpenAI(response);
@@ -212,16 +212,16 @@ export class OpenAIContentGenerator implements ContentGenerator {
     } catch (error) {
       const durationMs = Date.now() - startTime;
 
-      // Identify timeout errors specifically
+      // 专门识别超时错误
       const isTimeoutError = this.isTimeoutError(error);
       const errorMessage = isTimeoutError
-        ? `Request timeout after ${Math.round(durationMs / 1000)}s. Try reducing input length or increasing timeout in config.`
+        ? `请求在 ${Math.round(durationMs / 1000)} 秒后超时。尝试减少输入长度或在配置中增加超时时间。`
         : error instanceof Error
           ? error.message
           : String(error);
 
-      // Estimate token usage even when there's an error
-      // This helps track costs and usage even for failed requests
+      // 即使出现错误也估算 token 使用量
+      // 这有助于跟踪失败请求的成本和使用情况
       let estimatedUsage;
       try {
         const tokenCountResult = await this.countTokens({
@@ -230,13 +230,13 @@ export class OpenAIContentGenerator implements ContentGenerator {
         });
         estimatedUsage = {
           promptTokenCount: tokenCountResult.totalTokens,
-          candidatesTokenCount: 0, // No completion tokens since request failed
+          candidatesTokenCount: 0, // 请求失败，无完成 token
           totalTokenCount: tokenCountResult.totalTokens,
         };
       } catch {
-        // If token counting also fails, provide a minimal estimate
+        // 如果 token 计数也失败，则提供最小估算
         const contentStr = JSON.stringify(request.contents);
-        const estimatedTokens = Math.ceil(contentStr.length / 4);
+        const estimatedTokens =this.roughCount(contentStr);
         estimatedUsage = {
           promptTokenCount: estimatedTokens,
           candidatesTokenCount: 0,
@@ -244,11 +244,11 @@ export class OpenAIContentGenerator implements ContentGenerator {
         };
       }
 
-      // Log API error event for UI telemetry with estimated usage
+      // 记录带有估算使用量的 API 错误事件用于 UI 遥测
       const errorEvent = new ApiResponseEvent(
         this.model,
         durationMs,
-        `openai-${Date.now()}`, // Generate a prompt ID
+        `openai-${Date.now()}`, // 生成提示 ID
         this.config.getContentGeneratorConfig()?.authType,
         estimatedUsage,
         undefined,
@@ -256,7 +256,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       );
       logApiResponse(this.config, errorEvent);
 
-      // Log error interaction if enabled
+      // 如果启用则记录错误交互
       if (this.config.getContentGeneratorConfig()?.enableOpenAILogging) {
         const openaiRequest = await this.convertGeminiRequestToOpenAI(request);
         await openaiLogger.logInteraction(
@@ -266,20 +266,20 @@ export class OpenAIContentGenerator implements ContentGenerator {
         );
       }
 
-      console.error('OpenAI API Error:', errorMessage);
+      console.error('OpenAI API 错误:', errorMessage);
 
-      // Provide helpful timeout-specific error message
+      // 提供有用的超时特定错误消息
       if (isTimeoutError) {
         throw new Error(
-          `${errorMessage}\n\nTroubleshooting tips:\n` +
-            `- Reduce input length or complexity\n` +
-            `- Increase timeout in config: contentGenerator.timeout\n` +
-            `- Check network connectivity\n` +
-            `- Consider using streaming mode for long responses`,
+          `${errorMessage}\n\n故障排除提示:\n` +
+            `- 减少输入长度或复杂性\n` +
+            `- 在配置中增加超时时间: contentGenerator.timeout\n` +
+            `- 检查网络连接\n` +
+            `- 考虑对长响应使用流式模式`,
         );
       }
 
-      throw new Error(`OpenAI API error: ${errorMessage}`);
+      throw new Error(`OpenAI API 错误: ${errorMessage}`);
     }
   }
 
@@ -290,7 +290,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
     const messages = this.convertToOpenAIFormat(request);
 
     try {
-      // Build sampling parameters with clear priority
+      // 构建采样参数，明确优先级
       const samplingParams = this.buildSamplingParameters(request);
 
       const createParams: Parameters<
@@ -317,10 +317,10 @@ export class OpenAIContentGenerator implements ContentGenerator {
 
       const originalStream = this.streamGenerator(stream);
 
-      // Collect all responses for final logging (don't log during streaming)
+      // 收集所有响应用于最终记录（流式传输期间不记录）
       const responses: GenerateContentResponse[] = [];
 
-      // Return a new generator that both yields responses and collects them
+      // 返回一个既生成响应又收集响应的新生成器
       const wrappedGenerator = async function* (this: OpenAIContentGenerator) {
         try {
           for await (const response of originalStream) {
@@ -330,28 +330,28 @@ export class OpenAIContentGenerator implements ContentGenerator {
 
           const durationMs = Date.now() - startTime;
 
-          // Get final usage metadata from the last response that has it
+          // 从最后一个有使用量元数据的响应中获取最终使用量元数据
           const finalUsageMetadata = responses
             .slice()
             .reverse()
             .find((r) => r.usageMetadata)?.usageMetadata;
 
-          // Log API response event for UI telemetry
+          // 记录 API 响应事件用于 UI 遥测
           const responseEvent = new ApiResponseEvent(
             this.model,
             durationMs,
-            `openai-stream-${Date.now()}`, // Generate a prompt ID
+            `openai-stream-${Date.now()}`, // 生成提示 ID
             this.config.getContentGeneratorConfig()?.authType,
             finalUsageMetadata,
           );
 
           logApiResponse(this.config, responseEvent);
 
-          // Log interaction if enabled (same as generateContent method)
+          // 如果启用则记录交互（与 generateContent 方法相同）
           if (this.config.getContentGeneratorConfig()?.enableOpenAILogging) {
             const openaiRequest =
               await this.convertGeminiRequestToOpenAI(request);
-            // For streaming, we combine all responses into a single response for logging
+            // 对于流式传输，我们将所有响应合并为单个响应用于记录
             const combinedResponse =
               this.combineStreamResponsesForLogging(responses);
             const openaiResponse =
@@ -361,15 +361,15 @@ export class OpenAIContentGenerator implements ContentGenerator {
         } catch (error) {
           const durationMs = Date.now() - startTime;
 
-          // Identify timeout errors specifically for streaming
+          // 专门识别流式传输的超时错误
           const isTimeoutError = this.isTimeoutError(error);
           const errorMessage = isTimeoutError
-            ? `Streaming request timeout after ${Math.round(durationMs / 1000)}s. Try reducing input length or increasing timeout in config.`
+            ? `流式请求在 ${Math.round(durationMs / 1000)} 秒后超时。尝试减少输入长度或在配置中增加超时时间。`
             : error instanceof Error
               ? error.message
               : String(error);
 
-          // Estimate token usage even when there's an error in streaming
+          // 即使流式传输出现错误也估算 token 使用量
           let estimatedUsage;
           try {
             const tokenCountResult = await this.countTokens({
@@ -378,13 +378,13 @@ export class OpenAIContentGenerator implements ContentGenerator {
             });
             estimatedUsage = {
               promptTokenCount: tokenCountResult.totalTokens,
-              candidatesTokenCount: 0, // No completion tokens since request failed
+              candidatesTokenCount: 0, // 请求失败，无完成 token
               totalTokenCount: tokenCountResult.totalTokens,
             };
           } catch {
-            // If token counting also fails, provide a minimal estimate
+            // 如果 token 计数也失败，则提供最小估算
             const contentStr = JSON.stringify(request.contents);
-            const estimatedTokens = Math.ceil(contentStr.length / 4);
+            const estimatedTokens =this.roughCount(contentStr);
             estimatedUsage = {
               promptTokenCount: estimatedTokens,
               candidatesTokenCount: 0,
@@ -392,11 +392,11 @@ export class OpenAIContentGenerator implements ContentGenerator {
             };
           }
 
-          // Log API error event for UI telemetry with estimated usage
+          // 记录带有估算使用量的 API 错误事件用于 UI 遥测
           const errorEvent = new ApiResponseEvent(
             this.model,
             durationMs,
-            `openai-stream-${Date.now()}`, // Generate a prompt ID
+            `openai-stream-${Date.now()}`, // 生成提示 ID
             this.config.getContentGeneratorConfig()?.authType,
             estimatedUsage,
             undefined,
@@ -404,7 +404,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
           );
           logApiResponse(this.config, errorEvent);
 
-          // Log error interaction if enabled
+          // 如果启用则记录错误交互
           if (this.config.getContentGeneratorConfig()?.enableOpenAILogging) {
             const openaiRequest =
               await this.convertGeminiRequestToOpenAI(request);
@@ -415,14 +415,14 @@ export class OpenAIContentGenerator implements ContentGenerator {
             );
           }
 
-          // Provide helpful timeout-specific error message for streaming
+          // 为流式传输提供有用的超时特定错误消息
           if (isTimeoutError) {
             throw new Error(
-              `${errorMessage}\n\nStreaming timeout troubleshooting:\n` +
-                `- Reduce input length or complexity\n` +
-                `- Increase timeout in config: contentGenerator.timeout\n` +
-                `- Check network stability for streaming connections\n` +
-                `- Consider using non-streaming mode for very long inputs`,
+              `${errorMessage}\n\n流式传输超时故障排除:\n` +
+                `- 减少输入长度或复杂性\n` +
+                `- 在配置中增加超时时间: contentGenerator.timeout\n` +
+                `- 检查流式连接的网络稳定性\n` +
+                `- 考虑对非常长的输入使用非流式模式`,
             );
           }
 
@@ -434,15 +434,15 @@ export class OpenAIContentGenerator implements ContentGenerator {
     } catch (error) {
       const durationMs = Date.now() - startTime;
 
-      // Identify timeout errors specifically for streaming setup
+      // 专门识别流式传输设置的超时错误
       const isTimeoutError = this.isTimeoutError(error);
       const errorMessage = isTimeoutError
-        ? `Streaming setup timeout after ${Math.round(durationMs / 1000)}s. Try reducing input length or increasing timeout in config.`
+        ? `流式传输设置在 ${Math.round(durationMs / 1000)} 秒后超时。尝试减少输入长度或在配置中增加超时时间。`
         : error instanceof Error
           ? error.message
           : String(error);
 
-      // Estimate token usage even when there's an error in streaming setup
+      // 即使流式传输设置出现错误也估算 token 使用量
       let estimatedUsage;
       try {
         const tokenCountResult = await this.countTokens({
@@ -451,13 +451,13 @@ export class OpenAIContentGenerator implements ContentGenerator {
         });
         estimatedUsage = {
           promptTokenCount: tokenCountResult.totalTokens,
-          candidatesTokenCount: 0, // No completion tokens since request failed
+          candidatesTokenCount: 0, // 请求失败，无完成 token
           totalTokenCount: tokenCountResult.totalTokens,
         };
       } catch {
-        // If token counting also fails, provide a minimal estimate
+        // 如果 token 计数也失败，则提供最小估算
         const contentStr = JSON.stringify(request.contents);
-        const estimatedTokens = Math.ceil(contentStr.length / 4);
+        const estimatedTokens = this.roughCount(contentStr);
         estimatedUsage = {
           promptTokenCount: estimatedTokens,
           candidatesTokenCount: 0,
@@ -465,11 +465,11 @@ export class OpenAIContentGenerator implements ContentGenerator {
         };
       }
 
-      // Log API error event for UI telemetry with estimated usage
+      // 记录带有估算使用量的 API 错误事件用于 UI 遥测
       const errorEvent = new ApiResponseEvent(
         this.model,
         durationMs,
-        `openai-stream-${Date.now()}`, // Generate a prompt ID
+        `openai-stream-${Date.now()}`, // 生成提示 ID
         this.config.getContentGeneratorConfig()?.authType,
         estimatedUsage,
         undefined,
@@ -477,27 +477,27 @@ export class OpenAIContentGenerator implements ContentGenerator {
       );
       logApiResponse(this.config, errorEvent);
 
-      console.error('OpenAI API Streaming Error:', errorMessage);
+      console.error('OpenAI API 流式传输错误:', errorMessage);
 
-      // Provide helpful timeout-specific error message for streaming setup
+      // 为流式传输设置提供有用的超时特定错误消息
       if (isTimeoutError) {
         throw new Error(
-          `${errorMessage}\n\nStreaming setup timeout troubleshooting:\n` +
-            `- Reduce input length or complexity\n` +
-            `- Increase timeout in config: contentGenerator.timeout\n` +
-            `- Check network connectivity and firewall settings\n` +
-            `- Consider using non-streaming mode for very long inputs`,
+          `${errorMessage}\n\n流式传输设置超时故障排除:\n` +
+            `- 减少输入长度或复杂性\n` +
+            `- 在配置中增加超时时间: contentGenerator.timeout\n` +
+            `- 检查网络连接和防火墙设置\n` +
+            `- 考虑对非常长的输入使用非流式模式`,
         );
       }
 
-      throw new Error(`OpenAI API error: ${errorMessage}`);
+      throw new Error(`OpenAI API 错误: ${errorMessage}`);
     }
   }
 
   private async *streamGenerator(
     stream: AsyncIterable<ChatCompletionChunk>,
   ): AsyncGenerator<GenerateContentResponse> {
-    // Reset the accumulator for each new stream
+    // 为每个新流重置累加器
     this.streamingToolCalls.clear();
 
     for await (const chunk of stream) {
@@ -506,7 +506,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Combine streaming responses for logging purposes
+   * 合并流式响应用于记录目的
    */
   private combineStreamResponsesForLogging(
     responses: GenerateContentResponse[],
@@ -515,13 +515,13 @@ export class OpenAIContentGenerator implements ContentGenerator {
       return new GenerateContentResponse();
     }
 
-    // Find the last response with usage metadata
+    // 查找最后一个有使用量元数据的响应
     const finalUsageMetadata = responses
       .slice()
       .reverse()
       .find((r) => r.usageMetadata)?.usageMetadata;
 
-    // Combine all text content from the stream
+    // 合并流中的所有文本内容
     const combinedParts: Part[] = [];
     let combinedText = '';
     const functionCalls: Part[] = [];
@@ -538,15 +538,15 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Add combined text if any
+    // 如果有文本则添加
     if (combinedText) {
       combinedParts.push({ text: combinedText });
     }
 
-    // Add function calls
+    // 添加函数调用
     combinedParts.push(...functionCalls);
 
-    // Create combined response
+    // 创建合并响应
     const combinedResponse = new GenerateContentResponse();
     combinedResponse.candidates = [
       {
@@ -571,21 +571,43 @@ export class OpenAIContentGenerator implements ContentGenerator {
   async countTokens(
     request: CountTokensParameters,
   ): Promise<CountTokensResponse> {
-    // OpenAI doesn't have a direct token counting endpoint
-    // We'll estimate based on the tiktoken library or a rough calculation
-    // For now, return a rough estimate
+    // OpenAI 没有直接的 token 计数端点
+    // 我们将基于 tiktoken 库或粗略计算进行估算
+    // 目前，返回粗略估算
     const content = JSON.stringify(request.contents);
-    const estimatedTokens = Math.ceil(content.length / 4); // Rough estimate: 1 token ≈ 4 characters
+    const estimatedTokens = this.roughCount(content)
 
     return {
       totalTokens: estimatedTokens,
     };
   }
+  /**
+ * 粗略估算 token 数量（非精确，仅用于预估）
+ * 汉字按 0.75 token / 字，英文按 0.25 token / 字符计算
+ * @param text 输入文本
+ * @returns 估算的 token 数量（向上取整）
+ */
+roughCount(text: string): number {
+  let total = 0;
+
+  for (const ch of [...text]) {
+    const code = ch.codePointAt(0) ?? 0;
+
+    // 中文汉字范围（CJK Unified Ideographs）
+    if (code >= 0x4e00 && code <= 0x9fff) {
+      total += 0.75;
+    } else {
+      total += 0.25;
+    }
+  }
+
+  return Math.ceil(total);
+}
 
   async embedContent(
     request: EmbedContentParameters,
   ): Promise<EmbedContentResponse> {
-    // Extract text from contents
+    // 从内容中提取文本
     let text = '';
     if (Array.isArray(request.contents)) {
       text = request.contents
@@ -619,7 +641,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
 
     try {
       const embedding = await this.client.embeddings.create({
-        model: 'text-embedding-ada-002', // Default embedding model
+        model: 'text-embedding-ada-002', // 默认嵌入模型
         input: text,
       });
 
@@ -631,9 +653,9 @@ export class OpenAIContentGenerator implements ContentGenerator {
         ],
       };
     } catch (error) {
-      console.error('OpenAI API Embedding Error:', error);
+      console.error('OpenAI API 嵌入错误:', error);
       throw new Error(
-        `OpenAI API error: ${error instanceof Error ? error.message : String(error)}`,
+        `OpenAI API 错误: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -659,7 +681,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       const result: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(obj)) {
         if (key === 'type' && typeof value === 'string') {
-          // Convert Gemini types to OpenAI JSON Schema types
+          // 将 Gemini 类型转换为 OpenAI JSON Schema 类型
           const lowerValue = value.toLowerCase();
           if (lowerValue === 'integer') {
             result[key] = 'integer';
@@ -673,7 +695,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
           key === 'maximum' ||
           key === 'multipleOf'
         ) {
-          // Ensure numeric constraints are actual numbers, not strings
+          // 确保数值约束是实际数字，而不是字符串
           if (typeof value === 'string' && !isNaN(Number(value))) {
             result[key] = Number(value);
           } else {
@@ -685,7 +707,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
           key === 'minItems' ||
           key === 'maxItems'
         ) {
-          // Ensure length constraints are integers, not strings
+          // 确保长度约束是整数，而不是字符串
           if (typeof value === 'string' && !isNaN(Number(value))) {
             result[key] = parseInt(value, 10);
           } else {
@@ -711,12 +733,12 @@ export class OpenAIContentGenerator implements ContentGenerator {
     for (const tool of geminiTools) {
       let actualTool: Tool;
 
-      // Handle CallableTool vs Tool
+      // 处理 CallableTool vs Tool
       if ('tool' in tool) {
-        // This is a CallableTool
+        // 这是一个 CallableTool
         actualTool = await (tool as CallableTool).tool();
       } else {
-        // This is already a Tool
+        // 这已经是一个 Tool
         actualTool = tool as Tool;
       }
 
@@ -739,7 +761,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
     }
 
     // console.log(
-    //   'OpenAI Tools Parameters:',
+    //   'OpenAI 工具参数:',
     //   JSON.stringify(openAITools, null, 2),
     // );
     return openAITools;
@@ -750,7 +772,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
   ): OpenAI.Chat.ChatCompletionMessageParam[] {
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-    // Handle system instruction from config
+    // 处理来自配置的系统指令
     if (request.config?.systemInstruction) {
       const systemInstruction = request.config.systemInstruction;
       let systemText = '';
@@ -795,13 +817,13 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Handle contents
+    // 处理内容
     if (Array.isArray(request.contents)) {
       for (const content of request.contents) {
         if (typeof content === 'string') {
           messages.push({ role: 'user' as const, content });
         } else if ('role' in content && 'parts' in content) {
-          // Check if this content has function calls or responses
+          // 检查此内容是否有函数调用或响应
           const functionCalls: FunctionCall[] = [];
           const functionResponses: FunctionResponse[] = [];
           const textParts: string[] = [];
@@ -818,7 +840,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
             }
           }
 
-          // Handle function responses (tool results)
+          // 处理函数响应（工具结果）
           if (functionResponses.length > 0) {
             for (const funcResponse of functionResponses) {
               messages.push({
@@ -831,7 +853,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
               });
             }
           }
-          // Handle model messages with function calls
+          // 处理带函数调用的模型消息
           else if (content.role === 'model' && functionCalls.length > 0) {
             const toolCalls = functionCalls.map((fc, index) => ({
               id: fc.id || `call_${index}`,
@@ -848,7 +870,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
               tool_calls: toolCalls,
             });
           }
-          // Handle regular text messages
+          // 处理常规文本消息
           else {
             const role =
               content.role === 'model'
@@ -878,13 +900,13 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Clean up orphaned tool calls and merge consecutive assistant messages
+    // 清理孤立的工具调用并合并连续的助手消息
     const cleanedMessages = this.cleanOrphanedToolCalls(messages);
     return this.mergeConsecutiveAssistantMessages(cleanedMessages);
   }
 
   /**
-   * Clean up orphaned tool calls from message history to prevent OpenAI API errors
+   * 清理消息历史中的孤立工具调用以防止 OpenAI API 错误
    */
   private cleanOrphanedToolCalls(
     messages: OpenAI.Chat.ChatCompletionMessageParam[],
@@ -893,7 +915,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
     const toolCallIds = new Set<string>();
     const toolResponseIds = new Set<string>();
 
-    // First pass: collect all tool call IDs and tool response IDs
+    // 第一遍：收集所有工具调用 ID 和工具响应 ID
     for (const message of messages) {
       if (
         message.role === 'assistant' &&
@@ -914,20 +936,20 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Second pass: filter out orphaned messages
+    // 第二遍：过滤孤立消息
     for (const message of messages) {
       if (
         message.role === 'assistant' &&
         'tool_calls' in message &&
         message.tool_calls
       ) {
-        // Filter out tool calls that don't have corresponding responses
+        // 过滤出没有相应响应的工具调用
         const validToolCalls = message.tool_calls.filter(
           (toolCall) => toolCall.id && toolResponseIds.has(toolCall.id),
         );
 
         if (validToolCalls.length > 0) {
-          // Keep the message but only with valid tool calls
+          // 保留消息但仅保留有效的工具调用
           const cleanedMessage = { ...message };
           (
             cleanedMessage as OpenAI.Chat.ChatCompletionMessageParam & {
@@ -939,7 +961,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
           typeof message.content === 'string' &&
           message.content.trim()
         ) {
-          // Keep the message if it has text content, but remove tool calls
+          // 如果有文本内容则保留消息，但移除工具调用
           const cleanedMessage = { ...message };
           delete (
             cleanedMessage as OpenAI.Chat.ChatCompletionMessageParam & {
@@ -948,27 +970,27 @@ export class OpenAIContentGenerator implements ContentGenerator {
           ).tool_calls;
           cleaned.push(cleanedMessage);
         }
-        // If no valid tool calls and no content, skip the message entirely
+        // 如果没有有效的工具调用且没有内容，则完全跳过该消息
       } else if (
         message.role === 'tool' &&
         'tool_call_id' in message &&
         message.tool_call_id
       ) {
-        // Only keep tool responses that have corresponding tool calls
+        // 只保留有相应工具调用的工具响应
         if (toolCallIds.has(message.tool_call_id)) {
           cleaned.push(message);
         }
       } else {
-        // Keep all other messages as-is
+        // 原样保留所有其他消息
         cleaned.push(message);
       }
     }
 
-    // Final validation: ensure every assistant message with tool_calls has corresponding tool responses
+    // 最终验证：确保每个带 tool_calls 的助手消息都有相应的工具响应
     const finalCleaned: OpenAI.Chat.ChatCompletionMessageParam[] = [];
     const finalToolCallIds = new Set<string>();
 
-    // Collect all remaining tool call IDs
+    // 收集所有剩余的工具调用 ID
     for (const message of cleaned) {
       if (
         message.role === 'assistant' &&
@@ -983,7 +1005,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Verify all tool calls have responses
+    // 验证所有工具调用都有响应
     const finalToolResponseIds = new Set<string>();
     for (const message of cleaned) {
       if (
@@ -995,7 +1017,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Remove any remaining orphaned tool calls
+    // 移除任何剩余的孤立工具调用
     for (const message of cleaned) {
       if (
         message.role === 'assistant' &&
@@ -1035,7 +1057,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Merge consecutive assistant messages to combine split text and tool calls
+   * 合并连续的助手消息以组合分割的文本和工具调用
    */
   private mergeConsecutiveAssistantMessages(
     messages: OpenAI.Chat.ChatCompletionMessageParam[],
@@ -1046,9 +1068,9 @@ export class OpenAIContentGenerator implements ContentGenerator {
       if (message.role === 'assistant' && merged.length > 0) {
         const lastMessage = merged[merged.length - 1];
 
-        // If the last message is also an assistant message, merge them
+        // 如果最后一条消息也是助手消息，则合并它们
         if (lastMessage.role === 'assistant') {
-          // Combine content
+          // 组合内容
           const combinedContent = [
             typeof lastMessage.content === 'string' ? lastMessage.content : '',
             typeof message.content === 'string' ? message.content : '',
@@ -1056,14 +1078,14 @@ export class OpenAIContentGenerator implements ContentGenerator {
             .filter(Boolean)
             .join('');
 
-          // Combine tool calls
+          // 组合工具调用
           const lastToolCalls =
             'tool_calls' in lastMessage ? lastMessage.tool_calls || [] : [];
           const currentToolCalls =
             'tool_calls' in message ? message.tool_calls || [] : [];
           const combinedToolCalls = [...lastToolCalls, ...currentToolCalls];
 
-          // Update the last message with combined data
+          // 用组合数据更新最后一条消息
           (
             lastMessage as OpenAI.Chat.ChatCompletionMessageParam & {
               content: string | null;
@@ -1079,11 +1101,11 @@ export class OpenAIContentGenerator implements ContentGenerator {
             ).tool_calls = combinedToolCalls;
           }
 
-          continue; // Skip adding the current message since it's been merged
+          continue; // 跳过添加当前消息，因为它已被合并
         }
       }
 
-      // Add the message as-is if no merging is needed
+      // 如果不需要合并则原样添加消息
       merged.push(message);
     }
 
@@ -1098,12 +1120,12 @@ export class OpenAIContentGenerator implements ContentGenerator {
 
     const parts: Part[] = [];
 
-    // Handle text content
+    // 处理文本内容
     if (choice.message.content) {
       parts.push({ text: choice.message.content });
     }
 
-    // Handle tool calls
+    // 处理工具调用
     if (choice.message.tool_calls) {
       for (const toolCall of choice.message.tool_calls) {
         if (toolCall.function) {
@@ -1112,7 +1134,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
             try {
               args = JSON.parse(toolCall.function.arguments);
             } catch (error) {
-              console.error('Failed to parse function arguments:', error);
+              console.error('解析函数参数失败:', error);
               args = {};
             }
           }
@@ -1143,7 +1165,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
     response.modelVersion = this.model;
     response.promptFeedback = { safetyRatings: [] };
 
-    // Add usage metadata if available
+    // 如果可用则添加使用量元数据
     if (openaiResponse.usage) {
       const usage = openaiResponse.usage as {
         prompt_tokens?: number;
@@ -1155,13 +1177,13 @@ export class OpenAIContentGenerator implements ContentGenerator {
       const completionTokens = usage.completion_tokens || 0;
       const totalTokens = usage.total_tokens || 0;
 
-      // If we only have total tokens but no breakdown, estimate the split
-      // Typically input is ~70% and output is ~30% for most conversations
+      // 如果只有总 token 但没有细分，则估算分配
+      // 通常输入约占 70%，输出约占 30%
       let finalPromptTokens = promptTokens;
       let finalCompletionTokens = completionTokens;
 
       if (totalTokens > 0 && promptTokens === 0 && completionTokens === 0) {
-        // Estimate: assume 70% input, 30% output
+        // 估算：假设 70% 输入，30% 输出
         finalPromptTokens = Math.round(totalTokens * 0.7);
         finalCompletionTokens = Math.round(totalTokens * 0.3);
       }
@@ -1185,24 +1207,24 @@ export class OpenAIContentGenerator implements ContentGenerator {
     if (choice) {
       const parts: Part[] = [];
 
-      // Handle text content
+      // 处理文本内容
       if (choice.delta?.content) {
         parts.push({ text: choice.delta.content });
       }
 
-      // Handle tool calls - only accumulate during streaming, emit when complete
+      // 处理工具调用 - 仅在流式传输期间累积，完成时发出
       if (choice.delta?.tool_calls) {
         for (const toolCall of choice.delta.tool_calls) {
           const index = toolCall.index ?? 0;
 
-          // Get or create the tool call accumulator for this index
+          // 获取或为此索引创建工具调用累加器
           let accumulatedCall = this.streamingToolCalls.get(index);
           if (!accumulatedCall) {
             accumulatedCall = { arguments: '' };
             this.streamingToolCalls.set(index, accumulatedCall);
           }
 
-          // Update accumulated data
+          // 更新累积数据
           if (toolCall.id) {
             accumulatedCall.id = toolCall.id;
           }
@@ -1215,10 +1237,10 @@ export class OpenAIContentGenerator implements ContentGenerator {
         }
       }
 
-      // Only emit function calls when streaming is complete (finish_reason is present)
+      // 仅在流式传输完成时发出函数调用（finish_reason 存在时）
       if (choice.finish_reason) {
         for (const [, accumulatedCall] of this.streamingToolCalls) {
-          // TODO: Add back id once we have a way to generate tool_call_id from the VLLM parser.
+          // TODO: 一旦我们有从 VLLM 解析器生成 tool_call_id 的方法就加回 id。
           // if (accumulatedCall.id && accumulatedCall.name) {
           if (accumulatedCall.name) {
             let args: Record<string, unknown> = {};
@@ -1227,7 +1249,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
                 args = JSON.parse(accumulatedCall.arguments);
               } catch (error) {
                 console.error(
-                  'Failed to parse final tool call arguments:',
+                  '解析最终工具调用参数失败:',
                   error,
                 );
               }
@@ -1242,7 +1264,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
             });
           }
         }
-        // Clear all accumulated tool calls
+        // 清除所有累积的工具调用
         this.streamingToolCalls.clear();
       }
 
@@ -1266,7 +1288,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
     response.modelVersion = this.model;
     response.promptFeedback = { safetyRatings: [] };
 
-    // Add usage metadata if available in the chunk
+    // 如果块中有使用量元数据则添加
     if (chunk.usage) {
       const usage = chunk.usage as {
         prompt_tokens?: number;
@@ -1278,13 +1300,13 @@ export class OpenAIContentGenerator implements ContentGenerator {
       const completionTokens = usage.completion_tokens || 0;
       const totalTokens = usage.total_tokens || 0;
 
-      // If we only have total tokens but no breakdown, estimate the split
-      // Typically input is ~70% and output is ~30% for most conversations
+      // 如果只有总 token 但没有细分，则估算分配
+      // 通常输入约占 70%，输出约占 30%
       let finalPromptTokens = promptTokens;
       let finalCompletionTokens = completionTokens;
 
       if (totalTokens > 0 && promptTokens === 0 && completionTokens === 0) {
-        // Estimate: assume 70% input, 30% output
+        // 估算：假设 70% 输入，30% 输出
         finalPromptTokens = Math.round(totalTokens * 0.7);
         finalCompletionTokens = Math.round(totalTokens * 0.3);
       }
@@ -1300,10 +1322,10 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Build sampling parameters with clear priority:
-   * 1. Config-level sampling parameters (highest priority)
-   * 2. Request-level parameters (medium priority)
-   * 3. Default values (lowest priority)
+   * 构建采样参数，明确优先级：
+   * 1. 配置级别的采样参数（最高优先级）
+   * 2. 请求级别的参数（中等优先级）
+   * 3. 默认值（最低优先级）
    */
   private buildSamplingParameters(
     request: GenerateContentParameters,
@@ -1312,7 +1334,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       this.config.getContentGeneratorConfig()?.samplingParams;
 
     const params = {
-      // Temperature: config > request > default
+      // 温度：配置 > 请求 > 默认
       temperature:
         configSamplingParams?.temperature !== undefined
           ? configSamplingParams.temperature
@@ -1320,14 +1342,14 @@ export class OpenAIContentGenerator implements ContentGenerator {
             ? request.config.temperature
             : 0.0,
 
-      // Max tokens: config > request > undefined
+      // 最大 token：配置 > 请求 > 未定义
       ...(configSamplingParams?.max_tokens !== undefined
         ? { max_tokens: configSamplingParams.max_tokens }
         : request.config?.maxOutputTokens !== undefined
           ? { max_tokens: request.config.maxOutputTokens }
           : {}),
 
-      // Top-p: config > request > default
+      // Top-p：配置 > 请求 > 默认
       top_p:
         configSamplingParams?.top_p !== undefined
           ? configSamplingParams.top_p
@@ -1335,22 +1357,22 @@ export class OpenAIContentGenerator implements ContentGenerator {
             ? request.config.topP
             : 1.0,
 
-      // Top-k: config only (not available in request)
+      // Top-k：仅配置（请求中不可用）
       ...(configSamplingParams?.top_k !== undefined
         ? { top_k: configSamplingParams.top_k }
         : {}),
 
-      // Repetition penalty: config only
+      // 重复惩罚：仅配置
       ...(configSamplingParams?.repetition_penalty !== undefined
         ? { repetition_penalty: configSamplingParams.repetition_penalty }
         : {}),
 
-      // Presence penalty: config only
+      // 存在惩罚：仅配置
       ...(configSamplingParams?.presence_penalty !== undefined
         ? { presence_penalty: configSamplingParams.presence_penalty }
         : {}),
 
-      // Frequency penalty: config only
+      // 频率惩罚：仅配置
       ...(configSamplingParams?.frequency_penalty !== undefined
         ? { frequency_penalty: configSamplingParams.frequency_penalty }
         : {}),
@@ -1372,14 +1394,14 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Convert Gemini request format to OpenAI chat completion format for logging
+   * 将 Gemini 请求格式转换为 OpenAI 聊天完成格式用于记录
    */
   private async convertGeminiRequestToOpenAI(
     request: GenerateContentParameters,
   ): Promise<OpenAIRequestFormat> {
     const messages: OpenAIMessage[] = [];
 
-    // Handle system instruction
+    // 处理系统指令
     if (request.config?.systemInstruction) {
       const systemInstruction = request.config.systemInstruction;
       let systemText = '';
@@ -1424,7 +1446,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Handle contents
+    // 处理内容
     if (Array.isArray(request.contents)) {
       for (const content of request.contents) {
         if (typeof content === 'string') {
@@ -1446,7 +1468,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
             }
           }
 
-          // Handle function responses (tool results)
+          // 处理函数响应（工具结果）
           if (functionResponses.length > 0) {
             for (const funcResponse of functionResponses) {
               messages.push({
@@ -1459,7 +1481,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
               });
             }
           }
-          // Handle model messages with function calls
+          // 处理带函数调用的模型消息
           else if (content.role === 'model' && functionCalls.length > 0) {
             const toolCalls = functionCalls.map((fc, index) => ({
               id: fc.id || `call_${index}`,
@@ -1476,7 +1498,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
               tool_calls: toolCalls,
             });
           }
-          // Handle regular text messages
+          // 处理常规文本消息
           else {
             const role = content.role === 'model' ? 'assistant' : 'user';
             const text = textParts.join('\n');
@@ -1502,7 +1524,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Clean up orphaned tool calls and merge consecutive assistant messages
+    // 清理孤立的工具调用并合并连续的助手消息
     const cleanedMessages = this.cleanOrphanedToolCallsForLogging(messages);
     const mergedMessages =
       this.mergeConsecutiveAssistantMessagesForLogging(cleanedMessages);
@@ -1512,11 +1534,11 @@ export class OpenAIContentGenerator implements ContentGenerator {
       messages: mergedMessages,
     };
 
-    // Add sampling parameters using the same logic as actual API calls
+    // 使用与实际 API 调用相同的逻辑添加采样参数
     const samplingParams = this.buildSamplingParameters(request);
     Object.assign(openaiRequest, samplingParams);
 
-    // Convert tools if present
+    // 如果存在则转换工具
     if (request.config?.tools) {
       openaiRequest.tools = await this.convertGeminiToolsToOpenAI(
         request.config.tools,
@@ -1527,7 +1549,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Clean up orphaned tool calls for logging purposes
+   * 清理用于记录目的的孤立工具调用
    */
   private cleanOrphanedToolCallsForLogging(
     messages: OpenAIMessage[],
@@ -1536,7 +1558,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
     const toolCallIds = new Set<string>();
     const toolResponseIds = new Set<string>();
 
-    // First pass: collect all tool call IDs and tool response IDs
+    // 第一遍：收集所有工具调用 ID 和工具响应 ID
     for (const message of messages) {
       if (message.role === 'assistant' && message.tool_calls) {
         for (const toolCall of message.tool_calls) {
@@ -1549,16 +1571,16 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Second pass: filter out orphaned messages
+    // 第二遍：过滤孤立消息
     for (const message of messages) {
       if (message.role === 'assistant' && message.tool_calls) {
-        // Filter out tool calls that don't have corresponding responses
+        // 过滤出没有相应响应的工具调用
         const validToolCalls = message.tool_calls.filter(
           (toolCall) => toolCall.id && toolResponseIds.has(toolCall.id),
         );
 
         if (validToolCalls.length > 0) {
-          // Keep the message but only with valid tool calls
+          // 保留消息但仅保留有效的工具调用
           const cleanedMessage = { ...message };
           cleanedMessage.tool_calls = validToolCalls;
           cleaned.push(cleanedMessage);
@@ -1566,28 +1588,28 @@ export class OpenAIContentGenerator implements ContentGenerator {
           typeof message.content === 'string' &&
           message.content.trim()
         ) {
-          // Keep the message if it has text content, but remove tool calls
+          // 如果有文本内容则保留消息，但移除工具调用
           const cleanedMessage = { ...message };
           delete cleanedMessage.tool_calls;
           cleaned.push(cleanedMessage);
         }
-        // If no valid tool calls and no content, skip the message entirely
+        // 如果没有有效的工具调用且没有内容，则完全跳过该消息
       } else if (message.role === 'tool' && message.tool_call_id) {
-        // Only keep tool responses that have corresponding tool calls
+        // 只保留有相应工具调用的工具响应
         if (toolCallIds.has(message.tool_call_id)) {
           cleaned.push(message);
         }
       } else {
-        // Keep all other messages as-is
+        // 原样保留所有其他消息
         cleaned.push(message);
       }
     }
 
-    // Final validation: ensure every assistant message with tool_calls has corresponding tool responses
+    // 最终验证：确保每个带 tool_calls 的助手消息都有相应的工具响应
     const finalCleaned: OpenAIMessage[] = [];
     const finalToolCallIds = new Set<string>();
 
-    // Collect all remaining tool call IDs
+    // 收集所有剩余的工具调用 ID
     for (const message of cleaned) {
       if (message.role === 'assistant' && message.tool_calls) {
         for (const toolCall of message.tool_calls) {
@@ -1598,7 +1620,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Verify all tool calls have responses
+    // 验证所有工具调用都有响应
     const finalToolResponseIds = new Set<string>();
     for (const message of cleaned) {
       if (message.role === 'tool' && message.tool_call_id) {
@@ -1606,7 +1628,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       }
     }
 
-    // Remove any remaining orphaned tool calls
+    // 移除任何剩余的孤立工具调用
     for (const message of cleaned) {
       if (message.role === 'assistant' && message.tool_calls) {
         const finalValidToolCalls = message.tool_calls.filter(
@@ -1634,7 +1656,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Merge consecutive assistant messages to combine split text and tool calls for logging
+   * 合并连续的助手消息以组合分割的文本和工具调用用于记录
    */
   private mergeConsecutiveAssistantMessagesForLogging(
     messages: OpenAIMessage[],
@@ -1645,9 +1667,9 @@ export class OpenAIContentGenerator implements ContentGenerator {
       if (message.role === 'assistant' && merged.length > 0) {
         const lastMessage = merged[merged.length - 1];
 
-        // If the last message is also an assistant message, merge them
+        // 如果最后一条消息也是助手消息，则合并它们
         if (lastMessage.role === 'assistant') {
-          // Combine content
+          // 组合内容
           const combinedContent = [
             lastMessage.content || '',
             message.content || '',
@@ -1655,23 +1677,23 @@ export class OpenAIContentGenerator implements ContentGenerator {
             .filter(Boolean)
             .join('');
 
-          // Combine tool calls
+          // 组合工具调用
           const combinedToolCalls = [
             ...(lastMessage.tool_calls || []),
             ...(message.tool_calls || []),
           ];
 
-          // Update the last message with combined data
+          // 用组合数据更新最后一条消息
           lastMessage.content = combinedContent || null;
           if (combinedToolCalls.length > 0) {
             lastMessage.tool_calls = combinedToolCalls;
           }
 
-          continue; // Skip adding the current message since it's been merged
+          continue; // 跳过添加当前消息，因为它已被合并
         }
       }
 
-      // Add the message as-is if no merging is needed
+      // 如果不需要合并则原样添加消息
       merged.push(message);
     }
 
@@ -1679,7 +1701,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Convert Gemini response format to OpenAI chat completion format for logging
+   * 将 Gemini 响应格式转换为 OpenAI 聊天完成格式用于记录
    */
   private convertGeminiResponseToOpenAI(
     response: GenerateContentResponse,
@@ -1734,7 +1756,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
       choices: [choice],
     };
 
-    // Add usage metadata if available
+    // 如果可用则添加使用量元数据
     if (response.usageMetadata) {
       openaiResponse.usage = {
         prompt_tokens: response.usageMetadata.promptTokenCount || 0,
@@ -1747,7 +1769,7 @@ export class OpenAIContentGenerator implements ContentGenerator {
   }
 
   /**
-   * Map Gemini finish reasons to OpenAI finish reasons
+   * 将 Gemini 完成原因映射到 OpenAI 完成原因
    */
   private mapGeminiFinishReasonToOpenAI(geminiReason?: unknown): string {
     if (!geminiReason) return 'stop';

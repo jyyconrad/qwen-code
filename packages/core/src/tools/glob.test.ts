@@ -9,16 +9,16 @@ import { partListUnionToString } from '../core/geminiRequest.js';
 import path from 'path';
 import fs from 'fs/promises';
 import os from 'os';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'; // Removed vi
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'; // 移除了 vi
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { Config } from '../config/config.js';
 
 describe('GlobTool', () => {
-  let tempRootDir: string; // This will be the rootDirectory for the GlobTool instance
+  let tempRootDir: string; // 这将是 GlobTool 实例的 rootDirectory
   let globTool: GlobTool;
   const abortSignal = new AbortController().signal;
 
-  // Mock config for testing
+  // 用于测试的模拟配置
   const mockConfig = {
     getFileService: () => new FileDiscoveryService(tempRootDir),
     getFileFilteringRespectGitIgnore: () => true,
@@ -26,36 +26,36 @@ describe('GlobTool', () => {
   } as unknown as Config;
 
   beforeEach(async () => {
-    // Create a unique root directory for each test run
+    // 为每次测试运行创建一个唯一的根目录
     tempRootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'glob-tool-root-'));
     globTool = new GlobTool(mockConfig);
 
-    // Create some test files and directories within this root
-    // Top-level files
+    // 在此根目录中创建一些测试文件和目录
+    // 顶层文件
     await fs.writeFile(path.join(tempRootDir, 'fileA.txt'), 'contentA');
-    await fs.writeFile(path.join(tempRootDir, 'FileB.TXT'), 'contentB'); // Different case for testing
+    await fs.writeFile(path.join(tempRootDir, 'FileB.TXT'), 'contentB'); // 不同大小写用于测试
 
-    // Subdirectory and files within it
+    // 子目录及其内部文件
     await fs.mkdir(path.join(tempRootDir, 'sub'));
     await fs.writeFile(path.join(tempRootDir, 'sub', 'fileC.md'), 'contentC');
-    await fs.writeFile(path.join(tempRootDir, 'sub', 'FileD.MD'), 'contentD'); // Different case
+    await fs.writeFile(path.join(tempRootDir, 'sub', 'FileD.MD'), 'contentD'); // 不同大小写
 
-    // Deeper subdirectory
+    // 更深层的子目录
     await fs.mkdir(path.join(tempRootDir, 'sub', 'deep'));
     await fs.writeFile(
       path.join(tempRootDir, 'sub', 'deep', 'fileE.log'),
       'contentE',
     );
 
-    // Files for mtime sorting test
+    // 用于 mtime 排序测试的文件
     await fs.writeFile(path.join(tempRootDir, 'older.sortme'), 'older_content');
-    // Ensure a noticeable difference in modification time
+    // 确保修改时间有明显差异
     await new Promise((resolve) => setTimeout(resolve, 50));
     await fs.writeFile(path.join(tempRootDir, 'newer.sortme'), 'newer_content');
   });
 
   afterEach(async () => {
-    // Clean up the temporary root directory
+    // 清理临时根目录
     await fs.rm(tempRootDir, { recursive: true, force: true });
   });
 
@@ -146,7 +146,7 @@ describe('GlobTool', () => {
       const llmContent = partListUnionToString(result.llmContent);
 
       expect(llmContent).toContain('Found 2 file(s)');
-      // Ensure llmContent is a string for TypeScript type checking
+      // 确保 llmContent 是字符串以通过 TypeScript 类型检查
       expect(typeof llmContent).toBe('string');
 
       const filesListed = llmContent
@@ -179,9 +179,9 @@ describe('GlobTool', () => {
     });
 
     it('should return error if pattern is missing (schema validation)', () => {
-      // Need to correctly define this as an object without pattern
+      // 需要正确定义此对象而不包含 pattern
       const params = { path: '.' };
-      // @ts-expect-error - We're intentionally creating invalid params for testing
+      // @ts-expect-error - 我们故意创建无效参数用于测试
       expect(globTool.validateToolParams(params)).toBe(
         `params must have required property 'pattern'`,
       );
@@ -206,7 +206,7 @@ describe('GlobTool', () => {
         pattern: '*.ts',
         path: 123,
       };
-      // @ts-expect-error - We're intentionally creating invalid params for testing
+      // @ts-expect-error - 我们故意创建无效参数用于测试
       expect(globTool.validateToolParams(params)).toBe(
         'params/path must be string',
       );
@@ -217,23 +217,23 @@ describe('GlobTool', () => {
         pattern: '*.ts',
         case_sensitive: 'true',
       };
-      // @ts-expect-error - We're intentionally creating invalid params for testing
+      // @ts-expect-error - 我们故意创建无效参数用于测试
       expect(globTool.validateToolParams(params)).toBe(
         'params/case_sensitive must be boolean',
       );
     });
 
     it("should return error if search path resolves outside the tool's root directory", () => {
-      // Create a globTool instance specifically for this test, with a deeper root
+      // 为此测试专门创建一个 globTool 实例，使用更深的根目录
       tempRootDir = path.join(tempRootDir, 'sub');
       const specificGlobTool = new GlobTool(mockConfig);
-      // const params: GlobToolParams = { pattern: '*.txt', path: '..' }; // This line is unused and will be removed.
-      // This should be fine as tempRootDir is still within the original tempRootDir (the parent of deeperRootDir)
-      // Let's try to go further up.
+      // const params: GlobToolParams = { pattern: '*.txt', path: '..' }; // 此行未使用将被删除。
+      // 这应该没问题，因为 tempRootDir 仍在原始 tempRootDir 内（deeperRootDir 的父目录）
+      // 让我们尝试更上层。
       const paramsOutside: GlobToolParams = {
         pattern: '*.txt',
         path: '../../../../../../../../../../tmp',
-      }; // Definitely outside
+      }; // 肯定在外部
       expect(specificGlobTool.validateToolParams(paramsOutside)).toContain(
         "resolves outside the tool's root directory",
       );
@@ -268,39 +268,39 @@ describe('sortFileEntries', () => {
   });
 
   it('should sort a mix of recent and older files correctly', () => {
-    const recentTime1 = new Date(nowTimestamp - 1 * 60 * 60 * 1000); // 1 hour ago
-    const recentTime2 = new Date(nowTimestamp - 2 * 60 * 60 * 1000); // 2 hours ago
+    const recentTime1 = new Date(nowTimestamp - 1 * 60 * 60 * 1000); // 1 小时前
+    const recentTime2 = new Date(nowTimestamp - 2 * 60 * 60 * 1000); // 2 小时前
     const olderTime1 = new Date(
       nowTimestamp - (oneDayInMs + 1 * 60 * 60 * 1000),
-    ); // 25 hours ago
+    ); // 25 小时前
     const olderTime2 = new Date(
       nowTimestamp - (oneDayInMs + 2 * 60 * 60 * 1000),
-    ); // 26 hours ago
+    ); // 26 小时前
 
     const entries: GlobPath[] = [
       createFileEntry('older_zebra.txt', olderTime2),
       createFileEntry('recent_alpha.txt', recentTime1),
       createFileEntry('older_apple.txt', olderTime1),
       createFileEntry('recent_beta.txt', recentTime2),
-      createFileEntry('older_banana.txt', olderTime1), // Same mtime as apple
+      createFileEntry('older_banana.txt', olderTime1), // 与 apple 相同的 mtime
     ];
 
     const sorted = sortFileEntries(entries, nowTimestamp, oneDayInMs);
     const sortedPaths = sorted.map((e) => e.fullpath());
 
     expect(sortedPaths).toEqual([
-      'recent_alpha.txt', // Recent, newest
-      'recent_beta.txt', // Recent, older
-      'older_apple.txt', // Older, alphabetical
-      'older_banana.txt', // Older, alphabetical
-      'older_zebra.txt', // Older, alphabetical
+      'recent_alpha.txt', // 最近的，最新的
+      'recent_beta.txt', // 最近的，较旧的
+      'older_apple.txt', // 较旧的，按字母顺序
+      'older_banana.txt', // 较旧的，按字母顺序
+      'older_zebra.txt', // 较旧的，按字母顺序
     ]);
   });
 
   it('should sort only recent files by mtime descending', () => {
-    const recentTime1 = new Date(nowTimestamp - 1000); // Newest
+    const recentTime1 = new Date(nowTimestamp - 1000); // 最新的
     const recentTime2 = new Date(nowTimestamp - 2000);
-    const recentTime3 = new Date(nowTimestamp - 3000); // Oldest recent
+    const recentTime3 = new Date(nowTimestamp - 3000); // 最旧的最近文件
 
     const entries: GlobPath[] = [
       createFileEntry('c.txt', recentTime2),
@@ -316,7 +316,7 @@ describe('sortFileEntries', () => {
   });
 
   it('should sort only older files alphabetically by path', () => {
-    const olderTime = new Date(nowTimestamp - 2 * oneDayInMs); // All equally old
+    const olderTime = new Date(nowTimestamp - 2 * oneDayInMs); // 所有文件时间相同
     const entries: GlobPath[] = [
       createFileEntry('zebra.txt', olderTime),
       createFileEntry('apple.txt', olderTime),
@@ -359,9 +359,9 @@ describe('sortFileEntries', () => {
   });
 
   it('should use recencyThresholdMs parameter correctly', () => {
-    const justOverThreshold = new Date(nowTimestamp - (1000 + 1)); // Barely older
-    const justUnderThreshold = new Date(nowTimestamp - (1000 - 1)); // Barely recent
-    const customThresholdMs = 1000; // 1 second
+    const justOverThreshold = new Date(nowTimestamp - (1000 + 1)); // 刚好超过
+    const justUnderThreshold = new Date(nowTimestamp - (1000 - 1)); // 刚好未超过
+    const customThresholdMs = 1000; // 1 秒
 
     const entries: GlobPath[] = [
       createFileEntry('older_file.txt', justOverThreshold),

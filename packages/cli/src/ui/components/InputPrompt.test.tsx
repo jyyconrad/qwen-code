@@ -26,23 +26,23 @@ type MockedUseCompletion = ReturnType<typeof useCompletion>;
 type MockedUseInputHistory = ReturnType<typeof useInputHistory>;
 
 const mockSlashCommands: SlashCommand[] = [
-  { name: 'clear', description: 'Clear screen', action: vi.fn() },
+  { name: 'clear', description: '清屏', action: vi.fn() },
   {
     name: 'memory',
-    description: 'Manage memory',
+    description: '管理内存',
     subCommands: [
-      { name: 'show', description: 'Show memory', action: vi.fn() },
-      { name: 'add', description: 'Add to memory', action: vi.fn() },
-      { name: 'refresh', description: 'Refresh memory', action: vi.fn() },
+      { name: 'show', description: '显示内存', action: vi.fn() },
+      { name: 'add', description: '添加到内存', action: vi.fn() },
+      { name: 'refresh', description: '刷新内存', action: vi.fn() },
     ],
   },
   {
     name: 'chat',
-    description: 'Manage chats',
+    description: '管理聊天',
     subCommands: [
       {
         name: 'resume',
-        description: 'Resume a chat',
+        description: '恢复聊天',
         action: vi.fn(),
         completion: async () => ['fix-foo', 'fix-bar'],
       },
@@ -331,7 +331,7 @@ describe('InputPrompt', () => {
       await wait();
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error handling clipboard image:',
+        '处理剪贴板图像时出错:',
         expect.any(Error),
       );
       expect(mockBuffer.setText).not.toHaveBeenCalled();

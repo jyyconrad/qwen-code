@@ -9,75 +9,75 @@ import { partListUnionToString } from './geminiRequest.js';
 import { type Part } from '@google/genai';
 
 describe('partListUnionToString', () => {
-  it('should return the string value if the input is a string', () => {
+  it('如果输入是字符串，则应返回该字符串值', () => {
     const result = partListUnionToString('hello');
     expect(result).toBe('hello');
   });
 
-  it('should return a concatenated string if the input is an array of strings', () => {
+  it('如果输入是字符串数组，则应返回连接后的字符串', () => {
     const result = partListUnionToString(['hello', ' ', 'world']);
     expect(result).toBe('hello world');
   });
 
-  it('should handle videoMetadata', () => {
+  it('应处理 videoMetadata', () => {
     const part: Part = { videoMetadata: {} };
     const result = partListUnionToString(part);
-    expect(result).toBe('[Video Metadata]');
+    expect(result).toBe('[视频元数据]');
   });
 
-  it('should handle thought', () => {
+  it('应处理 thought', () => {
     const part: Part = { thought: true };
     const result = partListUnionToString(part);
-    expect(result).toBe('[Thought: true]');
+    expect(result).toBe('[思考: true]');
   });
 
-  it('should handle codeExecutionResult', () => {
+  it('应处理 codeExecutionResult', () => {
     const part: Part = { codeExecutionResult: {} };
     const result = partListUnionToString(part);
-    expect(result).toBe('[Code Execution Result]');
+    expect(result).toBe('[代码执行结果]');
   });
 
-  it('should handle executableCode', () => {
+  it('应处理 executableCode', () => {
     const part: Part = { executableCode: {} };
     const result = partListUnionToString(part);
-    expect(result).toBe('[Executable Code]');
+    expect(result).toBe('[可执行代码]');
   });
 
-  it('should handle fileData', () => {
+  it('应处理 fileData', () => {
     const part: Part = {
       fileData: { mimeType: 'text/plain', fileUri: 'file.txt' },
     };
     const result = partListUnionToString(part);
-    expect(result).toBe('[File Data]');
+    expect(result).toBe('[文件数据]');
   });
 
-  it('should handle functionCall', () => {
+  it('应处理 functionCall', () => {
     const part: Part = { functionCall: { name: 'myFunction' } };
     const result = partListUnionToString(part);
-    expect(result).toBe('[Function Call: myFunction]');
+    expect(result).toBe('[函数调用: myFunction]');
   });
 
-  it('should handle functionResponse', () => {
+  it('应处理 functionResponse', () => {
     const part: Part = {
       functionResponse: { name: 'myFunction', response: {} },
     };
     const result = partListUnionToString(part);
-    expect(result).toBe('[Function Response: myFunction]');
+    expect(result).toBe('[函数响应: myFunction]');
   });
 
-  it('should handle inlineData', () => {
+  it('应处理 inlineData', () => {
     const part: Part = { inlineData: { mimeType: 'image/png', data: '...' } };
     const result = partListUnionToString(part);
     expect(result).toBe('<image/png>');
   });
 
-  it('should handle text', () => {
+  it('应处理 text', () => {
     const part: Part = { text: 'hello' };
     const result = partListUnionToString(part);
     expect(result).toBe('hello');
   });
 
-  it('should return an empty string for an unknown part type', () => {
+  it('对于未知的 part 类型应返回空字符串', () => {
     const part: Part = {};
     const result = partListUnionToString(part);
     expect(result).toBe('');

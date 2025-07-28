@@ -24,7 +24,7 @@ import fs from 'fs';
 import os from 'os';
 import * as path from 'path';
 
-// Mock dependencies
+// 模拟依赖项
 const mockOpenDiff = vi.hoisted(() => vi.fn());
 const mockCreatePatch = vi.hoisted(() => vi.fn());
 

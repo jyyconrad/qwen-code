@@ -33,16 +33,16 @@ export function SuggestionsDisplay({
   if (isLoading) {
     return (
       <Box paddingX={1} width={width}>
-        <Text color="gray">Loading suggestions...</Text>
+        <Text color="gray">正在加载建议...</Text>
       </Box>
     );
   }
 
   if (suggestions.length === 0) {
-    return null; // Don't render anything if there are no suggestions
+    return null; // 如果没有建议则不渲染任何内容
   }
 
-  // Calculate the visible slice based on scrollOffset
+  // 根据 scrollOffset 计算可见切片
   const startIndex = scrollOffset;
   const endIndex = Math.min(
     scrollOffset + MAX_SUGGESTIONS_TO_SHOW,
@@ -63,12 +63,12 @@ export function SuggestionsDisplay({
           <Box key={`${suggestion}-${originalIndex}`} width={width}>
             <Box flexDirection="row">
               {userInput.startsWith('/') ? (
-                // only use box model for (/) command mode
+                // 仅在 (/) 命令模式下使用盒模型
                 <Box width={20} flexShrink={0}>
                   <Text color={textColor}>{suggestion.label}</Text>
                 </Box>
               ) : (
-                // use regular text for other modes (@ context)
+                // 在其他模式下 (@ 上下文) 使用常规文本
                 <Text color={textColor}>{suggestion.label}</Text>
               )}
               {suggestion.description ? (

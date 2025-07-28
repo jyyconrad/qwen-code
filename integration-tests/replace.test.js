@@ -9,12 +9,14 @@ import { strict as assert } from 'assert';
 import { TestRig } from './test-helper.js';
 
 test('should be able to replace content in a file', async (t) => {
+  // 应能够替换文件中的内容
   const rig = new TestRig();
   rig.setup(t.name);
 
   const fileName = 'file_to_replace.txt';
   rig.createFile(fileName, 'original content');
   const prompt = `Can you replace 'original' with 'replaced' in the file 'file_to_replace.txt'`;
+  // 你能将 'file_to_replace.txt' 文件中的 'original' 替换为 'replaced' 吗？
 
   await rig.run(prompt);
   const newFileContent = rig.readFile(fileName);

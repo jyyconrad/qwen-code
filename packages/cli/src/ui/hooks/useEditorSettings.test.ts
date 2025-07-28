@@ -53,7 +53,7 @@ describe('useEditorSettings', () => {
     mockSetEditorError = vi.fn();
     mockAddItem = vi.fn();
 
-    // Reset mock implementations to default
+    // 重置模拟实现为默认值
     mockCheckHasEditorType.mockReturnValue(true);
     mockAllowEditorTypeInSandbox.mockReturnValue(true);
   });
@@ -62,7 +62,7 @@ describe('useEditorSettings', () => {
     vi.restoreAllMocks();
   });
 
-  it('should initialize with dialog closed', () => {
+  it('应初始化为对话框关闭状态', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -70,7 +70,7 @@ describe('useEditorSettings', () => {
     expect(result.current.isEditorDialogOpen).toBe(false);
   });
 
-  it('should open editor dialog when openEditorDialog is called', () => {
+  it('调用 openEditorDialog 时应打开编辑器对话框', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -82,7 +82,7 @@ describe('useEditorSettings', () => {
     expect(result.current.isEditorDialogOpen).toBe(true);
   });
 
-  it('should close editor dialog when exitEditorDialog is called', () => {
+  it('调用 exitEditorDialog 时应关闭编辑器对话框', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -93,7 +93,7 @@ describe('useEditorSettings', () => {
     expect(result.current.isEditorDialogOpen).toBe(false);
   });
 
-  it('should handle editor selection successfully', () => {
+  it('应成功处理编辑器选择', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -115,7 +115,7 @@ describe('useEditorSettings', () => {
     expect(mockAddItem).toHaveBeenCalledWith(
       {
         type: MessageType.INFO,
-        text: 'Editor preference set to "vscode" in User settings.',
+        text: '编辑器偏好已设置为 "vscode"（用户设置）。',
       },
       expect.any(Number),
     );
@@ -124,7 +124,7 @@ describe('useEditorSettings', () => {
     expect(result.current.isEditorDialogOpen).toBe(false);
   });
 
-  it('should handle clearing editor preference (undefined editor)', () => {
+  it('应处理清除编辑器偏好（未定义的编辑器）', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -145,7 +145,7 @@ describe('useEditorSettings', () => {
     expect(mockAddItem).toHaveBeenCalledWith(
       {
         type: MessageType.INFO,
-        text: 'Editor preference cleared in Workspace settings.',
+        text: '工作区设置中的编辑器偏好已清除。',
       },
       expect.any(Number),
     );
@@ -154,7 +154,7 @@ describe('useEditorSettings', () => {
     expect(result.current.isEditorDialogOpen).toBe(false);
   });
 
-  it('should handle different editor types', () => {
+  it('应处理不同的编辑器类型', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -176,14 +176,14 @@ describe('useEditorSettings', () => {
       expect(mockAddItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: `Editor preference set to "${editorType}" in User settings.`,
+          text: `编辑器偏好已设置为 "${editorType}"（用户设置）。`,
         },
         expect.any(Number),
       );
     });
   });
 
-  it('should handle different setting scopes', () => {
+  it('应处理不同的设置范围', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -205,14 +205,14 @@ describe('useEditorSettings', () => {
       expect(mockAddItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: `Editor preference set to "vscode" in ${scope} settings.`,
+          text: `编辑器偏好已设置为 "vscode"（${scope} 设置）。`,
         },
         expect.any(Number),
       );
     });
   });
 
-  it('should not set preference for unavailable editors', () => {
+  it('不应为不可用的编辑器设置偏好', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -232,7 +232,7 @@ describe('useEditorSettings', () => {
     expect(result.current.isEditorDialogOpen).toBe(true);
   });
 
-  it('should not set preference for editors not allowed in sandbox', () => {
+  it('不应为沙箱中不允许的编辑器设置偏好', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
@@ -252,12 +252,12 @@ describe('useEditorSettings', () => {
     expect(result.current.isEditorDialogOpen).toBe(true);
   });
 
-  it('should handle errors during editor selection', () => {
+  it('应处理编辑器选择期间的错误', () => {
     const { result } = renderHook(() =>
       useEditorSettings(mockLoadedSettings, mockSetEditorError, mockAddItem),
     );
 
-    const errorMessage = 'Failed to save settings';
+    const errorMessage = '保存设置失败';
     (
       mockLoadedSettings.setValue as MockedFunction<
         typeof mockLoadedSettings.setValue
@@ -275,7 +275,7 @@ describe('useEditorSettings', () => {
     });
 
     expect(mockSetEditorError).toHaveBeenCalledWith(
-      `Failed to set editor preference: Error: ${errorMessage}`,
+      `设置编辑器偏好失败: Error: ${errorMessage}`,
     );
     expect(mockAddItem).not.toHaveBeenCalled();
     expect(result.current.isEditorDialogOpen).toBe(true);

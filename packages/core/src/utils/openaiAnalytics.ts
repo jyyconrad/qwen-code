@@ -9,15 +9,14 @@ import fs from 'node:fs/promises';
 import { openaiLogger } from './openaiLogger.js';
 
 /**
- * OpenAI API usage analytics
+ * OpenAI API 使用情况分析
  *
- * This utility analyzes OpenAI API logs to provide insights into API usage
- * patterns, costs, and performance.
+ * 此工具分析 OpenAI API 日志以提供 API 使用模式、成本和性能的洞察。
  */
 export class OpenAIAnalytics {
   /**
-   * Calculate statistics for OpenAI API usage
-   * @param days Number of days to analyze (default: 7)
+   * 计算 OpenAI API 使用情况的统计数据
+   * @param days 要分析的天数（默认：7）
    */
   static async calculateStats(days: number = 7): Promise<{
     totalRequests: number;
@@ -45,13 +44,13 @@ export class OpenAIAnalytics {
     const errorTypes: Record<string, number> = {};
     const hourDistribution: Record<string, number> = {};
 
-    // Initialize hour distribution (0-23)
+    // 初始化小时分布（0-23）
     for (let i = 0; i < 24; i++) {
       const hour = i.toString().padStart(2, '0');
       hourDistribution[hour] = 0;
     }
 
-    // Model pricing estimates (per 1000 tokens)
+    // 模型定价估算（每1000个token）
     const pricing: Record<string, { input: number; output: number }> = {
       'gpt-4': { input: 0.03, output: 0.06 },
       'gpt-4-32k': { input: 0.06, output: 0.12 },
@@ -65,7 +64,7 @@ export class OpenAIAnalytics {
       'gpt-3.5-turbo-16k-0613': { input: 0.003, output: 0.004 },
     };
 
-    // Default pricing for unknown models
+    // 未知模型的默认定价
     const defaultPricing = { input: 0.01, output: 0.03 };
 
     let estimatedCost = 0;
@@ -74,14 +73,14 @@ export class OpenAIAnalytics {
       try {
         const logData = await openaiLogger.readLogFile(logFile);
 
-        // Type guard to check if logData has the expected structure
+        // 类型守卫检查 logData 是否具有预期结构
         if (!isObjectWith<{ timestamp: string }>(logData, ['timestamp'])) {
-          continue; // Skip malformed logs
+          continue; // 跳过格式错误的日志
         }
 
         const logDate = new Date(logData.timestamp);
 
-        // Skip if log is older than the cutoff date
+        // 如果日志早于截止日期则跳过
         if (logDate < cutoffDate) {
           continue;
         }
@@ -90,7 +89,7 @@ export class OpenAIAnalytics {
         const hour = logDate.getUTCHours().toString().padStart(2, '0');
         hourDistribution[hour]++;
 
-        // Check if request was successful
+        // 检查请求是否成功
         if (
           isObjectWith<{ response?: unknown; error?: unknown }>(logData, [
             'response',
@@ -101,20 +100,20 @@ export class OpenAIAnalytics {
         ) {
           successfulRequests++;
 
-          // Extract model if available
+          // 提取模型（如果可用）
           const model = getModelFromLog(logData);
           if (model) {
             requestsByModel[model] = (requestsByModel[model] || 0) + 1;
           }
 
-          // Extract token usage if available
+          // 提取 token 使用情况（如果可用）
           const usage = getTokenUsageFromLog(logData);
           if (usage) {
             tokenUsage.promptTokens += usage.prompt_tokens || 0;
             tokenUsage.completionTokens += usage.completion_tokens || 0;
             tokenUsage.totalTokens += usage.total_tokens || 0;
 
-            // Calculate cost if model is known
+            // 如果模型已知则计算成本
             const modelName = model || 'unknown';
             const modelPricing = pricing[modelName] || defaultPricing;
 
@@ -128,22 +127,22 @@ export class OpenAIAnalytics {
           isObjectWith<{ error?: unknown }>(logData, ['error']) &&
           logData.error
         ) {
-          // Categorize errors
+          // 分类错误
           const errorType = getErrorTypeFromLog(logData);
           errorTypes[errorType] = (errorTypes[errorType] || 0) + 1;
         }
       } catch (error) {
-        console.error(`Error processing log file ${logFile}:`, error);
+        console.error(`处理日志文件 ${logFile} 时出错:`, error);
       }
     }
 
-    // Calculate success rate and average response time
+    // 计算成功率和平均响应时间
     const successRate =
       totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 0;
     const avgResponseTime =
       totalRequests > 0 ? totalResponseTime / totalRequests : 0;
 
-    // Calculate error rates as percentages
+    // 将错误率计算为百分比
     const errorRates: Record<string, number> = {};
     for (const [errorType, count] of Object.entries(errorTypes)) {
       errorRates[errorType] =
@@ -163,26 +162,26 @@ export class OpenAIAnalytics {
   }
 
   /**
-   * Generate a human-readable report of OpenAI API usage
-   * @param days Number of days to include in the report
+   * 生成 OpenAI API 使用情况的人类可读报告
+   * @param days 报告中包含的天数
    */
   static async generateReport(days: number = 7): Promise<string> {
     const stats = await this.calculateStats(days);
 
-    let report = `# OpenAI API Usage Report\n`;
-    report += `## Last ${days} days (${new Date().toISOString().split('T')[0]})\n\n`;
+    let report = `# OpenAI API 使用情况报告\n`;
+    report += `## 最近 ${days} 天 (${new Date().toISOString().split('T')[0]})\n\n`;
 
-    report += `### Overview\n`;
-    report += `- Total Requests: ${stats.totalRequests}\n`;
-    report += `- Success Rate: ${stats.successRate.toFixed(2)}%\n`;
-    report += `- Estimated Cost: $${stats.estimatedCost.toFixed(2)}\n\n`;
+    report += `### 概览\n`;
+    report += `- 总请求数: ${stats.totalRequests}\n`;
+    report += `- 成功率: ${stats.successRate.toFixed(2)}%\n`;
+    report += `- 预估成本: $${stats.estimatedCost.toFixed(2)}\n\n`;
 
-    report += `### Token Usage\n`;
-    report += `- Prompt Tokens: ${stats.tokenUsage.promptTokens.toLocaleString()}\n`;
-    report += `- Completion Tokens: ${stats.tokenUsage.completionTokens.toLocaleString()}\n`;
-    report += `- Total Tokens: ${stats.tokenUsage.totalTokens.toLocaleString()}\n\n`;
+    report += `### Token 使用情况\n`;
+    report += `- 提示 Token: ${stats.tokenUsage.promptTokens.toLocaleString()}\n`;
+    report += `- 完成 Token: ${stats.tokenUsage.completionTokens.toLocaleString()}\n`;
+    report += `- 总 Token: ${stats.tokenUsage.totalTokens.toLocaleString()}\n\n`;
 
-    report += `### Models Used\n`;
+    report += `### 使用的模型\n`;
     const sortedModels = Object.entries(stats.requestsByModel) as Array<
       [string, number]
     >;
@@ -190,11 +189,11 @@ export class OpenAIAnalytics {
 
     for (const [model, count] of sortedModels) {
       const percentage = ((count / stats.totalRequests) * 100).toFixed(1);
-      report += `- ${model}: ${count} requests (${percentage}%)\n`;
+      report += `- ${model}: ${count} 个请求 (${percentage}%)\n`;
     }
 
     if (Object.keys(stats.errorRates).length > 0) {
-      report += `\n### Error Types\n`;
+      report += `\n### 错误类型\n`;
       const sortedErrors = Object.entries(stats.errorRates) as Array<
         [string, number]
       >;
@@ -205,10 +204,10 @@ export class OpenAIAnalytics {
       }
     }
 
-    report += `\n### Usage by Hour (UTC)\n`;
+    report += `\n### 按小时使用情况 (UTC)\n`;
     report += `\`\`\`\n`;
     const maxRequests = Math.max(...Object.values(stats.timeDistribution));
-    const scale = 40; // max bar length
+    const scale = 40; // 最大条形长度
 
     for (let i = 0; i < 24; i++) {
       const hour = i.toString().padStart(2, '0');
@@ -224,9 +223,9 @@ export class OpenAIAnalytics {
   }
 
   /**
-   * Save an analytics report to a file
-   * @param days Number of days to include
-   * @param outputPath File path for the report (defaults to logs/openai/analytics.md)
+   * 将分析报告保存到文件
+   * @param days 包含的天数
+   * @param outputPath 报告的文件路径（默认为 logs/openai/analytics.md）
    */
   static async saveReport(
     days: number = 7,
@@ -251,7 +250,7 @@ function isObjectWith<T extends object>(
 }
 
 /**
- * Extract the model name from a log entry
+ * 从日志条目中提取模型名称
  */
 function getModelFromLog(logData: unknown): string | undefined {
   if (
@@ -273,7 +272,7 @@ function getModelFromLog(logData: unknown): string | undefined {
 }
 
 /**
- * Extract token usage information from a log entry
+ * 从日志条目中提取 token 使用信息
  */
 function getTokenUsageFromLog(logData: unknown):
   | {
@@ -318,7 +317,7 @@ function getTokenUsageFromLog(logData: unknown):
 }
 
 /**
- * Extract and categorize error types from a log entry
+ * 从日志条目中提取并分类错误类型
  */
 function getErrorTypeFromLog(logData: unknown): string {
   if (isObjectWith<{ error?: { message?: string } }>(logData, ['error'])) {
@@ -338,7 +337,7 @@ function getErrorTypeFromLog(logData: unknown): string {
   return 'unknown';
 }
 
-// CLI interface when script is run directly
+// 当脚本直接运行时的 CLI 接口
 if (import.meta.url === `file://${process.argv[1]}`) {
   async function main() {
     const args = process.argv.slice(2);
@@ -346,13 +345,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
     try {
       const reportPath = await OpenAIAnalytics.saveReport(days);
-      console.log(`Analytics report saved to: ${reportPath}`);
+      console.log(`分析报告已保存到: ${reportPath}`);
 
-      // Also print to console
+      // 同时打印到控制台
       const report = await OpenAIAnalytics.generateReport(days);
       console.log(report);
     } catch (error) {
-      console.error('Error generating analytics report:', error);
+      console.error('生成分析报告时出错:', error);
     }
   }
 

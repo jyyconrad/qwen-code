@@ -14,15 +14,15 @@ interface DetailedMessagesDisplayProps {
   messages: ConsoleMessageItem[];
   maxHeight: number | undefined;
   width: number;
-  // debugMode is not needed here if App.tsx filters debug messages before passing them.
-  // If DetailedMessagesDisplay should handle filtering, add debugMode prop.
+  // 如果 App.tsx 在传递消息前已经过滤了调试消息，则此处不需要 debugMode。
+  // 如果 DetailedMessagesDisplay 应该处理过滤，请添加 debugMode 属性。
 }
 
 export const DetailedMessagesDisplay: React.FC<
   DetailedMessagesDisplayProps
 > = ({ messages, maxHeight, width }) => {
   if (messages.length === 0) {
-    return null; // Don't render anything if there are no messages
+    return null; // 如果没有消息则不渲染任何内容
   }
 
   const borderAndPadding = 4;
@@ -37,30 +37,30 @@ export const DetailedMessagesDisplay: React.FC<
     >
       <Box marginBottom={1}>
         <Text bold color={Colors.Foreground}>
-          Debug Console <Text color={Colors.Gray}>(ctrl+o to close)</Text>
+          调试控制台 <Text color={Colors.Gray}>(按 ctrl+o 关闭)</Text>
         </Text>
       </Box>
       <MaxSizedBox maxHeight={maxHeight} maxWidth={width - borderAndPadding}>
         {messages.map((msg, index) => {
           let textColor = Colors.Foreground;
-          let icon = '\u2139'; // Information source (ℹ)
+          let icon = '\u2139'; // 信息来源 (ℹ)
 
           switch (msg.type) {
             case 'warn':
               textColor = Colors.AccentYellow;
-              icon = '\u26A0'; // Warning sign (⚠)
+              icon = '\u26A0'; // 警告标志 (⚠)
               break;
             case 'error':
               textColor = Colors.AccentRed;
-              icon = '\u2716'; // Heavy multiplication x (✖)
+              icon = '\u2716'; // 粗乘号 (✖)
               break;
             case 'debug':
-              textColor = Colors.Gray; // Or Colors.Gray
-              icon = '\u1F50D'; // Left-pointing magnifying glass (????)
+              textColor = Colors.Gray; // 或 Colors.Gray
+              icon = '\u1F50D'; // 向左指向的放大镜 (????)
               break;
             case 'log':
             default:
-              // Default textColor and icon are already set
+              // 默认的 textColor 和 icon 已经设置好了
               break;
           }
 

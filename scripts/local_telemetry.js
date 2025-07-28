@@ -2,7 +2,7 @@
 
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -28,9 +28,9 @@ const OTEL_LOG_FILE = path.join(OTEL_DIR, 'collector.log');
 const JAEGER_LOG_FILE = path.join(OTEL_DIR, 'jaeger.log');
 const JAEGER_PORT = 16686;
 
-// This configuration is for the primary otelcol-contrib instance.
-// It receives from the CLI on 4317, exports traces to Jaeger on 14317,
-// and sends metrics/logs to the debug log.
+// 此配置用于主 otelcol-contrib 实例。
+// 它从 CLI 接收端口 4317 上的数据，将追踪导出到端口 14317 上的 Jaeger，
+// 并将指标/日志发送到调试日志。
 const OTEL_CONFIG_CONTENT = `
 receivers:
   otlp:
@@ -69,9 +69,9 @@ service:
 `;
 
 async function main() {
-  // 1. Ensure binaries are available, downloading if necessary.
-  // Binaries are stored in the project's .iflycode/otel/bin directory
-  // to avoid modifying the user's system.
+  // 1. 确保二进制文件可用，必要时进行下载。
+  // 二进制文件存储在项目的 .iflycode/otel/bin 目录中
+  // 以避免修改用户的系统。
   if (!fileExists(BIN_DIR)) fs.mkdirSync(BIN_DIR, { recursive: true });
 
   const otelcolPath = await ensureBinary(
@@ -82,7 +82,7 @@ async function main() {
     'otelcol-contrib',
     false, // isJaeger = false
   ).catch((e) => {
-    console.error(`��� Error getting otelcol-contrib: ${e.message}`);
+    console.error(`🛑 获取 otelcol-contrib 时出错: ${e.message}`);
     return null;
   });
   if (!otelcolPath) process.exit(1);
@@ -95,30 +95,30 @@ async function main() {
     'jaeger',
     true, // isJaeger = true
   ).catch((e) => {
-    console.error(`🛑 Error getting jaeger: ${e.message}`);
+    console.error(`🛑 获取 jaeger 时出错: ${e.message}`);
     return null;
   });
   if (!jaegerPath) process.exit(1);
 
-  // 2. Kill any existing processes to ensure a clean start.
-  console.log('🧹 Cleaning up old processes and logs...');
+  // 2. 终止任何现有进程以确保干净启动。
+  console.log('🧹 清理旧进程和日志...');
   try {
     execSync('pkill -f "otelcol-contrib"');
-    console.log('✅ Stopped existing otelcol-contrib process.');
+    console.log('✅ 已停止现有的 otelcol-contrib 进程。');
   } catch (_e) {} // eslint-disable-line no-empty
   try {
     execSync('pkill -f "jaeger"');
-    console.log('✅ Stopped existing jaeger process.');
+    console.log('✅ 已停止现有的 jaeger 进程。');
   } catch (_e) {} // eslint-disable-line no-empty
   try {
     if (fileExists(OTEL_LOG_FILE)) fs.unlinkSync(OTEL_LOG_FILE);
-    console.log('✅ Deleted old collector log.');
+    console.log('✅ 已删除旧的 collector 日志。');
   } catch (e) {
     if (e.code !== 'ENOENT') console.error(e);
   }
   try {
     if (fileExists(JAEGER_LOG_FILE)) fs.unlinkSync(JAEGER_LOG_FILE);
-    console.log('✅ Deleted old jaeger log.');
+    console.log('✅ 已删除旧的 jaeger 日志。');
   } catch (e) {
     if (e.code !== 'ENOENT') console.error(e);
   }
@@ -140,53 +140,53 @@ async function main() {
 
   if (!fileExists(OTEL_DIR)) fs.mkdirSync(OTEL_DIR, { recursive: true });
   fs.writeFileSync(OTEL_CONFIG_FILE, OTEL_CONFIG_CONTENT);
-  console.log('📄 Wrote OTEL collector config.');
+  console.log('📄 已写入 OTEL collector 配置。');
 
-  // Start Jaeger
-  console.log(`🚀 Starting Jaeger service... Logs: ${JAEGER_LOG_FILE}`);
+  // 启动 Jaeger
+  console.log(`🚀 正在启动 Jaeger 服务... 日志: ${JAEGER_LOG_FILE}`);
   jaegerLogFd = fs.openSync(JAEGER_LOG_FILE, 'a');
   jaegerProcess = spawn(
     jaegerPath,
     ['--set=receivers.otlp.protocols.grpc.endpoint=localhost:14317'],
     { stdio: ['ignore', jaegerLogFd, jaegerLogFd] },
   );
-  console.log(`⏳ Waiting for Jaeger to start (PID: ${jaegerProcess.pid})...`);
+  console.log(`⏳ 等待 Jaeger 启动 (PID: ${jaegerProcess.pid})...`);
 
   try {
     await waitForPort(JAEGER_PORT);
-    console.log(`✅ Jaeger started successfully.`);
+    console.log(`✅ Jaeger 启动成功。`);
   } catch (_) {
-    console.error(`🛑 Error: Jaeger failed to start on port ${JAEGER_PORT}.`);
+    console.error(`🛑 错误: Jaeger 未能在端口 ${JAEGER_PORT} 上启动。`);
     if (jaegerProcess && jaegerProcess.pid) {
       process.kill(jaegerProcess.pid, 'SIGKILL');
     }
     if (fileExists(JAEGER_LOG_FILE)) {
-      console.error('📄 Jaeger Log Output:');
+      console.error('📄 Jaeger 日志输出:');
       console.error(fs.readFileSync(JAEGER_LOG_FILE, 'utf-8'));
     }
     process.exit(1);
   }
 
-  // Start the primary OTEL collector
-  console.log(`🚀 Starting OTEL collector... Logs: ${OTEL_LOG_FILE}`);
+  // 启动主 OTEL collector
+  console.log(`🚀 正在启动 OTEL collector... 日志: ${OTEL_LOG_FILE}`);
   collectorLogFd = fs.openSync(OTEL_LOG_FILE, 'a');
   collectorProcess = spawn(otelcolPath, ['--config', OTEL_CONFIG_FILE], {
     stdio: ['ignore', collectorLogFd, collectorLogFd],
   });
   console.log(
-    `⏳ Waiting for OTEL collector to start (PID: ${collectorProcess.pid})...`,
+    `⏳ 等待 OTEL collector 启动 (PID: ${collectorProcess.pid})...`,
   );
 
   try {
     await waitForPort(4317);
-    console.log(`✅ OTEL collector started successfully.`);
+    console.log(`✅ OTEL collector 启动成功。`);
   } catch (_) {
-    console.error(`🛑 Error: OTEL collector failed to start on port 4317.`);
+    console.error(`🛑 错误: OTEL collector 未能在端口 4317 上启动。`);
     if (collectorProcess && collectorProcess.pid) {
       process.kill(collectorProcess.pid, 'SIGKILL');
     }
     if (fileExists(OTEL_LOG_FILE)) {
-      console.error('📄 OTEL Collector Log Output:');
+      console.error('📄 OTEL Collector 日志输出:');
       console.error(fs.readFileSync(OTEL_LOG_FILE, 'utf-8'));
     }
     process.exit(1);
@@ -195,25 +195,25 @@ async function main() {
   [jaegerProcess, collectorProcess].forEach((proc) => {
     if (proc) {
       proc.on('error', (err) => {
-        console.error(`${proc.spawnargs[0]} process error:`, err);
+        console.error(`${proc.spawnargs[0]} 进程错误:`, err);
         process.exit(1);
       });
     }
   });
 
   console.log(`
-✨ Local telemetry environment is running.`);
+✨ 本地遥测环境正在运行。`);
   console.log(
     `
-🔎 View traces in the Jaeger UI: http://localhost:${JAEGER_PORT}`,
+🔎 在 Jaeger UI 中查看追踪: http://localhost:${JAEGER_PORT}`,
   );
-  console.log(`📊 View metrics in the logs and metrics: ${OTEL_LOG_FILE}`);
+  console.log(`📊 在日志和指标中查看指标: ${OTEL_LOG_FILE}`);
   console.log(
     `
-📄 Tail logs and metrics in another terminal: tail -f ${OTEL_LOG_FILE}`,
+📄 在另一个终端中查看日志和指标: tail -f ${OTEL_LOG_FILE}`,
   );
   console.log(`
-Press Ctrl+C to exit.`);
+按 Ctrl+C 退出。`);
 }
 
 main();

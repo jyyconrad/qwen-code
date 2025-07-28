@@ -39,52 +39,52 @@ export class ShellTool extends BaseTool<ShellToolParams, ToolResult> {
     super(
       ShellTool.Name,
       'Shell',
-      `This tool executes a given shell command as \`bash -c <command>\`. Command can start background processes using \`&\`. Command is executed as a subprocess that leads its own process group. Command process group can be terminated as \`kill -- -PGID\` or signaled as \`kill -s SIGNAL -- -PGID\`.
+      `该工具将给定的 shell 命令作为 \`bash -c <command>\` 执行。命令可以使用 \`&\` 启动后台进程。命令作为子进程执行，该子进程拥有自己的进程组。可以使用 \`kill -- -PGID\` 终止命令进程组，或使用 \`kill -s SIGNAL -- -PGID\` 向其发送信号。
 
-The following information is returned:
+返回以下信息：
 
-Command: Executed command.
-Directory: Directory (relative to project root) where command was executed, or \`(root)\`.
-Stdout: Output on stdout stream. Can be \`(empty)\` or partial on error and for any unwaited background processes.
-Stderr: Output on stderr stream. Can be \`(empty)\` or partial on error and for any unwaited background processes.
-Error: Error or \`(none)\` if no error was reported for the subprocess.
-Exit Code: Exit code or \`(none)\` if terminated by signal.
-Signal: Signal number or \`(none)\` if no signal was received.
-Background PIDs: List of background processes started or \`(none)\`.
-Process Group PGID: Process group started or \`(none)\``,
+Command: 执行的命令。
+Directory: 执行命令的目录（相对于项目根目录），或 \`(root)\`。
+Stdout: stdout 流的输出。在错误情况下或对于任何未等待的后台进程，可能为 \`(empty)\` 或部分输出。
+Stderr: stderr 流的输出。在错误情况下或对于任何未等待的后台进程，可能为 \`(empty)\` 或部分输出。
+Error: 错误信息，或如果子进程未报告错误则为 \`(none)\`。
+Exit Code: 退出代码，或如果由信号终止则为 \`(none)\`。
+Signal: 信号编号，或如果未收到信号则为 \`(none)\`。
+Background PIDs: 启动的后台进程列表，或 \`(none)\`。
+Process Group PGID: 启动的进程组，或 \`(none)\``,
       {
         type: Type.OBJECT,
         properties: {
           command: {
             type: Type.STRING,
-            description: 'Exact bash command to execute as `bash -c <command>`',
+            description: '要作为 `bash -c <command>` 执行的确切 bash 命令',
           },
           description: {
             type: Type.STRING,
             description:
-              'Brief description of the command for the user. Be specific and concise. Ideally a single sentence. Can be up to 3 sentences for clarity. No line breaks.',
+              '对用户的命令简要描述。要具体且简洁。理想情况下为单个句子。为了清晰起见，最多可为 3 个句子。无换行符。',
           },
           directory: {
             type: Type.STRING,
             description:
-              '(OPTIONAL) Directory to run the command in, if not the project root directory. Must be relative to the project root directory and must already exist.',
+              '（可选）运行命令的目录，如果不是项目根目录。必须相对于项目根目录且必须已存在。',
           },
         },
         required: ['command'],
       },
-      false, // output is not markdown
-      true, // output can be updated
+      false, // 输出不是 markdown
+      true, // 输出可以更新
     );
   }
 
   getDescription(params: ShellToolParams): string {
     let description = `${params.command}`;
-    // append optional [in directory]
-    // note description is needed even if validation fails due to absolute path
+    // 追加可选的 [in directory]
+    // 注意即使由于绝对路径导致验证失败，也需要描述
     if (params.directory) {
       description += ` [in ${params.directory}]`;
     }
-    // append optional (description), replacing any line breaks with spaces
+    // 追加可选的 (description)，将任何换行符替换为空格
     if (params.description) {
       description += ` (${params.description.replace(/\n/g, ' ')})`;
     }
@@ -92,37 +92,36 @@ Process Group PGID: Process group started or \`(none)\``,
   }
 
   /**
-   * Extracts the root command from a given shell command string.
-   * This is used to identify the base command for permission checks.
+   * 从给定的 shell 命令字符串中提取根命令。
+   * 这用于识别权限检查的基本命令。
    *
-   * @param command The shell command string to parse
-   * @returns The root command name, or undefined if it cannot be determined
-   * @example getCommandRoot("ls -la /tmp") returns "ls"
-   * @example getCommandRoot("git status && npm test") returns "git"
+   * @param command 要解析的 shell 命令字符串
+   * @returns 根命令名称，如果无法确定则返回 undefined
+   * @example getCommandRoot("ls -la /tmp") 返回 "ls"
+   * @example getCommandRoot("git status && npm test") 返回 "git"
    */
   getCommandRoot(command: string): string | undefined {
     return command
-      .trim() // remove leading and trailing whitespace
-      .replace(/[{}()]/g, '') // remove all grouping operators
-      .split(/[\s;&|]+/)[0] // split on any whitespace or separator or chaining operators and take first part
-      ?.split(/[/\\]/) // split on any path separators (or return undefined if previous line was undefined)
-      .pop(); // take last part and return command root (or undefined if previous line was empty)
+      .trim() // 移除前导和尾随空白
+      .replace(/[{}()]/g, '') // 移除所有分组操作符
+      .split(/[\s;&|]+/)[0] // 按任何空白或分隔符或链接操作符分割并取第一部分
+      ?.split(/[/\\]/) // 按任何路径分隔符分割（或如果前一行未定义则返回 undefined）
+      .pop(); // 取最后一部分并返回命令根（或如果前一行为空则返回 undefined）
   }
 
   /**
-   * Determines whether a given shell command is allowed to execute based on
-   * the tool's configuration including allowlists and blocklists.
+   * 根据工具的配置（包括允许列表和阻止列表）确定给定的 shell 命令是否被允许执行。
    *
-   * @param command The shell command string to validate
-   * @returns An object with 'allowed' boolean and optional 'reason' string if not allowed
+   * @param command 要验证的 shell 命令字符串
+   * @returns 包含 'allowed' 布尔值和可选的 'reason' 字符串（如果不允许）的对象
    */
   isCommandAllowed(command: string): { allowed: boolean; reason?: string } {
-    // 0. Disallow command substitution
+    // 0. 不允许命令替换
     if (command.includes('$(')) {
       return {
         allowed: false,
         reason:
-          'Command substitution using $() is not allowed for security reasons',
+          '出于安全原因，不允许使用 $() 进行命令替换',
       };
     }
 
@@ -131,11 +130,10 @@ Process Group PGID: Process group started or \`(none)\``,
     const normalize = (cmd: string): string => cmd.trim().replace(/\s+/g, ' ');
 
     /**
-     * Checks if a command string starts with a given prefix, ensuring it's a
-     * whole word match (i.e., followed by a space or it's an exact match).
-     * e.g., `isPrefixedBy('npm install', 'npm')` -> true
-     * e.g., `isPrefixedBy('npm', 'npm')` -> true
-     * e.g., `isPrefixedBy('npminstall', 'npm')` -> false
+     * 检查命令字符串是否以给定前缀开头，确保是完整单词匹配（即后跟空格或完全匹配）。
+     * 例如，`isPrefixedBy('npm install', 'npm')` -> true
+     * 例如，`isPrefixedBy('npm', 'npm')` -> true
+     * 例如，`isPrefixedBy('npminstall', 'npm')` -> false
      */
     const isPrefixedBy = (cmd: string, prefix: string): boolean => {
       if (!cmd.startsWith(prefix)) {
@@ -145,8 +143,8 @@ Process Group PGID: Process group started or \`(none)\``,
     };
 
     /**
-     * Extracts and normalizes shell commands from a list of tool strings.
-     * e.g., 'ShellTool("ls -l")' becomes 'ls -l'
+     * 从工具字符串列表中提取和规范化 shell 命令。
+     * 例如，'ShellTool("ls -l")' 变为 'ls -l'
      */
     const extractCommands = (tools: string[]): string[] =>
       tools.flatMap((tool) => {
@@ -161,11 +159,11 @@ Process Group PGID: Process group started or \`(none)\``,
     const coreTools = this.config.getCoreTools() || [];
     const excludeTools = this.config.getExcludeTools() || [];
 
-    // 1. Check if the shell tool is globally disabled.
+    // 1. 检查 shell 工具是否被全局禁用。
     if (SHELL_TOOL_NAMES.some((name) => excludeTools.includes(name))) {
       return {
         allowed: false,
-        reason: 'Shell tool is globally disabled in configuration',
+        reason: 'Shell 工具在配置中被全局禁用',
       };
     }
 
@@ -182,18 +180,18 @@ Process Group PGID: Process group started or \`(none)\``,
     const blockedCommandsArr = [...blockedCommands];
 
     for (const cmd of commandsToValidate) {
-      // 2. Check if the command is on the blocklist.
+      // 2. 检查命令是否在阻止列表中。
       const isBlocked = blockedCommandsArr.some((blocked) =>
         isPrefixedBy(cmd, blocked),
       );
       if (isBlocked) {
         return {
           allowed: false,
-          reason: `Command '${cmd}' is blocked by configuration`,
+          reason: `命令 '${cmd}' 被配置阻止`,
         };
       }
 
-      // 3. If in strict allow-list mode, check if the command is permitted.
+      // 3. 如果在严格允许列表模式下，检查命令是否被允许。
       const isStrictAllowlist =
         hasSpecificAllowedCommands && !isWildcardAllowed;
       const allowedCommandsArr = [...allowedCommands];
@@ -204,13 +202,13 @@ Process Group PGID: Process group started or \`(none)\``,
         if (!isAllowed) {
           return {
             allowed: false,
-            reason: `Command '${cmd}' is not in the allowed commands list`,
+            reason: `命令 '${cmd}' 不在允许的命令列表中`,
           };
         }
       }
     }
 
-    // 4. If all checks pass, the command is allowed.
+    // 4. 如果所有检查都通过，则命令被允许。
     return { allowed: true };
   }
 
@@ -219,9 +217,9 @@ Process Group PGID: Process group started or \`(none)\``,
     if (!commandCheck.allowed) {
       if (!commandCheck.reason) {
         console.error(
-          'Unexpected: isCommandAllowed returned false without a reason',
+          '意外：isCommandAllowed 返回 false 但没有原因',
         );
-        return `Command is not allowed: ${params.command}`;
+        return `命令不被允许：${params.command}`;
       }
       return commandCheck.reason;
     }
@@ -230,21 +228,21 @@ Process Group PGID: Process group started or \`(none)\``,
       return errors;
     }
     if (!params.command.trim()) {
-      return 'Command cannot be empty.';
+      return '命令不能为空。';
     }
     if (!this.getCommandRoot(params.command)) {
-      return 'Could not identify command root to obtain permission from user.';
+      return '无法识别命令根以从用户获取权限。';
     }
     if (params.directory) {
       if (path.isAbsolute(params.directory)) {
-        return 'Directory cannot be absolute. Must be relative to the project root directory.';
+        return '目录不能是绝对路径。必须相对于项目根目录。';
       }
       const directory = path.resolve(
         this.config.getTargetDir(),
         params.directory,
       );
       if (!fs.existsSync(directory)) {
-        return 'Directory must exist.';
+        return '目录必须存在。';
       }
     }
     return null;
@@ -255,15 +253,15 @@ Process Group PGID: Process group started or \`(none)\``,
     _abortSignal: AbortSignal,
   ): Promise<ToolCallConfirmationDetails | false> {
     if (this.validateToolParams(params)) {
-      return false; // skip confirmation, execute call will fail immediately
+      return false; // 跳过确认，执行调用将立即失败
     }
-    const rootCommand = this.getCommandRoot(params.command)!; // must be non-empty string post-validation
+    const rootCommand = this.getCommandRoot(params.command)!; // 验证后必须为非空字符串
     if (this.whitelist.has(rootCommand)) {
-      return false; // already approved and whitelisted
+      return false; // 已批准并列入白名单
     }
     const confirmationDetails: ToolExecuteConfirmationDetails = {
       type: 'exec',
-      title: 'Confirm Shell Command',
+      title: '确认 Shell 命令',
       command: params.command,
       rootCommand,
       onConfirm: async (outcome: ToolConfirmationOutcome) => {
@@ -284,17 +282,17 @@ Process Group PGID: Process group started or \`(none)\``,
     if (validationError) {
       return {
         llmContent: [
-          `Command rejected: ${params.command}`,
-          `Reason: ${validationError}`,
+          `命令被拒绝：${params.command}`,
+          `原因：${validationError}`,
         ].join('\n'),
-        returnDisplay: `Error: ${validationError}`,
+        returnDisplay: `错误：${validationError}`,
       };
     }
 
     if (abortSignal.aborted) {
       return {
-        llmContent: 'Command was cancelled by user before it could start.',
-        returnDisplay: 'Command cancelled by user.',
+        llmContent: '命令在开始前被用户取消。',
+        returnDisplay: '命令被用户取消。',
       };
     }
 
@@ -304,26 +302,26 @@ Process Group PGID: Process group started or \`(none)\``,
       .toString('hex')}.tmp`;
     const tempFilePath = path.join(os.tmpdir(), tempFileName);
 
-    // pgrep is not available on Windows, so we can't get background PIDs
+    // Windows 上没有 pgrep，因此无法获取后台 PID
     const command = isWindows
       ? params.command
       : (() => {
-          // wrap command to append subprocess pids (via pgrep) to temporary file
+          // 包装命令以将子进程 PID（通过 pgrep）追加到临时文件
           let command = params.command.trim();
           if (!command.endsWith('&')) command += ';';
           return `{ ${command} }; __code=$?; pgrep -g 0 >${tempFilePath} 2>&1; exit $__code;`;
         })();
 
-    // spawn command in specified directory (or project root if not specified)
+    // 在指定目录中启动命令（或在未指定时使用项目根目录）
     const shell = isWindows
       ? spawn('cmd.exe', ['/c', command], {
           stdio: ['ignore', 'pipe', 'pipe'],
-          // detached: true, // ensure subprocess starts its own process group (esp. in Linux)
+          // detached: true, // 确保子进程启动自己的进程组（特别是在 Linux 中）
           cwd: path.resolve(this.config.getTargetDir(), params.directory || ''),
         })
       : spawn('bash', ['-c', command], {
           stdio: ['ignore', 'pipe', 'pipe'],
-          detached: true, // ensure subprocess starts its own process group (esp. in Linux)
+          detached: true, // 确保子进程启动自己的进程组（特别是在 Linux 中）
           cwd: path.resolve(this.config.getTargetDir(), params.directory || ''),
         });
 
@@ -344,9 +342,9 @@ Process Group PGID: Process group started or \`(none)\``,
     };
 
     shell.stdout.on('data', (data: Buffer) => {
-      // continue to consume post-exit for background processes
-      // removing listeners can overflow OS buffer and block subprocesses
-      // destroying (e.g. shell.stdout.destroy()) can terminate subprocesses via SIGPIPE
+      // 继续消费退出后的数据以处理后台进程
+      // 移除监听器可能导致操作系统缓冲区溢出并阻塞子进程
+      // 销毁（例如 shell.stdout.destroy()）可能通过 SIGPIPE 终止子进程
       if (!exited) {
         const str = stripAnsi(data.toString());
         stdout += str;
@@ -366,7 +364,7 @@ Process Group PGID: Process group started or \`(none)\``,
     let error: Error | null = null;
     shell.on('error', (err: Error) => {
       error = err;
-      // remove wrapper from user's command in error message
+      // 从用户的错误消息中移除包装器命令
       error.message = error.message.replace(command, params.command);
     });
 
@@ -385,25 +383,25 @@ Process Group PGID: Process group started or \`(none)\``,
     const abortHandler = async () => {
       if (shell.pid && !exited) {
         if (os.platform() === 'win32') {
-          // For Windows, use taskkill to kill the process tree
+          // 对于 Windows，使用 taskkill 杀死进程树
           spawn('taskkill', ['/pid', shell.pid.toString(), '/f', '/t']);
         } else {
           try {
-            // attempt to SIGTERM process group (negative PID)
-            // fall back to SIGKILL (to group) after 200ms
+            // 尝试向进程组发送 SIGTERM（负 PID）
+            // 200ms 后回退到 SIGKILL（到组）
             process.kill(-shell.pid, 'SIGTERM');
             await new Promise((resolve) => setTimeout(resolve, 200));
             if (shell.pid && !exited) {
               process.kill(-shell.pid, 'SIGKILL');
             }
           } catch (_e) {
-            // if group kill fails, fall back to killing just the main process
+            // 如果组杀死失败，回退到只杀死主进程
             try {
               if (shell.pid) {
                 shell.kill('SIGKILL');
               }
             } catch (_e) {
-              console.error(`failed to kill shell process ${shell.pid}: ${_e}`);
+              console.error(`无法杀死 shell 进程 ${shell.pid}：${_e}`);
             }
           }
         }
@@ -411,14 +409,14 @@ Process Group PGID: Process group started or \`(none)\``,
     };
     abortSignal.addEventListener('abort', abortHandler);
 
-    // wait for the shell to exit
+    // 等待 shell 退出
     try {
       await new Promise((resolve) => shell.on('exit', resolve));
     } finally {
       abortSignal.removeEventListener('abort', abortHandler);
     }
 
-    // parse pids (pgrep output) from temporary file and remove it
+    // 从临时文件解析 PID（pgrep 输出）并删除它
     const backgroundPIDs: number[] = [];
     if (os.platform() !== 'win32') {
       if (fs.existsSync(tempFilePath)) {
@@ -431,7 +429,7 @@ Process Group PGID: Process group started or \`(none)\``,
             console.error(`pgrep: ${line}`);
           }
           const pid = Number(line);
-          // exclude the shell subprocess pid
+          // 排除 shell 子进程 PID
           if (pid !== shell.pid) {
             backgroundPIDs.push(pid);
           }
@@ -439,18 +437,18 @@ Process Group PGID: Process group started or \`(none)\``,
         fs.unlinkSync(tempFilePath);
       } else {
         if (!abortSignal.aborted) {
-          console.error('missing pgrep output');
+          console.error('缺少 pgrep 输出');
         }
       }
     }
 
     let llmContent = '';
     if (abortSignal.aborted) {
-      llmContent = 'Command was cancelled by user before it could complete.';
+      llmContent = '命令在完成前被用户取消。';
       if (output.trim()) {
-        llmContent += ` Below is the output (on stdout and stderr) before it was cancelled:\n${output}`;
+        llmContent += ` 以下是取消前的输出（stdout 和 stderr）：\n${output}`;
       } else {
-        llmContent += ' There was no output before it was cancelled.';
+        llmContent += ' 取消前没有输出。';
       }
     } else {
       llmContent = [
@@ -473,19 +471,19 @@ Process Group PGID: Process group started or \`(none)\``,
       if (output.trim()) {
         returnDisplayMessage = output;
       } else {
-        // Output is empty, let's provide a reason if the command failed or was cancelled
+        // 输出为空，如果命令失败或被取消则提供原因
         if (abortSignal.aborted) {
-          returnDisplayMessage = 'Command cancelled by user.';
+          returnDisplayMessage = '命令被用户取消。';
         } else if (processSignal) {
-          returnDisplayMessage = `Command terminated by signal: ${processSignal}`;
+          returnDisplayMessage = `命令被信号终止：${processSignal}`;
         } else if (error) {
-          // If error is not null, it's an Error object (or other truthy value)
-          returnDisplayMessage = `Command failed: ${getErrorMessage(error)}`;
+          // 如果错误不为 null，则为 Error 对象（或其他真值）
+          returnDisplayMessage = `命令失败：${getErrorMessage(error)}`;
         } else if (code !== null && code !== 0) {
-          returnDisplayMessage = `Command exited with code: ${code}`;
+          returnDisplayMessage = `命令退出代码：${code}`;
         }
-        // If output is empty and command succeeded (code 0, no error/signal/abort),
-        // returnDisplayMessage will remain empty, which is fine.
+        // 如果输出为空且命令成功（代码 0，无错误/信号/中止），
+        // returnDisplayMessage 将保持为空，这是可以的。
       }
     }
 

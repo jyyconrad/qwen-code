@@ -10,7 +10,7 @@ import { HistoryItemDisplay } from './HistoryItemDisplay.js';
 import { HistoryItem, MessageType } from '../types.js';
 import { SessionStatsProvider } from '../contexts/SessionContext.js';
 
-// Mock child components
+// 模拟子组件
 vi.mock('./messages/ToolGroupMessage.js', () => ({
   ToolGroupMessage: () => <div />,
 }));
@@ -23,7 +23,7 @@ describe('<HistoryItemDisplay />', () => {
     terminalWidth: 80,
   };
 
-  it('renders UserMessage for "user" type', () => {
+  it('为 "user" 类型渲染 UserMessage', () => {
     const item: HistoryItem = {
       ...baseItem,
       type: MessageType.USER,
@@ -35,7 +35,7 @@ describe('<HistoryItemDisplay />', () => {
     expect(lastFrame()).toContain('Hello');
   });
 
-  it('renders StatsDisplay for "stats" type', () => {
+  it('为 "stats" 类型渲染 StatsDisplay', () => {
     const item: HistoryItem = {
       ...baseItem,
       type: MessageType.STATS,
@@ -49,7 +49,7 @@ describe('<HistoryItemDisplay />', () => {
     expect(lastFrame()).toContain('Stats');
   });
 
-  it('renders AboutBox for "about" type', () => {
+  it('为 "about" 类型渲染 AboutBox', () => {
     const item: HistoryItem = {
       ...baseItem,
       type: MessageType.ABOUT,
@@ -66,7 +66,7 @@ describe('<HistoryItemDisplay />', () => {
     expect(lastFrame()).toContain('About Gemini CLI');
   });
 
-  it('renders ModelStatsDisplay for "model_stats" type', () => {
+  it('为 "model_stats" 类型渲染 ModelStatsDisplay', () => {
     const item: HistoryItem = {
       ...baseItem,
       type: 'model_stats',
@@ -81,7 +81,7 @@ describe('<HistoryItemDisplay />', () => {
     );
   });
 
-  it('renders ToolStatsDisplay for "tool_stats" type', () => {
+  it('为 "tool_stats" 类型渲染 ToolStatsDisplay', () => {
     const item: HistoryItem = {
       ...baseItem,
       type: 'tool_stats',
@@ -96,7 +96,7 @@ describe('<HistoryItemDisplay />', () => {
     );
   });
 
-  it('renders SessionSummaryDisplay for "quit" type', () => {
+  it('为 "quit" 类型渲染 SessionSummaryDisplay', () => {
     const item: HistoryItem = {
       ...baseItem,
       type: 'quit',

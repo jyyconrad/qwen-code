@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -46,22 +46,22 @@ export class DiscoveredMCPTool extends BaseTool<ToolParams, ToolResult> {
     const toolAllowListKey = `${this.serverName}.${this.serverToolName}`;
 
     if (this.trust) {
-      return false; // server is trusted, no confirmation needed
+      return false; // 服务器受信任，无需确认
     }
 
     if (
       DiscoveredMCPTool.allowlist.has(serverAllowListKey) ||
       DiscoveredMCPTool.allowlist.has(toolAllowListKey)
     ) {
-      return false; // server and/or tool already allow listed
+      return false; // 服务器和/或工具已在白名单中
     }
 
     const confirmationDetails: ToolMcpConfirmationDetails = {
       type: 'mcp',
-      title: 'Confirm MCP Tool Execution',
+      title: '确认 MCP 工具执行',
       serverName: this.serverName,
-      toolName: this.serverToolName, // Display original tool name in confirmation
-      toolDisplayName: this.name, // Display global registry name exposed to model and user
+      toolName: this.serverToolName, // 在确认中显示原始工具名称
+      toolDisplayName: this.name, // 显示暴露给模型和用户的全局注册表名称
       onConfirm: async (outcome: ToolConfirmationOutcome) => {
         if (outcome === ToolConfirmationOutcome.ProceedAlwaysServer) {
           DiscoveredMCPTool.allowlist.add(serverAllowListKey);
@@ -91,24 +91,23 @@ export class DiscoveredMCPTool extends BaseTool<ToolParams, ToolResult> {
 }
 
 /**
- * Processes an array of `Part` objects, primarily from a tool's execution result,
- * to generate a user-friendly string representation, typically for display in a CLI.
+ * 处理一个 `Part` 对象数组，主要来自工具的执行结果，
+ * 生成用户友好的字符串表示形式，通常用于 CLI 中显示。
  *
- * The `result` array can contain various types of `Part` objects:
- * 1. `FunctionResponse` parts:
- *    - If the `response.content` of a `FunctionResponse` is an array consisting solely
- *      of `TextPart` objects, their text content is concatenated into a single string.
- *      This is to present simple textual outputs directly.
- *    - If `response.content` is an array but contains other types of `Part` objects (or a mix),
- *      the `content` array itself is preserved. This handles structured data like JSON objects or arrays
- *      returned by a tool.
- *    - If `response.content` is not an array or is missing, the entire `functionResponse`
- *      object is preserved.
- * 2. Other `Part` types (e.g., `TextPart` directly in the `result` array):
- *    - These are preserved as is.
+ * `result` 数组可以包含各种类型的 `Part` 对象：
+ * 1. `FunctionResponse` 部分：
+ *    - 如果 `FunctionResponse` 的 `response.content` 是一个仅由
+ *      `TextPart` 对象组成的数组，则将其文本内容连接成单个字符串。
+ *      这是为了直接呈现简单的文本输出。
+ *    - 如果 `response.content` 是一个数组但包含其他类型的 `Part` 对象（或混合），
+ *      则保留 `content` 数组本身。这处理工具返回的结构化数据，如 JSON 对象或数组。
+ *    - 如果 `response.content` 不是数组或缺失，则保留整个 `functionResponse`
+ *      对象。
+ * 2. 其他 `Part` 类型（例如，`result` 数组中的直接 `TextPart`）：
+ *    - 这些将按原样保留。
  *
- * All processed parts are then collected into an array, which is JSON.stringify-ed
- * with indentation and wrapped in a markdown JSON code block.
+ * 所有处理过的部分都会被收集到一个数组中，然后使用 JSON.stringify 进行序列化，
+ * 并带有缩进，最后包装在 markdown JSON 代码块中。
  */
 function getStringifiedResultForDisplay(result: Part[]) {
   if (!result || result.length === 0) {
@@ -119,21 +118,21 @@ function getStringifiedResultForDisplay(result: Part[]) {
     if (part.functionResponse) {
       const responseContent = part.functionResponse.response?.content;
       if (responseContent && Array.isArray(responseContent)) {
-        // Check if all parts in responseContent are simple TextParts
+        // 检查 responseContent 中的所有部分是否都是简单的 TextPart
         const allTextParts = responseContent.every(
           (p: Part) => p.text !== undefined,
         );
         if (allTextParts) {
           return responseContent.map((p: Part) => p.text).join('');
         }
-        // If not all simple text parts, return the array of these content parts for JSON stringification
+        // 如果不是所有简单文本部分，则返回这些内容部分的数组以供 JSON 序列化
         return responseContent;
       }
 
-      // If no content, or not an array, or not a functionResponse, stringify the whole functionResponse part for inspection
+      // 如果没有内容，或不是数组，或不是 functionResponse，则序列化整个 functionResponse 部分以供检查
       return part.functionResponse;
     }
-    return part; // Fallback for unexpected structure or non-FunctionResponsePart
+    return part; // 对于意外结构或非 FunctionResponsePart 的回退
   };
 
   const processedResults =

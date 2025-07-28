@@ -40,8 +40,8 @@ import {
 } from '../commands/types.js';
 import { CommandService } from '../../services/CommandService.js';
 
-// This interface is for the old, inline command definitions.
-// It will be removed once all commands are migrated to the new system.
+// 此接口用于旧的内联命令定义。
+// 一旦所有命令迁移到新系统后将被移除。
 export interface LegacySlashCommand {
   name: string;
   altName?: string;
@@ -58,7 +58,7 @@ export interface LegacySlashCommand {
 }
 
 /**
- * Hook to define and process slash commands (e.g., /help, /clear).
+ * 用于定义和处理斜杠命令的 Hook（例如，/help, /clear）。
  */
 export const useSlashCommandProcessor = (
   config: Config | null,
@@ -89,8 +89,8 @@ export const useSlashCommandProcessor = (
 
   const logger = useMemo(() => {
     const l = new Logger(config?.getSessionId() || '');
-    // The logger's initialize is async, but we can create the instance
-    // synchronously. Commands that use it will await its initialization.
+    // 日志记录器的初始化是异步的，但我们可以同步创建实例。
+    // 使用它的命令将等待其初始化完成。
     return l;
   }, [config]);
 
@@ -107,7 +107,7 @@ export const useSlashCommandProcessor = (
 
   const addMessage = useCallback(
     (message: Message) => {
-      // Convert Message to HistoryItemWithoutId
+      // 将 Message 转换为 HistoryItemWithoutId
       let historyItemContent: HistoryItemWithoutId;
       if (message.type === MessageType.ABOUT) {
         historyItemContent = {
@@ -215,28 +215,27 @@ export const useSlashCommandProcessor = (
     }
   }, [config]);
 
-  // Define legacy commands
-  // This list contains all commands that have NOT YET been migrated to the
-  // new system. As commands are migrated, they are removed from this list.
+  // 定义旧命令
+  // 此列表包含尚未迁移到新系统的所有命令。随着命令的迁移，它们将从此列表中移除。
   const legacyCommands: LegacySlashCommand[] = useMemo(() => {
     const commands: LegacySlashCommand[] = [
-      // `/help` and `/clear` have been migrated and REMOVED from this list.
+      // `/help` 和 `/clear` 已迁移并从此列表中移除。
       {
         name: 'docs',
-        description: 'open full iFlyCode documentation in your browser',
+        description: '在浏览器中打开完整的 iFlyCode 文档',
         action: async (_mainCommand, _subCommand, _args) => {
           const docsUrl =
             'https://github.com/iFlyCodeLM/iFlyCode3-Coder/blob/main/README.md';
           if (process.env.SANDBOX && process.env.SANDBOX !== 'sandbox-exec') {
             addMessage({
               type: MessageType.INFO,
-              content: `Please open the following URL in your browser to view the documentation:\n${docsUrl}`,
+              content: `请在浏览器中打开以下 URL 查看文档：\n${docsUrl}`,
               timestamp: new Date(),
             });
           } else {
             addMessage({
               type: MessageType.INFO,
-              content: `Opening documentation in your browser: ${docsUrl}`,
+              content: `正在浏览器中打开文档：${docsUrl}`,
               timestamp: new Date(),
             });
             await open(docsUrl);
@@ -245,13 +244,13 @@ export const useSlashCommandProcessor = (
       },
       {
         name: 'editor',
-        description: 'set external editor preference',
+        description: '设置外部编辑器偏好',
         action: (_mainCommand, _subCommand, _args) => openEditorDialog(),
       },
       {
         name: 'stats',
         altName: 'usage',
-        description: 'check session stats. Usage: /stats [model|tools]',
+        description: '检查会话统计信息。用法：/stats [model|tools]',
         action: (_mainCommand, subCommand, _args) => {
           if (subCommand === 'model') {
             addMessage({
@@ -280,9 +279,9 @@ export const useSlashCommandProcessor = (
       },
       {
         name: 'mcp',
-        description: 'list configured MCP servers and tools',
+        description: '列出配置的 MCP 服务器和工具',
         action: async (_mainCommand, _subCommand, _args) => {
-          // Check if the _subCommand includes a specific flag to control description visibility
+          // 检查 _subCommand 是否包含特定标志来控制描述可见性
           let useShowDescriptions = showToolDescriptions;
           if (_subCommand === 'desc' || _subCommand === 'descriptions') {
             useShowDescriptions = true;
@@ -296,7 +295,7 @@ export const useSlashCommandProcessor = (
           } else if (_args === 'nodesc' || _args === 'nodescriptions') {
             useShowDescriptions = false;
           }
-          // Check if the _subCommand includes a specific flag to show detailed tool schema
+          // 检查 _subCommand 是否包含特定标志来显示详细的工具模式
           let useShowSchema = false;
           if (_subCommand === 'schema' || _args === 'schema') {
             useShowSchema = true;
@@ -306,7 +305,7 @@ export const useSlashCommandProcessor = (
           if (!toolRegistry) {
             addMessage({
               type: MessageType.ERROR,
-              content: 'Could not retrieve tool registry.',
+              content: '无法检索工具注册表。',
               timestamp: new Date(),
             });
             return;
@@ -320,13 +319,13 @@ export const useSlashCommandProcessor = (
             if (process.env.SANDBOX && process.env.SANDBOX !== 'sandbox-exec') {
               addMessage({
                 type: MessageType.INFO,
-                content: `No MCP servers configured. Please open the following URL in your browser to view documentation:\n${docsUrl}`,
+                content: `未配置 MCP 服务器。请在浏览器中打开以下 URL 查看文档：\n${docsUrl}`,
                 timestamp: new Date(),
               });
             } else {
               addMessage({
                 type: MessageType.INFO,
-                content: `No MCP servers configured. Opening documentation in your browser: ${docsUrl}`,
+                content: `未配置 MCP 服务器。正在浏览器中打开文档：${docsUrl}`,
                 timestamp: new Date(),
               });
               await open(docsUrl);
@@ -334,7 +333,7 @@ export const useSlashCommandProcessor = (
             return;
           }
 
-          // Check if any servers are still connecting
+          // 检查是否有服务器仍在连接中
           const connectingServers = serverNames.filter(
             (name) => getMCPServerStatus(name) === MCPServerStatus.CONNECTING,
           );
@@ -342,56 +341,56 @@ export const useSlashCommandProcessor = (
 
           let message = '';
 
-          // Add overall discovery status message if needed
+          // 如果需要，添加整体发现状态消息
           if (
             discoveryState === MCPDiscoveryState.IN_PROGRESS ||
             connectingServers.length > 0
           ) {
-            message += `\u001b[33m⏳ MCP servers are starting up (${connectingServers.length} initializing)...\u001b[0m\n`;
-            message += `\u001b[90mNote: First startup may take longer. Tool availability will update automatically.\u001b[0m\n\n`;
+            message += `\u001b[33m⏳ MCP 服务器正在启动 (${connectingServers.length} 个正在初始化)...\u001b[0m\n`;
+            message += `\u001b[90m注意：首次启动可能需要更长时间。工具可用性将自动更新。\u001b[0m\n\n`;
           }
 
-          message += 'Configured MCP servers:\n\n';
+          message += '配置的 MCP 服务器：\n\n';
 
           for (const serverName of serverNames) {
             const serverTools = toolRegistry.getToolsByServer(serverName);
             const status = getMCPServerStatus(serverName);
 
-            // Add status indicator with descriptive text
+            // 添加状态指示器和描述性文本
             let statusIndicator = '';
             let statusText = '';
             switch (status) {
               case MCPServerStatus.CONNECTED:
                 statusIndicator = '🟢';
-                statusText = 'Ready';
+                statusText = '就绪';
                 break;
               case MCPServerStatus.CONNECTING:
                 statusIndicator = '🔄';
-                statusText = 'Starting... (first startup may take longer)';
+                statusText = '启动中...（首次启动可能需要更长时间）';
                 break;
               case MCPServerStatus.DISCONNECTED:
               default:
                 statusIndicator = '🔴';
-                statusText = 'Disconnected';
+                statusText = '已断开连接';
                 break;
             }
 
-            // Get server description if available
+            // 获取服务器描述（如果可用）
             const server = mcpServers[serverName];
 
-            // Format server header with bold formatting and status
+            // 格式化服务器标题，包含粗体格式和状态
             message += `${statusIndicator} \u001b[1m${serverName}\u001b[0m - ${statusText}`;
 
-            // Add tool count with conditional messaging
+            // 添加工具数量和条件消息
             if (status === MCPServerStatus.CONNECTED) {
-              message += ` (${serverTools.length} tools)`;
+              message += ` (${serverTools.length} 个工具)`;
             } else if (status === MCPServerStatus.CONNECTING) {
-              message += ` (tools will appear when ready)`;
+              message += ` (工具将在就绪时出现)`;
             } else {
-              message += ` (${serverTools.length} tools cached)`;
+              message += ` (${serverTools.length} 个工具已缓存)`;
             }
 
-            // Add server description with proper handling of multi-line descriptions
+            // 添加服务器描述，正确处理多行描述
             if ((useShowDescriptions || useShowSchema) && server?.description) {
               const greenColor = '\u001b[32m';
               const resetColor = '\u001b[0m';
@@ -409,7 +408,7 @@ export const useSlashCommandProcessor = (
               message += '\n';
             }
 
-            // Reset formatting after server entry
+            // 在服务器条目后重置格式
             message += '\u001b[0m';
 
             if (serverTools.length > 0) {
@@ -418,14 +417,14 @@ export const useSlashCommandProcessor = (
                   (useShowDescriptions || useShowSchema) &&
                   tool.description
                 ) {
-                  // Format tool name in cyan using simple ANSI cyan color
+                  // 使用简单的 ANSI 青色格式化工具名称
                   message += `  - \u001b[36m${tool.name}\u001b[0m`;
 
-                  // Apply green color to the description text
+                  // 对描述文本应用绿色
                   const greenColor = '\u001b[32m';
                   const resetColor = '\u001b[0m';
 
-                  // Handle multi-line descriptions by properly indenting and preserving formatting
+                  // 通过正确缩进和保留格式处理多行描述
                   const descLines = tool.description.trim().split('\n');
                   if (descLines) {
                     message += ':\n';
@@ -435,15 +434,15 @@ export const useSlashCommandProcessor = (
                   } else {
                     message += '\n';
                   }
-                  // Reset is handled inline with each line now
+                  // 现在每行内联处理重置
                 } else {
-                  // Use cyan color for the tool name even when not showing descriptions
+                  // 即使不显示描述也使用青色格式化工具名称
                   message += `  - \u001b[36m${tool.name}\u001b[0m\n`;
                 }
                 if (useShowSchema) {
-                  // Prefix the parameters in cyan
+                  // 使用青色前缀参数
                   message += `    \u001b[36mParameters:\u001b[0m\n`;
-                  // Apply green color to the parameter text
+                  // 对参数文本应用绿色
                   const greenColor = '\u001b[32m';
                   const resetColor = '\u001b[0m';
 
@@ -462,12 +461,12 @@ export const useSlashCommandProcessor = (
                 }
               });
             } else {
-              message += '  No tools available\n';
+              message += '  无可用工具\n';
             }
             message += '\n';
           }
 
-          // Make sure to reset any ANSI formatting at the end to prevent it from affecting the terminal
+          // 确保在末尾重置任何 ANSI 格式，以防止影响终端
           message += '\u001b[0m';
 
           addMessage({
@@ -479,23 +478,23 @@ export const useSlashCommandProcessor = (
       },
       {
         name: 'extensions',
-        description: 'list active extensions',
+        description: '列出活动扩展',
         action: async () => {
           const activeExtensions = config?.getActiveExtensions();
           if (!activeExtensions || activeExtensions.length === 0) {
             addMessage({
               type: MessageType.INFO,
-              content: 'No active extensions.',
+              content: '无活动扩展。',
               timestamp: new Date(),
             });
             return;
           }
 
-          let message = 'Active extensions:\n\n';
+          let message = '活动扩展：\n\n';
           for (const ext of activeExtensions) {
             message += `  - \u001b[36m${ext.name} (v${ext.version})\u001b[0m\n`;
           }
-          // Make sure to reset any ANSI formatting at the end to prevent it from affecting the terminal
+          // 确保在末尾重置任何 ANSI 格式，以防止影响终端
           message += '\u001b[0m';
 
           addMessage({
@@ -507,9 +506,9 @@ export const useSlashCommandProcessor = (
       },
       {
         name: 'tools',
-        description: 'list available iFlyCode tools',
+        description: '列出可用的 iFlyCode 工具',
         action: async (_mainCommand, _subCommand, _args) => {
-          // Check if the _subCommand includes a specific flag to control description visibility
+          // 检查 _subCommand 是否包含特定标志来控制描述可见性
           let useShowDescriptions = showToolDescriptions;
           if (_subCommand === 'desc' || _subCommand === 'descriptions') {
             useShowDescriptions = true;
@@ -529,47 +528,47 @@ export const useSlashCommandProcessor = (
           if (!tools) {
             addMessage({
               type: MessageType.ERROR,
-              content: 'Could not retrieve tools.',
+              content: '无法检索工具。',
               timestamp: new Date(),
             });
             return;
           }
 
-          // Filter out MCP tools by checking if they have a serverName property
+          // 通过检查是否有 serverName 属性来过滤掉 MCP 工具
           const geminiTools = tools.filter((tool) => !('serverName' in tool));
 
-          let message = 'Available Gemini CLI tools:\n\n';
+          let message = '可用的 Gemini CLI 工具：\n\n';
 
           if (geminiTools.length > 0) {
             geminiTools.forEach((tool) => {
               if (useShowDescriptions && tool.description) {
-                // Format tool name in cyan using simple ANSI cyan color
+                // 使用简单的 ANSI 青色格式化工具名称
                 message += `  - \u001b[36m${tool.displayName} (${tool.name})\u001b[0m:\n`;
 
-                // Apply green color to the description text
+                // 对描述文本应用绿色
                 const greenColor = '\u001b[32m';
                 const resetColor = '\u001b[0m';
 
-                // Handle multi-line descriptions by properly indenting and preserving formatting
+                // 通过正确缩进和保留格式处理多行描述
                 const descLines = tool.description.trim().split('\n');
 
-                // If there are multiple lines, add proper indentation for each line
+                // 如果有多行，为每行添加适当的缩进
                 if (descLines) {
                   for (const descLine of descLines) {
                     message += `      ${greenColor}${descLine}${resetColor}\n`;
                   }
                 }
               } else {
-                // Use cyan color for the tool name even when not showing descriptions
+                // 即使不显示描述也使用青色格式化工具名称
                 message += `  - \u001b[36m${tool.displayName}\u001b[0m\n`;
               }
             });
           } else {
-            message += '  No tools available\n';
+            message += '  无可用工具\n';
           }
           message += '\n';
 
-          // Make sure to reset any ANSI formatting at the end to prevent it from affecting the terminal
+          // 确保在末尾重置任何 ANSI 格式，以防止影响终端
           message += '\u001b[0m';
 
           addMessage({
@@ -587,7 +586,7 @@ export const useSlashCommandProcessor = (
       },
       {
         name: 'bug',
-        description: 'submit a bug report',
+        description: '提交错误报告',
         action: async (_mainCommand, _subCommand, args) => {
           let bugDescription = _subCommand || '';
           if (args) {
@@ -596,25 +595,25 @@ export const useSlashCommandProcessor = (
           bugDescription = bugDescription.trim();
 
           const osVersion = `${process.platform} ${process.version}`;
-          let sandboxEnv = 'no sandbox';
+          let sandboxEnv = '无沙箱';
           if (process.env.SANDBOX && process.env.SANDBOX !== 'sandbox-exec') {
             sandboxEnv = process.env.SANDBOX.replace(/^gemini-(?:code-)?/, '');
           } else if (process.env.SANDBOX === 'sandbox-exec') {
             sandboxEnv = `sandbox-exec (${
-              process.env.SEATBELT_PROFILE || 'unknown'
+              process.env.SEATBELT_PROFILE || '未知'
             })`;
           }
-          const modelVersion = config?.getModel() || 'Unknown';
+          const modelVersion = config?.getModel() || '未知';
           const cliVersion = await getCliVersion();
           const memoryUsage = formatMemoryUsage(process.memoryUsage().rss);
 
           const info = `
-*   **CLI Version:** ${cliVersion}
-*   **Git Commit:** ${GIT_COMMIT_INFO}
-*   **Operating System:** ${osVersion}
-*   **Sandbox Environment:** ${sandboxEnv}
-*   **Model Version:** ${modelVersion}
-*   **Memory Usage:** ${memoryUsage}
+*   **CLI 版本：** ${cliVersion}
+*   **Git 提交：** ${GIT_COMMIT_INFO}
+*   **操作系统：** ${osVersion}
+*   **沙箱环境：** ${sandboxEnv}
+*   **模型版本：** ${modelVersion}
+*   **内存使用：** ${memoryUsage}
 `;
 
           let bugReportUrl =
@@ -629,7 +628,7 @@ export const useSlashCommandProcessor = (
 
           addMessage({
             type: MessageType.INFO,
-            content: `To submit your bug report, please open the following URL in your browser:\n${bugReportUrl}`,
+            content: `要提交错误报告，请在浏览器中打开以下 URL：\n${bugReportUrl}`,
             timestamp: new Date(),
           });
           (async () => {
@@ -640,7 +639,7 @@ export const useSlashCommandProcessor = (
                 error instanceof Error ? error.message : String(error);
               addMessage({
                 type: MessageType.ERROR,
-                content: `Could not open URL in browser: ${errorMessage}`,
+                content: `无法在浏览器中打开 URL：${errorMessage}`,
                 timestamp: new Date(),
               });
             }
@@ -650,7 +649,7 @@ export const useSlashCommandProcessor = (
       {
         name: 'chat',
         description:
-          'Manage conversation history. Usage: /chat <list|save|resume> <tag>',
+          '管理对话历史。用法：/chat <list|save|resume> <tag>',
         action: async (_mainCommand, subCommand, args) => {
           const tag = (args || '').trim();
           const logger = new Logger(config?.getSessionId() || '');
@@ -659,7 +658,7 @@ export const useSlashCommandProcessor = (
           if (!chat) {
             addMessage({
               type: MessageType.ERROR,
-              content: 'No chat client available for conversation status.',
+              content: '无可用的聊天客户端来获取对话状态。',
               timestamp: new Date(),
             });
             return;
@@ -667,7 +666,7 @@ export const useSlashCommandProcessor = (
           if (!subCommand) {
             addMessage({
               type: MessageType.ERROR,
-              content: 'Missing command\nUsage: /chat <list|save|resume> <tag>',
+              content: '缺少命令\n用法：/chat <list|save|resume> <tag>',
               timestamp: new Date(),
             });
             return;
@@ -677,7 +676,7 @@ export const useSlashCommandProcessor = (
               if (!tag) {
                 addMessage({
                   type: MessageType.ERROR,
-                  content: 'Missing tag. Usage: /chat save <tag>',
+                  content: '缺少标签。用法：/chat save <tag>',
                   timestamp: new Date(),
                 });
                 return;
@@ -687,13 +686,13 @@ export const useSlashCommandProcessor = (
                 await logger.saveCheckpoint(chat?.getHistory() || [], tag);
                 addMessage({
                   type: MessageType.INFO,
-                  content: `Conversation checkpoint saved with tag: ${tag}.`,
+                  content: `对话检查点已保存，标签：${tag}。`,
                   timestamp: new Date(),
                 });
               } else {
                 addMessage({
                   type: MessageType.INFO,
-                  content: 'No conversation found to save.',
+                  content: '未找到要保存的对话。',
                   timestamp: new Date(),
                 });
               }
@@ -705,7 +704,7 @@ export const useSlashCommandProcessor = (
               if (!tag) {
                 addMessage({
                   type: MessageType.ERROR,
-                  content: 'Missing tag. Usage: /chat resume <tag>',
+                  content: '缺少标签。用法：/chat resume <tag>',
                   timestamp: new Date(),
                 });
                 return;
@@ -714,7 +713,7 @@ export const useSlashCommandProcessor = (
               if (conversation.length === 0) {
                 addMessage({
                   type: MessageType.INFO,
-                  content: `No saved checkpoint found with tag: ${tag}.`,
+                  content: `未找到标签为 ${tag} 的已保存检查点。`,
                   timestamp: new Date(),
                 });
                 return;
@@ -731,8 +730,7 @@ export const useSlashCommandProcessor = (
               for (const item of conversation) {
                 i += 1;
 
-                // Add each item to history regardless of whether we display
-                // it.
+                // 无论是否显示，都将每个项目添加到历史中。
                 chat.addHistory(item);
 
                 const text =
@@ -741,7 +739,7 @@ export const useSlashCommandProcessor = (
                     .map((m) => m.text)
                     .join('') || '';
                 if (!text) {
-                  // Parsing Part[] back to various non-text output not yet implemented.
+                  // 将 Part[] 解析回各种非文本输出尚未实现。
                   continue;
                 }
                 if (i === 1 && text.match(/context for our chat/)) {
@@ -766,7 +764,7 @@ export const useSlashCommandProcessor = (
               addMessage({
                 type: MessageType.INFO,
                 content:
-                  'list of saved conversations: ' +
+                  '已保存的对话列表：' +
                   (await savedChatTags()).join(', '),
                 timestamp: new Date(),
               });
@@ -774,7 +772,7 @@ export const useSlashCommandProcessor = (
             default:
               addMessage({
                 type: MessageType.ERROR,
-                content: `Unknown /chat command: ${subCommand}. Available: list, save, resume`,
+                content: `未知的 /chat 命令：${subCommand}。可用命令：list, save, resume`,
                 timestamp: new Date(),
               });
               return;
@@ -786,7 +784,7 @@ export const useSlashCommandProcessor = (
       {
         name: 'quit',
         altName: 'exit',
-        description: 'exit the cli',
+        description: '退出 CLI',
         action: async (mainCommand, _subCommand, _args) => {
           const now = new Date();
           const { sessionStartTime } = session.stats;
@@ -813,13 +811,13 @@ export const useSlashCommandProcessor = (
       {
         name: 'compress',
         altName: 'summarize',
-        description: 'Compresses the context by replacing it with a summary.',
+        description: '通过用摘要替换上下文来压缩上下文。',
         action: async (_mainCommand, _subCommand, _args) => {
           if (pendingCompressionItemRef.current !== null) {
             addMessage({
               type: MessageType.ERROR,
               content:
-                'Already compressing, wait for previous request to complete',
+                '已在压缩中，请等待之前的请求完成',
               timestamp: new Date(),
             });
             return;
@@ -835,8 +833,8 @@ export const useSlashCommandProcessor = (
           try {
             const compressed = await config!
               .getGeminiClient()!
-              // TODO: Set Prompt id for CompressChat from SlashCommandProcessor.
-              .tryCompressChat('Prompt Id not set', true);
+              // TODO: 从 SlashCommandProcessor 设置 CompressChat 的提示 ID。
+              .tryCompressChat('提示 ID 未设置', true);
             if (compressed) {
               addMessage({
                 type: MessageType.COMPRESSION,
@@ -850,14 +848,14 @@ export const useSlashCommandProcessor = (
             } else {
               addMessage({
                 type: MessageType.ERROR,
-                content: 'Failed to compress chat history.',
+                content: '无法压缩聊天历史。',
                 timestamp: new Date(),
               });
             }
           } catch (e) {
             addMessage({
               type: MessageType.ERROR,
-              content: `Failed to compress chat history: ${e instanceof Error ? e.message : String(e)}`,
+              content: `无法压缩聊天历史：${e instanceof Error ? e.message : String(e)}`,
               timestamp: new Date(),
             });
           }
@@ -870,7 +868,7 @@ export const useSlashCommandProcessor = (
       commands.push({
         name: 'restore',
         description:
-          'restore a tool call. This will reset the conversation and file history to the state it was in when the tool call was suggested',
+          '恢复工具调用。这将把对话和文件历史重置到建议工具调用时的状态',
         completion: async () => {
           const checkpointDir = config?.getProjectTempDir()
             ? path.join(config.getProjectTempDir(), 'checkpoints')
@@ -895,14 +893,14 @@ export const useSlashCommandProcessor = (
           if (!checkpointDir) {
             addMessage({
               type: MessageType.ERROR,
-              content: 'Could not determine the .gemini directory path.',
+              content: '无法确定 .gemini 目录路径。',
               timestamp: new Date(),
             });
             return;
           }
 
           try {
-            // Ensure the directory exists before trying to read it.
+            // 在尝试读取之前确保目录存在。
             await fs.mkdir(checkpointDir, { recursive: true });
             const files = await fs.readdir(checkpointDir);
             const jsonFiles = files.filter((file) => file.endsWith('.json'));
@@ -911,7 +909,7 @@ export const useSlashCommandProcessor = (
               if (jsonFiles.length === 0) {
                 addMessage({
                   type: MessageType.INFO,
-                  content: 'No restorable tool calls found.',
+                  content: '未找到可恢复的工具调用。',
                   timestamp: new Date(),
                 });
                 return;
@@ -927,7 +925,7 @@ export const useSlashCommandProcessor = (
               const fileList = truncatedFiles.join('\n');
               addMessage({
                 type: MessageType.INFO,
-                content: `Available tool calls to restore:\n\n${fileList}`,
+                content: `可恢复的工具调用：\n\n${fileList}`,
                 timestamp: new Date(),
               });
               return;
@@ -940,7 +938,7 @@ export const useSlashCommandProcessor = (
             if (!jsonFiles.includes(selectedFile)) {
               addMessage({
                 type: MessageType.ERROR,
-                content: `File not found: ${selectedFile}`,
+                content: `文件未找到：${selectedFile}`,
                 timestamp: new Date(),
               });
               return;
@@ -966,7 +964,7 @@ export const useSlashCommandProcessor = (
               );
               addMessage({
                 type: MessageType.INFO,
-                content: `Restored project to the state before the tool call.`,
+                content: `已将项目恢复到工具调用前的状态。`,
                 timestamp: new Date(),
               });
             }
@@ -979,7 +977,7 @@ export const useSlashCommandProcessor = (
           } catch (error) {
             addMessage({
               type: MessageType.ERROR,
-              content: `Could not read restorable tool calls. This is the error: ${error}`,
+              content: `无法读取可恢复的工具调用。错误信息：${error}`,
               timestamp: new Date(),
             });
           }
@@ -1027,9 +1025,9 @@ export const useSlashCommandProcessor = (
       }
 
       const parts = trimmed.substring(1).trim().split(/\s+/);
-      const commandPath = parts.filter((p) => p); // The parts of the command, e.g., ['memory', 'add']
+      const commandPath = parts.filter((p) => p); // 命令的部分，例如 ['memory', 'add']
 
-      // --- Start of New Tree Traversal Logic ---
+      // --- 开始新的树遍历逻辑 ---
 
       let currentCommands = commands;
       let commandToExecute: SlashCommand | undefined;
@@ -1096,20 +1094,20 @@ export const useSlashCommandProcessor = (
                   default: {
                     const unhandled: never = result.dialog;
                     throw new Error(
-                      `Unhandled slash command result: ${unhandled}`,
+                      `未处理的斜杠命令结果：${unhandled}`,
                     );
                   }
                 }
               default: {
                 const unhandled: never = result;
-                throw new Error(`Unhandled slash command result: ${unhandled}`);
+                throw new Error(`未处理的斜杠命令结果：${unhandled}`);
               }
             }
           }
 
           return { type: 'handled' };
         } else if (commandToExecute.subCommands) {
-          const helpText = `Command '/${commandToExecute.name}' requires a subcommand. Available:\n${commandToExecute.subCommands
+          const helpText = `命令 '/${commandToExecute.name}' 需要子命令。可用命令：\n${commandToExecute.subCommands
             .map((sc) => `  - ${sc.name}: ${sc.description || ''}`)
             .join('\n')}`;
           addMessage({
@@ -1121,9 +1119,9 @@ export const useSlashCommandProcessor = (
         }
       }
 
-      // --- End of New Tree Traversal Logic ---
+      // --- 结束新的树遍历逻辑 ---
 
-      // --- Legacy Fallback Logic (for commands not yet migrated) ---
+      // --- 旧的回退逻辑（用于尚未迁移的命令）---
 
       const mainCommand = parts[0];
       const subCommand = parts[1];
@@ -1162,7 +1160,7 @@ export const useSlashCommandProcessor = (
 
       addMessage({
         type: MessageType.ERROR,
-        content: `Unknown command: ${trimmed}`,
+        content: `未知命令：${trimmed}`,
         timestamp: new Date(),
       });
       return { type: 'handled' };
@@ -1181,7 +1179,7 @@ export const useSlashCommandProcessor = (
   );
 
   const allCommands = useMemo(() => {
-    // Adapt legacy commands to the new SlashCommand interface
+    // 将旧命令适配到新的 SlashCommand 接口
     const adaptedLegacyCommands: SlashCommand[] = legacyCommands.map(
       (legacyCmd) => ({
         name: legacyCmd.name,

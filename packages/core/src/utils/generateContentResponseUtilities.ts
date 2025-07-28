@@ -6,6 +6,7 @@
 
 import { GenerateContentResponse, Part, FunctionCall } from '@google/genai';
 
+// 获取响应文本
 export function getResponseText(
   response: GenerateContentResponse,
 ): string | undefined {
@@ -23,6 +24,7 @@ export function getResponseText(
   return textSegments.join('');
 }
 
+// 从部分获取响应文本
 export function getResponseTextFromParts(parts: Part[]): string | undefined {
   if (!parts) {
     return undefined;
@@ -37,6 +39,7 @@ export function getResponseTextFromParts(parts: Part[]): string | undefined {
   return textSegments.join('');
 }
 
+// 获取函数调用
 export function getFunctionCalls(
   response: GenerateContentResponse,
 ): FunctionCall[] | undefined {
@@ -50,6 +53,7 @@ export function getFunctionCalls(
   return functionCallParts.length > 0 ? functionCallParts : undefined;
 }
 
+// 从部分获取函数调用
 export function getFunctionCallsFromParts(
   parts: Part[],
 ): FunctionCall[] | undefined {
@@ -62,6 +66,7 @@ export function getFunctionCallsFromParts(
   return functionCallParts.length > 0 ? functionCallParts : undefined;
 }
 
+// 获取函数调用作为 JSON
 export function getFunctionCallsAsJson(
   response: GenerateContentResponse,
 ): string | undefined {
@@ -72,6 +77,7 @@ export function getFunctionCallsAsJson(
   return JSON.stringify(functionCalls, null, 2);
 }
 
+// 从部分获取函数调用作为 JSON
 export function getFunctionCallsFromPartsAsJson(
   parts: Part[],
 ): string | undefined {
@@ -82,6 +88,7 @@ export function getFunctionCallsFromPartsAsJson(
   return JSON.stringify(functionCalls, null, 2);
 }
 
+// 获取结构化响应
 export function getStructuredResponse(
   response: GenerateContentResponse,
 ): string | undefined {
@@ -100,6 +107,7 @@ export function getStructuredResponse(
   return undefined;
 }
 
+// 从部分获取结构化响应
 export function getStructuredResponseFromParts(
   parts: Part[],
 ): string | undefined {

@@ -16,23 +16,23 @@ describe('privacyCommand', () => {
     mockContext = createMockCommandContext();
   });
 
-  it('should return a dialog action to open the privacy dialog', () => {
-    // Ensure the command has an action to test.
+  it('应返回一个对话框操作以打开隐私对话框', () => {
+    // 确保命令具有要测试的操作。
     if (!privacyCommand.action) {
-      throw new Error('The privacy command must have an action.');
+      throw new Error('隐私命令必须具有操作。');
     }
 
     const result = privacyCommand.action(mockContext, '');
 
-    // Assert that the action returns the correct object to trigger the privacy dialog.
+    // 断言操作返回正确的对象以触发隐私对话框。
     expect(result).toEqual({
       type: 'dialog',
       dialog: 'privacy',
     });
   });
 
-  it('should have the correct name and description', () => {
+  it('应具有正确的名称和描述', () => {
     expect(privacyCommand.name).toBe('privacy');
-    expect(privacyCommand.description).toBe('display the privacy notice');
+    expect(privacyCommand.description).toBe('显示隐私声明');
   });
 });

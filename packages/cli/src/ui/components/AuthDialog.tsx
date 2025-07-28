@@ -98,7 +98,7 @@ export function AuthDialog({
 
   const handleOpenAIKeyCancel = () => {
     setShowOpenAIKeyPrompt(false);
-    setErrorMessage('OpenAI API key is required to use OpenAI authentication.');
+    setErrorMessage('使用 OpenAI 认证需要 OpenAI API 密钥。');
   };
 
   useInput((_input, key) => {
@@ -108,15 +108,15 @@ export function AuthDialog({
     }
 
     if (key.escape) {
-      // Prevent exit if there is an error message.
-      // This means they user is not authenticated yet.
+      // 如果有错误信息则阻止退出。
+      // 这表示用户尚未完成认证。
       if (errorMessage) {
         return;
       }
       if (settings.merged.selectedAuthType === undefined) {
-        // Prevent exiting if no auth method is set
+        // 如果未设置认证方式则阻止退出
         setErrorMessage(
-          'You must select an auth method to proceed. Press Ctrl+C twice to exit.',
+          '您必须选择一种认证方式才能继续。按两次 Ctrl+C 退出。',
         );
         return;
       }
@@ -141,9 +141,9 @@ export function AuthDialog({
       padding={1}
       width="100%"
     >
-      <Text bold>Get started</Text>
+      <Text bold>开始使用</Text>
       <Box marginTop={1}>
-        <Text>How would you like to authenticate for this project?</Text>
+        <Text>您希望如何为此项目进行认证？</Text>
       </Box>
       <Box marginTop={1}>
         <RadioButtonSelect
@@ -159,10 +159,10 @@ export function AuthDialog({
         </Box>
       )}
       <Box marginTop={1}>
-        <Text color={Colors.AccentPurple}>(Use Enter to Set Auth)</Text>
+        <Text color={Colors.AccentPurple}>(使用回车键设置认证)</Text>
       </Box>
       <Box marginTop={1}>
-        <Text>Terms of Services and Privacy Notice for iFlyCode</Text>
+        <Text>iFlyCode 的服务条款和隐私声明</Text>
       </Box>
       <Box marginTop={1}>
         <Text color={Colors.AccentBlue}>

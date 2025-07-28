@@ -15,7 +15,7 @@ export const useStreamingContext = (): StreamingState => {
   const context = React.useContext(StreamingContext);
   if (context === undefined) {
     throw new Error(
-      'useStreamingContext must be used within a StreamingContextProvider',
+      'useStreamingContext 必须在 StreamingContextProvider 内使用',
     );
   }
   return context;

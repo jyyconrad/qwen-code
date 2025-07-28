@@ -24,11 +24,11 @@ import {
 } from '../utils/errors.js';
 import { GeminiChat } from './geminiChat.js';
 
-// Define a structure for tools passed to the server
+// 定义传递给服务器的工具结构
 export interface ServerTool {
   name: string;
   schema: FunctionDeclaration;
-  // The execute method signature might differ slightly or be wrapped
+  // execute 方法签名可能略有不同或被包装
   execute(
     params: Record<string, unknown>,
     signal?: AbortSignal,
@@ -138,7 +138,7 @@ export type ServerGeminiLoopDetectedEvent = {
   type: GeminiEventType.LoopDetected;
 };
 
-// The original union type, now composed of the individual types
+// 原始联合类型，现在由各个单独的类型组成
 export type ServerGeminiStreamEvent =
   | ServerGeminiContentEvent
   | ServerGeminiToolCallRequestEvent
@@ -151,7 +151,7 @@ export type ServerGeminiStreamEvent =
   | ServerGeminiMaxSessionTurnsEvent
   | ServerGeminiLoopDetectedEvent;
 
-// A turn manages the agentic loop turn within the server context.
+// Turn 管理服务器上下文中的代理循环回合。
 export class Turn {
   readonly pendingToolCalls: ToolCallRequestInfo[];
   private debugResponses: GenerateContentResponse[];
@@ -163,7 +163,7 @@ export class Turn {
     this.pendingToolCalls = [];
     this.debugResponses = [];
   }
-  // The run method yields simpler events suitable for server logic
+  // run 方法生成适用于服务器逻辑的简化事件
   async *run(
     req: PartListUnion,
     signal: AbortSignal,
@@ -182,15 +182,15 @@ export class Turn {
       for await (const resp of responseStream) {
         if (signal?.aborted) {
           yield { type: GeminiEventType.UserCancelled };
-          // Do not add resp to debugResponses if aborted before processing
+          // 如果在处理前被中止，则不将 resp 添加到 debugResponses
           return;
         }
         this.debugResponses.push(resp);
 
         const thoughtPart = resp.candidates?.[0]?.content?.parts?.[0];
         if (thoughtPart?.thought) {
-          // Thought always has a bold "subject" part enclosed in double asterisks
-          // (e.g., **Subject**). The rest of the string is considered the description.
+          // Thought 总是有一个用双星号括起来的粗体 "subject" 部分
+          // (例如，**Subject**)。字符串的其余部分被视为描述。
           const rawText = thoughtPart.text ?? '';
           const subjectStringMatches = rawText.match(/\*\*(.*?)\*\*/s);
           const subject = subjectStringMatches
@@ -214,7 +214,7 @@ export class Turn {
           yield { type: GeminiEventType.Content, value: text };
         }
 
-        // Handle function calls (requesting tool execution)
+        // 处理函数调用（请求工具执行）
         const functionCalls = resp.functionCalls ?? [];
         for (const fnCall of functionCalls) {
           const event = this.handlePendingFunctionCall(fnCall);
@@ -230,14 +230,14 @@ export class Turn {
       }
       if (signal.aborted) {
         yield { type: GeminiEventType.UserCancelled };
-        // Regular cancellation error, fail gracefully.
+        // 普通的取消错误，优雅地失败。
         return;
       }
 
       const contextForReport = [...this.chat.getHistory(/*curated*/ true), req];
       await reportError(
         error,
-        'Error when talking to Gemini API',
+        '与 Gemini API 通信时出错',
         contextForReport,
         'Turn.run-sendMessageStream',
       );
@@ -276,7 +276,7 @@ export class Turn {
 
     this.pendingToolCalls.push(toolCallRequest);
 
-    // Yield a request for the tool call, not the pending/confirming status
+    // 生成工具调用的请求事件，而不是待处理/确认状态
     return { type: GeminiEventType.ToolCallRequest, value: toolCallRequest };
   }
 

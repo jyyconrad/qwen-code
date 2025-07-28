@@ -17,7 +17,7 @@ describe('useInputHistory', () => {
 
   const userMessages = ['message 1', 'message 2', 'message 3'];
 
-  it('should initialize with historyIndex -1 and empty originalQueryBeforeNav', () => {
+  it('应初始化 historyIndex 为 -1 且 originalQueryBeforeNav 为空', () => {
     const { result } = renderHook(() =>
       useInputHistory({
         userMessages: [],
@@ -28,8 +28,8 @@ describe('useInputHistory', () => {
       }),
     );
 
-    // Internal state is not directly testable, but we can infer from behavior.
-    // Attempting to navigate down should do nothing if historyIndex is -1.
+    // 内部状态无法直接测试，但可以通过行为推断。
+    // 如果 historyIndex 为 -1，向下导航应无操作。
     act(() => {
       result.current.navigateDown();
     });
@@ -37,7 +37,7 @@ describe('useInputHistory', () => {
   });
 
   describe('handleSubmit', () => {
-    it('should call onSubmit with trimmed value and reset history', () => {
+    it('应使用修剪后的值调用 onSubmit 并重置历史记录', () => {
       const { result } = renderHook(() =>
         useInputHistory({
           userMessages,
@@ -53,14 +53,14 @@ describe('useInputHistory', () => {
       });
 
       expect(mockOnSubmit).toHaveBeenCalledWith('submit value');
-      // Check if history is reset (e.g., by trying to navigate down)
+      // 检查历史记录是否已重置（例如通过尝试向下导航）
       act(() => {
         result.current.navigateDown();
       });
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
-    it('should not call onSubmit if value is empty after trimming', () => {
+    it('如果值在修剪后为空，则不应调用 onSubmit', () => {
       const { result } = renderHook(() =>
         useInputHistory({
           userMessages,
@@ -80,7 +80,7 @@ describe('useInputHistory', () => {
   });
 
   describe('navigateUp', () => {
-    it('should not navigate if isActive is false', () => {
+    it('如果 isActive 为 false 则不应导航', () => {
       const { result } = renderHook(() =>
         useInputHistory({
           userMessages,
@@ -97,7 +97,7 @@ describe('useInputHistory', () => {
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
-    it('should not navigate if userMessages is empty', () => {
+    it('如果 userMessages 为空则不应导航', () => {
       const { result } = renderHook(() =>
         useInputHistory({
           userMessages: [],
@@ -114,7 +114,7 @@ describe('useInputHistory', () => {
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
-    it('should call onChange with the last message when navigating up from initial state', () => {
+    it('在初始状态下向上导航时应使用最后一条消息调用 onChange', () => {
       const currentQuery = 'current query';
       const { result } = renderHook(() =>
         useInputHistory({
@@ -130,10 +130,10 @@ describe('useInputHistory', () => {
         result.current.navigateUp();
       });
 
-      expect(mockOnChange).toHaveBeenCalledWith(userMessages[2]); // Last message
+      expect(mockOnChange).toHaveBeenCalledWith(userMessages[2]); // 最后一条消息
     });
 
-    it('should store currentQuery as originalQueryBeforeNav on first navigateUp', () => {
+    it('在首次 navigateUp 时应将 currentQuery 存储为 originalQueryBeforeNav', () => {
       const currentQuery = 'original user input';
       const { result } = renderHook(() =>
         useInputHistory({
@@ -146,18 +146,18 @@ describe('useInputHistory', () => {
       );
 
       act(() => {
-        result.current.navigateUp(); // historyIndex becomes 0
+        result.current.navigateUp(); // historyIndex 变为 0
       });
       expect(mockOnChange).toHaveBeenCalledWith(userMessages[2]);
 
-      // Navigate down to restore original query
+      // 向下导航以恢复原始查询
       act(() => {
-        result.current.navigateDown(); // historyIndex becomes -1
+        result.current.navigateDown(); // historyIndex 变为 -1
       });
       expect(mockOnChange).toHaveBeenCalledWith(currentQuery);
     });
 
-    it('should navigate through history messages on subsequent navigateUp calls', () => {
+    it('在后续的 navigateUp 调用中应遍历历史消息', () => {
       const { result } = renderHook(() =>
         useInputHistory({
           userMessages,
@@ -169,28 +169,28 @@ describe('useInputHistory', () => {
       );
 
       act(() => {
-        result.current.navigateUp(); // Navigates to 'message 3'
+        result.current.navigateUp(); // 导航到 'message 3'
       });
       expect(mockOnChange).toHaveBeenCalledWith(userMessages[2]);
 
       act(() => {
-        result.current.navigateUp(); // Navigates to 'message 2'
+        result.current.navigateUp(); // 导航到 'message 2'
       });
       expect(mockOnChange).toHaveBeenCalledWith(userMessages[1]);
 
       act(() => {
-        result.current.navigateUp(); // Navigates to 'message 1'
+        result.current.navigateUp(); // 导航到 'message 1'
       });
       expect(mockOnChange).toHaveBeenCalledWith(userMessages[0]);
     });
   });
 
   describe('navigateDown', () => {
-    it('should not navigate if isActive is false', () => {
+    it('如果 isActive 为 false 则不应导航', () => {
       const initialProps = {
         userMessages,
         onSubmit: mockOnSubmit,
-        isActive: true, // Start active to allow setup navigation
+        isActive: true, // 开始时为激活状态以允许设置导航
         currentQuery: 'current',
         onChange: mockOnChange,
       };
@@ -201,13 +201,13 @@ describe('useInputHistory', () => {
         },
       );
 
-      // First navigate up to have something in history
+      // 首先向上导航以在历史记录中有内容
       act(() => {
         result.current.navigateUp();
       });
-      mockOnChange.mockClear(); // Clear calls from setup
+      mockOnChange.mockClear(); // 清除设置时的调用
 
-      // Set isActive to false for the actual test
+      // 将 isActive 设置为 false 进行实际测试
       rerender({ ...initialProps, isActive: false });
 
       act(() => {
@@ -217,7 +217,7 @@ describe('useInputHistory', () => {
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
-    it('should not navigate if historyIndex is -1 (not in history navigation)', () => {
+    it('如果 historyIndex 为 -1（未处于历史导航中）则不应导航', () => {
       const { result } = renderHook(() =>
         useInputHistory({
           userMessages,
@@ -234,7 +234,7 @@ describe('useInputHistory', () => {
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
-    it('should restore originalQueryBeforeNav when navigating down to initial state', () => {
+    it('在向下导航到初始状态时应恢复 originalQueryBeforeNav', () => {
       const originalQuery = 'my original input';
       const { result } = renderHook(() =>
         useInputHistory({
@@ -247,13 +247,13 @@ describe('useInputHistory', () => {
       );
 
       act(() => {
-        result.current.navigateUp(); // Navigates to 'message 3', stores 'originalQuery'
+        result.current.navigateUp(); // 导航到 'message 3'，存储 'originalQuery'
       });
       expect(mockOnChange).toHaveBeenCalledWith(userMessages[2]);
       mockOnChange.mockClear();
 
       act(() => {
-        result.current.navigateDown(); // Navigates back to original query
+        result.current.navigateDown(); // 导航回原始查询
       });
       expect(mockOnChange).toHaveBeenCalledWith(originalQuery);
     });

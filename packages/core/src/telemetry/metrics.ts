@@ -59,36 +59,36 @@ export function initializeMetrics(config: Config): void {
   if (!meter) return;
 
   toolCallCounter = meter.createCounter(METRIC_TOOL_CALL_COUNT, {
-    description: 'Counts tool calls, tagged by function name and success.',
+    description: '统计工具调用次数，按函数名和成功状态标记。',
     valueType: ValueType.INT,
   });
   toolCallLatencyHistogram = meter.createHistogram(METRIC_TOOL_CALL_LATENCY, {
-    description: 'Latency of tool calls in milliseconds.',
+    description: '工具调用的延迟（毫秒）。',
     unit: 'ms',
     valueType: ValueType.INT,
   });
   apiRequestCounter = meter.createCounter(METRIC_API_REQUEST_COUNT, {
-    description: 'Counts API requests, tagged by model and status.',
+    description: '统计 API 请求次数，按模型和状态标记。',
     valueType: ValueType.INT,
   });
   apiRequestLatencyHistogram = meter.createHistogram(
     METRIC_API_REQUEST_LATENCY,
     {
-      description: 'Latency of API requests in milliseconds.',
+      description: 'API 请求的延迟（毫秒）。',
       unit: 'ms',
       valueType: ValueType.INT,
     },
   );
   tokenUsageCounter = meter.createCounter(METRIC_TOKEN_USAGE, {
-    description: 'Counts the total number of tokens used.',
+    description: '统计使用的令牌总数。',
     valueType: ValueType.INT,
   });
   fileOperationCounter = meter.createCounter(METRIC_FILE_OPERATION_COUNT, {
-    description: 'Counts file operations (create, read, update).',
+    description: '统计文件操作（创建、读取、更新）。',
     valueType: ValueType.INT,
   });
   const sessionCounter = meter.createCounter(METRIC_SESSION_COUNT, {
-    description: 'Count of CLI sessions started.',
+    description: 'CLI 会话启动次数。',
     valueType: ValueType.INT,
   });
   sessionCounter.add(1, getCommonAttributes(config));

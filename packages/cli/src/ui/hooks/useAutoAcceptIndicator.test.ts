@@ -120,7 +120,7 @@ describe('useAutoAcceptIndicator', () => {
     mockConfigInstance = new (Config as any)() as MockConfigInstanceShape;
   });
 
-  it('should initialize with ApprovalMode.AUTO_EDIT if config.getApprovalMode returns ApprovalMode.AUTO_EDIT', () => {
+  it('如果 config.getApprovalMode 返回 ApprovalMode.AUTO_EDIT，则应初始化为 ApprovalMode.AUTO_EDIT', () => {
     mockConfigInstance.getApprovalMode.mockReturnValue(ApprovalMode.AUTO_EDIT);
     const { result } = renderHook(() =>
       useAutoAcceptIndicator({
@@ -131,7 +131,7 @@ describe('useAutoAcceptIndicator', () => {
     expect(mockConfigInstance.getApprovalMode).toHaveBeenCalledTimes(1);
   });
 
-  it('should initialize with ApprovalMode.DEFAULT if config.getApprovalMode returns ApprovalMode.DEFAULT', () => {
+  it('如果 config.getApprovalMode 返回 ApprovalMode.DEFAULT，则应初始化为 ApprovalMode.DEFAULT', () => {
     mockConfigInstance.getApprovalMode.mockReturnValue(ApprovalMode.DEFAULT);
     const { result } = renderHook(() =>
       useAutoAcceptIndicator({
@@ -142,7 +142,7 @@ describe('useAutoAcceptIndicator', () => {
     expect(mockConfigInstance.getApprovalMode).toHaveBeenCalledTimes(1);
   });
 
-  it('should initialize with ApprovalMode.YOLO if config.getApprovalMode returns ApprovalMode.YOLO', () => {
+  it('如果 config.getApprovalMode 返回 ApprovalMode.YOLO，则应初始化为 ApprovalMode.YOLO', () => {
     mockConfigInstance.getApprovalMode.mockReturnValue(ApprovalMode.YOLO);
     const { result } = renderHook(() =>
       useAutoAcceptIndicator({
@@ -153,7 +153,7 @@ describe('useAutoAcceptIndicator', () => {
     expect(mockConfigInstance.getApprovalMode).toHaveBeenCalledTimes(1);
   });
 
-  it('should toggle the indicator and update config when Shift+Tab or Ctrl+Y is pressed', () => {
+  it('当按下 Shift+Tab 或 Ctrl+Y 时，应切换指示器并更新配置', () => {
     mockConfigInstance.getApprovalMode.mockReturnValue(ApprovalMode.DEFAULT);
     const { result } = renderHook(() =>
       useAutoAcceptIndicator({
@@ -211,7 +211,7 @@ describe('useAutoAcceptIndicator', () => {
     expect(result.current).toBe(ApprovalMode.DEFAULT);
   });
 
-  it('should not toggle if only one key or other keys combinations are pressed', () => {
+  it('如果只按一个键或其他键组合，则不应切换', () => {
     mockConfigInstance.getApprovalMode.mockReturnValue(ApprovalMode.DEFAULT);
     renderHook(() =>
       useAutoAcceptIndicator({
@@ -255,7 +255,7 @@ describe('useAutoAcceptIndicator', () => {
     expect(mockConfigInstance.setApprovalMode).not.toHaveBeenCalled();
   });
 
-  it('should update indicator when config value changes externally (useEffect dependency)', () => {
+  it('当配置值外部更改时（useEffect 依赖项），应更新指示器', () => {
     mockConfigInstance.getApprovalMode.mockReturnValue(ApprovalMode.DEFAULT);
     const { result, rerender } = renderHook(
       (props: { config: ActualConfigType }) => useAutoAcceptIndicator(props),

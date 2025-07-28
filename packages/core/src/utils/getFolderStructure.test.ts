@@ -19,7 +19,7 @@ vi.mock('path', async (importOriginal) => {
   return {
     ...original,
     resolve: vi.fn((str) => str),
-    // Other path functions (basename, join, normalize, etc.) will use original implementation
+    // 其他路径函数（basename、join、normalize 等）将使用原始实现
   };
 });
 
@@ -27,10 +27,10 @@ vi.mock('fs/promises');
 vi.mock('fs');
 vi.mock('./gitUtils.js');
 
-// Import 'path' again here, it will be the mocked version
+// 在此处再次导入 'path'，它将是被模拟的版本
 import * as path from 'path';
 
-// Helper to create Dirent-like objects for mocking fs.readdir
+// 辅助函数：创建 Dirent 类似对象以模拟 fs.readdir
 const createDirent = (name: string, type: 'file' | 'dir'): FSDirent => ({
   name,
   isFile: () => type === 'file',
@@ -40,7 +40,6 @@ const createDirent = (name: string, type: 'file' | 'dir'): FSDirent => ({
   isSymbolicLink: () => false,
   isFIFO: () => false,
   isSocket: () => false,
-  path: '',
   parentPath: '',
 });
 
@@ -48,17 +47,17 @@ describe('getFolderStructure', () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    // path.resolve is now a vi.fn() due to the top-level vi.mock.
-    // We ensure its implementation is set for each test (or rely on the one from vi.mock).
-    // vi.resetAllMocks() clears call history but not the implementation set by vi.fn() in vi.mock.
-    // If we needed to change it per test, we would do it here:
+    // path.resolve 现在是 vi.fn()，由于顶层的 vi.mock。
+    // 我们确保每次测试都设置其实现（或依赖 vi.mock 中的设置）。
+    // vi.resetAllMocks() 清除调用历史但不清除 vi.mock 中 vi.fn 设置的实现。
+    // 如果我们需要在每个测试中更改它，我们会在这里做：
     (path.resolve as Mock).mockImplementation((str: string) => str);
 
-    // Re-apply/define the mock implementation for fsPromises.readdir for each test
+    // 为每个测试重新应用/定义 fsPromises.readdir 的模拟实现
     (fsPromises.readdir as Mock).mockImplementation(
       async (dirPath: string | Buffer | URL) => {
-        // path.normalize here will use the mocked path module.
-        // Since normalize is spread from original, it should be the real one.
+        // 这里的 path.normalize 将使用被模拟的 path 模块。
+        // 由于 normalize 是从原始模块中展开的，它应该是真实的实现。
         const normalizedPath = path.normalize(dirPath.toString());
         if (mockFsStructure[normalizedPath]) {
           return mockFsStructure[normalizedPath];
@@ -74,7 +73,7 @@ describe('getFolderStructure', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks(); // Restores spies (like fsPromises.readdir) and resets vi.fn mocks (like path.resolve)
+    vi.restoreAllMocks(); // 恢复间谍（如 fsPromises.readdir）并重置 vi.fn 模拟（如 path.resolve）
   });
 
   const mockFsStructure: Record<string, FSDirent[]> = {
@@ -112,10 +111,10 @@ describe('getFolderStructure', () => {
     ],
   };
 
-  it('should return basic folder structure', async () => {
+  it('应返回基本文件夹结构', async () => {
     const structure = await getFolderStructure('/testroot/subfolderA');
     const expected = `
-Showing up to 200 items (files + folders).
+显示最多 200 个项目（文件 + 文件夹）。
 
 /testroot/subfolderA/
 ├───fileA1.ts
@@ -126,20 +125,20 @@ Showing up to 200 items (files + folders).
     expect(structure.trim()).toBe(expected);
   });
 
-  it('should handle an empty folder', async () => {
+  it('应处理空文件夹', async () => {
     const structure = await getFolderStructure('/testroot/emptyFolder');
     const expected = `
-Showing up to 200 items (files + folders).
+显示最多 200 个项目（文件 + 文件夹）。
 
 /testroot/emptyFolder/
 `.trim();
     expect(structure.trim()).toBe(expected.trim());
   });
 
-  it('should ignore folders specified in ignoredFolders (default)', async () => {
+  it('应忽略 ignoredFolders 中指定的文件夹（默认）', async () => {
     const structure = await getFolderStructure('/testroot');
     const expected = `
-Showing up to 200 items (files + folders). Folders or files indicated with ... contain more items not shown, were ignored, or the display limit (200 items) was reached.
+显示最多 200 个项目（文件 + 文件夹）。标记为 ... 的文件夹或文件包含未显示的更多项目、被忽略的项目，或已达到显示限制（200 个项目）。
 
 /testroot/
 ├───.hiddenfile
@@ -155,12 +154,12 @@ Showing up to 200 items (files + folders). Folders or files indicated with ... c
     expect(structure.trim()).toBe(expected);
   });
 
-  it('should ignore folders specified in custom ignoredFolders', async () => {
+  it('应忽略自定义 ignoredFolders 中指定的文件夹', async () => {
     const structure = await getFolderStructure('/testroot', {
       ignoredFolders: new Set(['subfolderA', 'node_modules']),
     });
     const expected = `
-Showing up to 200 items (files + folders). Folders or files indicated with ... contain more items not shown, were ignored, or the display limit (200 items) was reached.
+显示最多 200 个项目（文件 + 文件夹）。标记为 ... 的文件夹或文件包含未显示的更多项目、被忽略的项目，或已达到显示限制（200 个项目）。
 
 /testroot/
 ├───.hiddenfile
@@ -172,12 +171,12 @@ Showing up to 200 items (files + folders). Folders or files indicated with ... c
     expect(structure.trim()).toBe(expected);
   });
 
-  it('should filter files by fileIncludePattern', async () => {
+  it('应按 fileIncludePattern 过滤文件', async () => {
     const structure = await getFolderStructure('/testroot/subfolderA', {
       fileIncludePattern: /\.ts$/,
     });
     const expected = `
-Showing up to 200 items (files + folders).
+显示最多 200 个项目（文件 + 文件夹）。
 
 /testroot/subfolderA/
 ├───fileA1.ts
@@ -186,12 +185,12 @@ Showing up to 200 items (files + folders).
     expect(structure.trim()).toBe(expected);
   });
 
-  it('should handle maxItems truncation for files within a folder', async () => {
+  it('应处理文件夹内文件的 maxItems 截断', async () => {
     const structure = await getFolderStructure('/testroot/subfolderA', {
       maxItems: 3,
     });
     const expected = `
-Showing up to 3 items (files + folders).
+显示最多 3 个项目（文件 + 文件夹）。
 
 /testroot/subfolderA/
 ├───fileA1.ts
@@ -201,12 +200,12 @@ Showing up to 3 items (files + folders).
     expect(structure.trim()).toBe(expected);
   });
 
-  it('should handle maxItems truncation for subfolders', async () => {
+  it('应处理子文件夹的 maxItems 截断', async () => {
     const structure = await getFolderStructure('/testroot/manyFolders', {
       maxItems: 4,
     });
     const expectedRevised = `
-Showing up to 4 items (files + folders). Folders or files indicated with ... contain more items not shown, were ignored, or the display limit (4 items) was reached.
+显示最多 4 个项目（文件 + 文件夹）。标记为 ... 的文件夹或文件包含未显示的更多项目、被忽略的项目，或已达到显示限制（4 个项目）。
 
 /testroot/manyFolders/
 ├───folder-0/
@@ -218,12 +217,12 @@ Showing up to 4 items (files + folders). Folders or files indicated with ... con
     expect(structure.trim()).toBe(expectedRevised);
   });
 
-  it('should handle maxItems that only allows the root folder itself', async () => {
+  it('应处理仅允许根文件夹本身的 maxItems', async () => {
     const structure = await getFolderStructure('/testroot/subfolderA', {
       maxItems: 1,
     });
     const expectedRevisedMax1 = `
-Showing up to 1 items (files + folders). Folders or files indicated with ... contain more items not shown, were ignored, or the display limit (1 items) was reached.
+显示最多 1 个项目（文件 + 文件夹）。标记为 ... 的文件夹或文件包含未显示的更多项目、被忽略的项目，或已达到显示限制（1 个项目）。
 
 /testroot/subfolderA/
 ├───fileA1.ts
@@ -233,8 +232,8 @@ Showing up to 1 items (files + folders). Folders or files indicated with ... con
     expect(structure.trim()).toBe(expectedRevisedMax1);
   });
 
-  it('should handle non-existent directory', async () => {
-    // Temporarily make fsPromises.readdir throw ENOENT for this specific path
+  it('应处理不存在的目录', async () => {
+    // 临时使 fsPromises.readdir 对此特定路径抛出 ENOENT
     const originalReaddir = fsPromises.readdir;
     (fsPromises.readdir as Mock).mockImplementation(
       async (p: string | Buffer | URL) => {
@@ -247,16 +246,16 @@ Showing up to 1 items (files + folders). Folders or files indicated with ... con
 
     const structure = await getFolderStructure('/nonexistent');
     expect(structure).toContain(
-      'Error: Could not read directory "/nonexistent"',
+      '错误：无法读取目录 "/nonexistent"',
     );
   });
 
-  it('should handle deep folder structure within limits', async () => {
+  it('应在限制内处理深层文件夹结构', async () => {
     const structure = await getFolderStructure('/testroot/deepFolders', {
       maxItems: 10,
     });
     const expected = `
-Showing up to 10 items (files + folders).
+显示最多 10 个项目（文件 + 文件夹）。
 
 /testroot/deepFolders/
 └───level1/
@@ -267,12 +266,12 @@ Showing up to 10 items (files + folders).
     expect(structure.trim()).toBe(expected);
   });
 
-  it('should truncate deep folder structure if maxItems is small', async () => {
+  it('如果 maxItems 较小，应截断深层文件夹结构', async () => {
     const structure = await getFolderStructure('/testroot/deepFolders', {
       maxItems: 3,
     });
     const expected = `
-Showing up to 3 items (files + folders).
+显示最多 3 个项目（文件 + 文件夹）。
 
 /testroot/deepFolders/
 └───level1/
@@ -321,7 +320,7 @@ describe('getFolderStructure gitignore', () => {
     vi.mocked(gitUtils.isGitRepository).mockReturnValue(true);
   });
 
-  it('should ignore files and folders specified in .gitignore', async () => {
+  it('应忽略 .gitignore 中指定的文件和文件夹', async () => {
     const fileService = new FileDiscoveryService('/test/project');
     const structure = await getFolderStructure('/test/project', {
       fileService,
@@ -331,14 +330,14 @@ describe('getFolderStructure gitignore', () => {
     expect(structure).not.toContain('logs.json');
   });
 
-  it('should not ignore files if respectGitIgnore is false', async () => {
+  it('如果 respectGitIgnore 为 false，不应忽略文件', async () => {
     const fileService = new FileDiscoveryService('/test/project');
     const structure = await getFolderStructure('/test/project', {
       fileService,
       respectGitIgnore: false,
     });
     expect(structure).toContain('ignored.txt');
-    // node_modules is still ignored by default
+    // node_modules 仍被默认忽略
     expect(structure).toContain('node_modules/...');
   });
 });

@@ -91,7 +91,7 @@ describe('GitService', () => {
       if (command === 'git --version') {
         callback(null, 'git version 2.0.0');
       } else {
-        callback(new Error('Command not mocked'));
+        callback(new Error('命令未被模拟'));
       }
       return {};
     });
@@ -132,20 +132,20 @@ describe('GitService', () => {
   });
 
   describe('constructor', () => {
-    it('should successfully create an instance if projectRoot is a Git repository', () => {
+    it('如果 projectRoot 是 Git 仓库，应成功创建实例', () => {
       expect(() => new GitService(mockProjectRoot)).not.toThrow();
     });
   });
 
   describe('verifyGitAvailability', () => {
-    it('should resolve true if git --version command succeeds', async () => {
+    it('如果 git --version 命令成功，应解析为 true', async () => {
       const service = new GitService(mockProjectRoot);
       await expect(service.verifyGitAvailability()).resolves.toBe(true);
     });
 
-    it('should resolve false if git --version command fails', async () => {
+    it('如果 git --version 命令失败，应解析为 false', async () => {
       hoistedMockExec.mockImplementation((command, callback) => {
-        callback(new Error('git not found'));
+        callback(new Error('未找到 git'));
         return {} as ChildProcess;
       });
       const service = new GitService(mockProjectRoot);
@@ -154,18 +154,18 @@ describe('GitService', () => {
   });
 
   describe('initialize', () => {
-    it('should throw an error if Git is not available', async () => {
+    it('如果 Git 不可用，应抛出错误', async () => {
       hoistedMockExec.mockImplementation((command, callback) => {
-        callback(new Error('git not found'));
+        callback(new Error('未找到 git'));
         return {} as ChildProcess;
       });
       const service = new GitService(mockProjectRoot);
       await expect(service.initialize()).rejects.toThrow(
-        'Checkpointing is enabled, but Git is not installed. Please install Git or disable checkpointing to continue.',
+        '检查点已启用，但未安装 Git。请安装 Git 或禁用检查点以继续。',
       );
     });
 
-    it('should call setupShadowGitRepository if Git is available', async () => {
+    it('如果 Git 可用，应调用 setupShadowGitRepository', async () => {
       const service = new GitService(mockProjectRoot);
       const setupSpy = vi
         .spyOn(service, 'setupShadowGitRepository')
@@ -182,7 +182,7 @@ describe('GitService', () => {
     const visibleGitIgnorePath = path.join(mockProjectRoot, '.gitignore');
     const gitConfigPath = path.join(repoDir, '.gitconfig');
 
-    it('should create a .gitconfig file with the correct content', async () => {
+    it('应创建包含正确内容的 .gitconfig 文件', async () => {
       const service = new GitService(mockProjectRoot);
       await service.setupShadowGitRepository();
       const expectedConfigContent =
@@ -193,7 +193,7 @@ describe('GitService', () => {
       );
     });
 
-    it('should create history and repository directories', async () => {
+    it('应创建 history 和 repository 目录', async () => {
       const service = new GitService(mockProjectRoot);
       await service.setupShadowGitRepository();
       expect(hoistedMockMkdir).toHaveBeenCalledWith(repoDir, {
@@ -201,7 +201,7 @@ describe('GitService', () => {
       });
     });
 
-    it('should initialize git repo in historyDir if not already initialized', async () => {
+    it('如果尚未初始化，应在 historyDir 中初始化 git 仓库', async () => {
       hoistedMockCheckIsRepo.mockResolvedValue(false);
       const service = new GitService(mockProjectRoot);
       await service.setupShadowGitRepository();
@@ -209,14 +209,14 @@ describe('GitService', () => {
       expect(hoistedMockInit).toHaveBeenCalled();
     });
 
-    it('should not initialize git repo if already initialized', async () => {
+    it('如果已初始化，则不应再次初始化 git 仓库', async () => {
       hoistedMockCheckIsRepo.mockResolvedValue(true);
       const service = new GitService(mockProjectRoot);
       await service.setupShadowGitRepository();
       expect(hoistedMockInit).not.toHaveBeenCalled();
     });
 
-    it('should copy .gitignore from projectRoot if it exists', async () => {
+    it('如果存在，应从 projectRoot 复制 .gitignore', async () => {
       const gitignoreContent = `node_modules/\n.env`;
       hoistedMockReadFile.mockImplementation(async (filePath) => {
         if (filePath === visibleGitIgnorePath) {
@@ -236,8 +236,8 @@ describe('GitService', () => {
       );
     });
 
-    it('should throw an error if reading projectRoot .gitignore fails with other errors', async () => {
-      const readError = new Error('Read permission denied');
+    it('如果读取 projectRoot .gitignore 时发生其他错误，应抛出错误', async () => {
+      const readError = new Error('读取权限被拒绝');
       hoistedMockReadFile.mockImplementation(async (filePath) => {
         if (filePath === visibleGitIgnorePath) {
           throw readError;
@@ -250,11 +250,11 @@ describe('GitService', () => {
 
       const service = new GitService(mockProjectRoot);
       await expect(service.setupShadowGitRepository()).rejects.toThrow(
-        'Read permission denied',
+        '读取权限被拒绝',
       );
     });
 
-    it('should make an initial commit if no commits exist in history repo', async () => {
+    it('如果历史仓库中没有提交记录，应进行初始提交', async () => {
       hoistedMockCheckIsRepo.mockResolvedValue(false);
       const service = new GitService(mockProjectRoot);
       await service.setupShadowGitRepository();
@@ -263,7 +263,7 @@ describe('GitService', () => {
       });
     });
 
-    it('should not make an initial commit if commits already exist', async () => {
+    it('如果已存在提交记录，则不应进行初始提交', async () => {
       hoistedMockCheckIsRepo.mockResolvedValue(true);
       const service = new GitService(mockProjectRoot);
       await service.setupShadowGitRepository();

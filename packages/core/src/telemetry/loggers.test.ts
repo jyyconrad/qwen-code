@@ -67,7 +67,7 @@ describe('loggers', () => {
   });
 
   describe('logCliConfiguration', () => {
-    it('should log the cli configuration', () => {
+    it('应记录 CLI 配置', () => {
       const mockConfig = {
         getSessionId: () => 'test-session-id',
         getModel: () => 'test-model',
@@ -100,7 +100,7 @@ describe('loggers', () => {
       logCliConfiguration(mockConfig, startSessionEvent);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'CLI configuration loaded.',
+        body: 'CLI 配置已加载。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_CLI_CONFIG,
@@ -129,7 +129,7 @@ describe('loggers', () => {
       getUsageStatisticsEnabled: () => true,
     } as unknown as Config;
 
-    it('should log a user prompt', () => {
+    it('应记录用户提示', () => {
       const event = new UserPromptEvent(
         11,
         'prompt-id-8',
@@ -140,7 +140,7 @@ describe('loggers', () => {
       logUserPrompt(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'User prompt. Length: 11.',
+        body: '用户提示。长度：11。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_USER_PROMPT,
@@ -151,7 +151,7 @@ describe('loggers', () => {
       });
     });
 
-    it('should not log prompt if disabled', () => {
+    it('如果禁用则不应记录提示', () => {
       const mockConfig = {
         getSessionId: () => 'test-session-id',
         getTelemetryEnabled: () => true,
@@ -168,7 +168,7 @@ describe('loggers', () => {
       logUserPrompt(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'User prompt. Length: 11.',
+        body: '用户提示。长度：11。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_USER_PROMPT,
@@ -202,7 +202,7 @@ describe('loggers', () => {
       );
     });
 
-    it('should log an API response with all fields', () => {
+    it('应记录包含所有字段的 API 响应', () => {
       const usageData: GenerateContentResponseUsageMetadata = {
         promptTokenCount: 17,
         candidatesTokenCount: 50,
@@ -222,7 +222,7 @@ describe('loggers', () => {
       logApiResponse(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'API response from test-model. Status: 200. Duration: 100ms.',
+        body: '来自 test-model 的 API 响应。状态：200。持续时间：100ms。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_API_RESPONSE,
@@ -265,7 +265,7 @@ describe('loggers', () => {
       });
     });
 
-    it('should log an API response with an error', () => {
+    it('应记录带有错误的 API 响应', () => {
       const usageData: GenerateContentResponseUsageMetadata = {
         promptTokenCount: 17,
         candidatesTokenCount: 50,
@@ -286,7 +286,7 @@ describe('loggers', () => {
       logApiResponse(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'API response from test-model. Status: 200. Duration: 100ms.',
+        body: '来自 test-model 的 API 响应。状态：200。持续时间：100ms。',
         attributes: {
           'session.id': 'test-session-id',
           ...event,
@@ -313,7 +313,7 @@ describe('loggers', () => {
       getTelemetryLogPromptsEnabled: () => true,
     } as Config;
 
-    it('should log an API request with request_text', () => {
+    it('应记录带有 request_text 的 API 请求', () => {
       const event = new ApiRequestEvent(
         'test-model',
         'prompt-id-7',
@@ -323,7 +323,7 @@ describe('loggers', () => {
       logApiRequest(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'API request to test-model.',
+        body: '向 test-model 发起的 API 请求。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_API_REQUEST,
@@ -335,13 +335,13 @@ describe('loggers', () => {
       });
     });
 
-    it('should log an API request without request_text', () => {
+    it('应记录不带 request_text 的 API 请求', () => {
       const event = new ApiRequestEvent('test-model', 'prompt-id-6');
 
       logApiRequest(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'API request to test-model.',
+        body: '向 test-model 发起的 API 请求。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_API_REQUEST,
@@ -359,13 +359,13 @@ describe('loggers', () => {
       getUsageStatisticsEnabled: () => true,
     } as unknown as Config;
 
-    it('should log flash fallback event', () => {
+    it('应记录闪回降级事件', () => {
       const event = new FlashFallbackEvent(AuthType.USE_VERTEX_AI);
 
       logFlashFallback(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'Switching to flash as Fallback.',
+        body: '切换到闪回作为降级方案。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_FLASH_FALLBACK,
@@ -430,7 +430,7 @@ describe('loggers', () => {
       mockLogger.emit.mockReset();
     });
 
-    it('should log a tool call with all fields', () => {
+    it('应记录包含所有字段的工具调用', () => {
       const call: CompletedToolCall = {
         status: 'success',
         request: {
@@ -458,7 +458,7 @@ describe('loggers', () => {
       logToolCall(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'Tool call: test-function. Decision: accept. Success: true. Duration: 100ms.',
+        body: '工具调用：test-function。决策：接受。成功：true。持续时间：100ms。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_TOOL_CALL,
@@ -493,7 +493,7 @@ describe('loggers', () => {
         'event.timestamp': '2025-01-01T00:00:00.000Z',
       });
     });
-    it('should log a tool call with a reject decision', () => {
+    it('应记录带有拒绝决策的工具调用', () => {
       const call: ErroredToolCall = {
         status: 'error',
         request: {
@@ -520,7 +520,7 @@ describe('loggers', () => {
       logToolCall(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'Tool call: test-function. Decision: reject. Success: false. Duration: 100ms.',
+        body: '工具调用：test-function。决策：拒绝。成功：false。持续时间：100ms。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_TOOL_CALL,
@@ -556,7 +556,7 @@ describe('loggers', () => {
       });
     });
 
-    it('should log a tool call with a modify decision', () => {
+    it('应记录带有修改决策的工具调用', () => {
       const call: CompletedToolCall = {
         status: 'success',
         request: {
@@ -584,7 +584,7 @@ describe('loggers', () => {
       logToolCall(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'Tool call: test-function. Decision: modify. Success: true. Duration: 100ms.',
+        body: '工具调用：test-function。决策：修改。成功：true。持续时间：100ms。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_TOOL_CALL,
@@ -620,7 +620,7 @@ describe('loggers', () => {
       });
     });
 
-    it('should log a tool call without a decision', () => {
+    it('应记录不带决策的工具调用', () => {
       const call: CompletedToolCall = {
         status: 'success',
         request: {
@@ -647,7 +647,7 @@ describe('loggers', () => {
       logToolCall(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'Tool call: test-function. Success: true. Duration: 100ms.',
+        body: '工具调用：test-function。成功：true。持续时间：100ms。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_TOOL_CALL,
@@ -682,7 +682,7 @@ describe('loggers', () => {
       });
     });
 
-    it('should log a failed tool call with an error', () => {
+    it('应记录带有错误的失败工具调用', () => {
       const call: ErroredToolCall = {
         status: 'error',
         request: {
@@ -711,7 +711,7 @@ describe('loggers', () => {
       logToolCall(mockConfig, event);
 
       expect(mockLogger.emit).toHaveBeenCalledWith({
-        body: 'Tool call: test-function. Success: false. Duration: 100ms.',
+        body: '工具调用：test-function。成功：false。持续时间：100ms。',
         attributes: {
           'session.id': 'test-session-id',
           'event.name': EVENT_TOOL_CALL,

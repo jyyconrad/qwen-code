@@ -2,7 +2,7 @@
 
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -23,16 +23,16 @@ const projectHash = crypto
   .update(projectRoot)
   .digest('hex');
 
-// User-level .gemini directory in home
+// 用户级 .gemini 目录位于 home 中
 const USER_GEMINI_DIR = path.join(os.homedir(), '.iflycode');
-// Project-level .gemini directory in the workspace
+// 项目级 .gemini 目录位于工作区中
 const WORKSPACE_GEMINI_DIR = path.join(projectRoot, '.iflycode');
 
-// Telemetry artifacts are stored in a hashed directory under the user's ~/.iflycode/tmp
+// 遥测工件存储在用户 ~/.iflycode/tmp 下的哈希目录中
 export const OTEL_DIR = path.join(USER_GEMINI_DIR, 'tmp', projectHash, 'otel');
 export const BIN_DIR = path.join(OTEL_DIR, 'bin');
 
-// Workspace settings remain in the project's .gemini directory
+// 工作区设置保留在项目的 .gemini 目录中
 export const WORKSPACE_SETTINGS_FILE = path.join(
   WORKSPACE_GEMINI_DIR,
   'settings.json',
@@ -51,7 +51,7 @@ export function getJson(url) {
     const content = fs.readFileSync(tmpFile, 'utf-8');
     return JSON.parse(content);
   } catch (e) {
-    console.error(`Failed to fetch or parse JSON from ${url}`);
+    console.error(`无法从 ${url} 获取或解析 JSON`);
     throw e;
   } finally {
     if (fs.existsSync(tmpFile)) {
@@ -67,7 +67,7 @@ export function downloadFile(url, dest) {
     });
     return dest;
   } catch (e) {
-    console.error(`Failed to download file from ${url}`);
+    console.error(`无法从 ${url} 下载文件`);
     throw e;
   }
 }
@@ -102,7 +102,7 @@ export function readJsonFile(filePath) {
   try {
     return JSON.parse(content);
   } catch (e) {
-    console.error(`Error parsing JSON from ${filePath}: ${e.message}`);
+    console.error(`解析 ${filePath} 中的 JSON 出错: ${e.message}`);
     return {};
   }
 }
@@ -122,7 +122,7 @@ export function waitForPort(port, timeout = 10000) {
       });
       socket.once('error', (_) => {
         if (Date.now() - startTime > timeout) {
-          reject(new Error(`Timeout waiting for port ${port} to open.`));
+          reject(new Error(`等待端口 ${port} 打开超时。`));
         } else {
           setTimeout(tryConnect, 500);
         }
@@ -142,11 +142,11 @@ export async function ensureBinary(
 ) {
   const executablePath = path.join(BIN_DIR, executableName);
   if (fileExists(executablePath)) {
-    console.log(`✅ ${executableName} already exists at ${executablePath}`);
+    console.log(`✅ ${executableName} 已存在于 ${executablePath}`);
     return executablePath;
   }
 
-  console.log(`🔍 ${executableName} not found. Downloading from ${repo}...`);
+  console.log(`🔍 未找到 ${executableName}。正在从 ${repo} 下载...`);
 
   const platform = process.platform === 'win32' ? 'windows' : process.platform;
   const arch = process.arch === 'x64' ? 'amd64' : process.arch;
@@ -154,7 +154,7 @@ export async function ensureBinary(
 
   if (isJaeger && platform === 'windows' && arch === 'arm64') {
     console.warn(
-      `⚠️ Jaeger does not have a release for Windows on ARM64. Skipping.`,
+      `⚠️ Jaeger 没有 Windows ARM64 版本的发布。跳过。`,
     );
     return null;
   }
@@ -163,7 +163,7 @@ export async function ensureBinary(
   let asset;
 
   if (isJaeger) {
-    console.log(`🔍 Finding latest Jaeger v2+ asset...`);
+    console.log(`🔍 正在查找最新的 Jaeger v2+ 资产...`);
     const releases = getJson(`https://api.github.com/repos/${repo}/releases`);
     const sortedReleases = releases
       .filter((r) => !r.prerelease && r.tag_name.startsWith('v'))
@@ -191,14 +191,14 @@ export async function ensureBinary(
         release = r;
         asset = foundAsset;
         console.log(
-          `⬇️  Found ${asset.name} in release ${r.tag_name}, downloading...`,
+          `⬇️  在发布版本 ${r.tag_name} 中找到 ${asset.name}，正在下载...`,
         );
         break;
       }
     }
     if (!asset) {
       throw new Error(
-        `Could not find a suitable Jaeger v2 asset for platform ${platform}/${arch}.`,
+        `无法为平台 ${platform}/${arch} 找到合适的 Jaeger v2 资产。`,
       );
     }
   } else {
@@ -210,7 +210,7 @@ export async function ensureBinary(
     asset = release.assets.find((a) => a.name === assetName);
     if (!asset) {
       throw new Error(
-        `Could not find a suitable asset for ${repo} (version ${version}) on platform ${platform}/${arch}. Searched for: ${assetName}`,
+        `无法为 ${repo} (版本 ${version}) 在平台 ${platform}/${arch} 上找到合适的资产。搜索内容: ${assetName}`,
       );
     }
   }
@@ -222,9 +222,9 @@ export async function ensureBinary(
   const archivePath = path.join(tmpDir, asset.name);
 
   try {
-    console.log(`⬇️  Downloading ${asset.name}...`);
+    console.log(`⬇️  正在下载 ${asset.name}...`);
     downloadFile(downloadUrl, archivePath);
-    console.log(`📦 Extracting ${asset.name}...`);
+    console.log(`📦 正在解压 ${asset.name}...`);
 
     const actualExt = asset.name.endsWith('.zip') ? 'zip' : 'tar.gz';
 
@@ -244,7 +244,7 @@ export async function ensureBinary(
 
     if (!foundBinaryPath) {
       throw new Error(
-        `Could not find binary "${nameToFind}" in extracted archive at ${tmpDir}. Contents: ${fs.readdirSync(tmpDir).join(', ')}`,
+        `在解压的归档文件 ${tmpDir} 中找不到二进制文件 "${nameToFind}"。内容: ${fs.readdirSync(tmpDir).join(', ')}`,
       );
     }
 
@@ -254,7 +254,7 @@ export async function ensureBinary(
       fs.chmodSync(executablePath, '755');
     }
 
-    console.log(`✅ ${executableName} installed at ${executablePath}`);
+    console.log(`✅ ${executableName} 已安装到 ${executablePath}`);
     return executablePath;
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -282,38 +282,38 @@ export function manageTelemetrySettings(
     if (workspaceSettings.telemetry.enabled !== true) {
       workspaceSettings.telemetry.enabled = true;
       settingsModified = true;
-      console.log('⚙️  Enabled telemetry in workspace settings.');
+      console.log('⚙️  在工作区设置中启用遥测。');
     }
     if (workspaceSettings.sandbox !== false) {
       workspaceSettings.sandbox = false;
       settingsModified = true;
-      console.log('✅ Disabled sandbox mode for telemetry.');
+      console.log('✅ 为遥测禁用沙箱模式。');
     }
     if (workspaceSettings.telemetry.otlpEndpoint !== oTelEndpoint) {
       workspaceSettings.telemetry.otlpEndpoint = oTelEndpoint;
       settingsModified = true;
-      console.log(`🔧 Set telemetry OTLP endpoint to ${oTelEndpoint}.`);
+      console.log(`🔧 将遥测 OTLP 端点设置为 ${oTelEndpoint}。`);
     }
     if (workspaceSettings.telemetry.target !== target) {
       workspaceSettings.telemetry.target = target;
       settingsModified = true;
-      console.log(`🎯 Set telemetry target to ${target}.`);
+      console.log(`🎯 将遥测目标设置为 ${target}。`);
     }
   } else {
     if (workspaceSettings.telemetry.enabled === true) {
       delete workspaceSettings.telemetry.enabled;
       settingsModified = true;
-      console.log('⚙️  Disabled telemetry in workspace settings.');
+      console.log('⚙️  在工作区设置中禁用遥测。');
     }
     if (workspaceSettings.telemetry.otlpEndpoint) {
       delete workspaceSettings.telemetry.otlpEndpoint;
       settingsModified = true;
-      console.log('🔧 Cleared telemetry OTLP endpoint.');
+      console.log('🔧 清除遥测 OTLP 端点。');
     }
     if (workspaceSettings.telemetry.target) {
       delete workspaceSettings.telemetry.target;
       settingsModified = true;
-      console.log('🎯 Cleared telemetry target.');
+      console.log('🎯 清除遥测目标。');
     }
     if (Object.keys(workspaceSettings.telemetry).length === 0) {
       delete workspaceSettings.telemetry;
@@ -325,18 +325,18 @@ export function manageTelemetrySettings(
     ) {
       workspaceSettings.sandbox = originalSandboxSettingToRestore;
       settingsModified = true;
-      console.log('✅ Restored original sandbox setting.');
+      console.log('✅ 恢复原始沙箱设置。');
     }
   }
 
   if (settingsModified) {
     writeJsonFile(WORKSPACE_SETTINGS_FILE, workspaceSettings);
-    console.log('✅ Workspace settings updated.');
+    console.log('✅ 工作区设置已更新。');
   } else {
     console.log(
       enable
-        ? '✅ Workspace settings are already configured for telemetry.'
-        : '✅ Workspace settings already reflect telemetry disabled.',
+        ? '✅ 工作区设置已为遥测配置完成。'
+        : '✅ 工作区设置已反映遥测已禁用。',
     );
   }
   return currentSandboxSetting;
@@ -352,7 +352,7 @@ export function registerCleanup(
     if (cleanedUp) return;
     cleanedUp = true;
 
-    console.log('\n👋 Shutting down...');
+    console.log('\n👋 正在关闭...');
 
     manageTelemetrySettings(false, null, originalSandboxSetting);
 
@@ -361,12 +361,12 @@ export function registerCleanup(
       if (proc && proc.pid) {
         const name = path.basename(proc.spawnfile);
         try {
-          console.log(`🛑 Stopping ${name} (PID: ${proc.pid})...`);
+          console.log(`🛑 正在停止 ${name} (PID: ${proc.pid})...`);
           process.kill(proc.pid, 'SIGTERM');
-          console.log(`✅ ${name} stopped.`);
+          console.log(`✅ ${name} 已停止。`);
         } catch (e) {
           if (e.code !== 'ESRCH') {
-            console.error(`Error stopping ${name}: ${e.message}`);
+            console.error(`停止 ${name} 出错: ${e.message}`);
           }
         }
       }
@@ -380,7 +380,7 @@ export function registerCleanup(
         try {
           fs.closeSync(fd);
         } catch (_) {
-          /* no-op */
+          /* 无操作 */
         }
       }
     });
@@ -390,7 +390,7 @@ export function registerCleanup(
   process.on('SIGINT', () => process.exit(0));
   process.on('SIGTERM', () => process.exit(0));
   process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
+    console.error('未捕获的异常:', err);
     cleanup();
     process.exit(1);
   });

@@ -12,8 +12,8 @@ import * as path from 'path';
 const execAsync = promisify(exec);
 
 /**
- * Checks if the system clipboard contains an image (macOS only for now)
- * @returns true if clipboard contains an image
+ * 检查系统剪贴板是否包含图像（目前仅支持 macOS）
+ * @returns 如果剪贴板包含图像则返回 true
  */
 export async function clipboardHasImage(): Promise<boolean> {
   if (process.platform !== 'darwin') {
@@ -21,7 +21,7 @@ export async function clipboardHasImage(): Promise<boolean> {
   }
 
   try {
-    // Use osascript to check clipboard type
+    // 使用 osascript 检查剪贴板类型
     const { stdout } = await execAsync(
       `osascript -e 'clipboard info' 2>/dev/null | grep -qE "«class PNGf»|TIFF picture|JPEG picture|GIF picture|«class JPEG»|«class TIFF»" && echo "true" || echo "false"`,
       { shell: '/bin/bash' },
@@ -33,9 +33,9 @@ export async function clipboardHasImage(): Promise<boolean> {
 }
 
 /**
- * Saves the image from clipboard to a temporary file (macOS only for now)
- * @param targetDir The target directory to create temp files within
- * @returns The path to the saved image file, or null if no image or error
+ * 将剪贴板中的图像保存到临时文件（目前仅支持 macOS）
+ * @param targetDir 用于创建临时文件的目标目录
+ * @returns 保存的图像文件路径，如果没有图像或出错则返回 null
  */
 export async function saveClipboardImage(
   targetDir?: string,
@@ -45,16 +45,16 @@ export async function saveClipboardImage(
   }
 
   try {
-    // Create a temporary directory for clipboard images within the target directory
-    // This avoids security restrictions on paths outside the target directory
+    // 在目标目录内创建一个用于剪贴板图像的临时目录
+    // 这样可以避免对目标目录外路径的安全限制
     const baseDir = targetDir || process.cwd();
     const tempDir = path.join(baseDir, '.gemini-clipboard');
     await fs.mkdir(tempDir, { recursive: true });
 
-    // Generate a unique filename with timestamp
+    // 使用时间戳生成唯一的文件名
     const timestamp = new Date().getTime();
 
-    // Try different image formats in order of preference
+    // 按优先顺序尝试不同的图像格式
     const formats = [
       { class: 'PNGf', extension: 'png' },
       { class: 'JPEG', extension: 'jpg' },
@@ -68,7 +68,7 @@ export async function saveClipboardImage(
         `clipboard-${timestamp}.${format.extension}`,
       );
 
-      // Try to save clipboard as this format
+      // 尝试将剪贴板保存为此格式
       const script = `
         try
           set imageData to the clipboard as «class ${format.class}»
@@ -87,37 +87,37 @@ export async function saveClipboardImage(
       const { stdout } = await execAsync(`osascript -e '${script}'`);
 
       if (stdout.trim() === 'success') {
-        // Verify the file was created and has content
+        // 验证文件是否已创建且包含内容
         try {
           const stats = await fs.stat(tempFilePath);
           if (stats.size > 0) {
             return tempFilePath;
           }
         } catch {
-          // File doesn't exist, continue to next format
+          // 文件不存在，继续尝试下一种格式
         }
       }
 
-      // Clean up failed attempt
+      // 清理失败的尝试
       try {
         await fs.unlink(tempFilePath);
       } catch {
-        // Ignore cleanup errors
+        // 忽略清理错误
       }
     }
 
-    // No format worked
+    // 所有格式都失败了
     return null;
   } catch (error) {
-    console.error('Error saving clipboard image:', error);
+    console.error('保存剪贴板图像时出错:', error);
     return null;
   }
 }
 
 /**
- * Cleans up old temporary clipboard image files
- * Removes files older than 1 hour
- * @param targetDir The target directory where temp files are stored
+ * 清理旧的临时剪贴板图像文件
+ * 删除超过 1 小时的文件
+ * @param targetDir 存储临时文件的目标目录
  */
 export async function cleanupOldClipboardImages(
   targetDir?: string,
@@ -144,6 +144,6 @@ export async function cleanupOldClipboardImages(
       }
     }
   } catch {
-    // Ignore errors in cleanup
+    // 忽略清理过程中的错误
   }
 }

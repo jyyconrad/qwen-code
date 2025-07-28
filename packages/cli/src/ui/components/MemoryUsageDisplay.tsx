@@ -23,7 +23,7 @@ export const MemoryUsageDisplay: React.FC = () => {
       );
     };
     const intervalId = setInterval(updateMemory, 2000);
-    updateMemory(); // Initial update
+    updateMemory(); // 初始更新
     return () => clearInterval(intervalId);
   }, []);
 

@@ -1,21 +1,19 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// 根据 Apache 许可证 2.0 版（“许可证”）获得许可；
+// 除非符合许可证要求，否则您不得使用此文件。
+// 您可以在以下位置获取许可证副本：
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unless required by applicable law_or_agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// 除非适用法律要求或书面同意，否则根据许可证分发的软件
+// 是按“原样”分发的，不附带任何明示或暗示的担保。
+// 请参阅许可证以了解特定语言的管理权限和限制。
 
 import { spawn, execSync } from 'child_process';
 import { dirname, join } from 'path';
@@ -26,7 +24,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf-8'));
 
-// check build status, write warnings to file for app to display if needed
+// 检查构建状态，将警告写入文件以便应用程序在需要时显示
 execSync('node ./scripts/check-build-status.js', {
   stdio: 'inherit',
   cwd: root,
@@ -41,11 +39,11 @@ try {
     .toString()
     .trim();
 } catch {
-  // ignore
+  // 忽略
 }
-// if debugging is enabled and sandboxing is disabled, use --inspect-brk flag
-// note with sandboxing this flag is passed to the binary inside the sandbox
-// inside sandbox SANDBOX should be set and sandbox_command.js should fail
+// 如果启用了调试且禁用了沙箱，则使用 --inspect-brk 标志
+// 注意：使用沙箱时，此标志会传递给沙箱内的二进制文件
+// 在沙箱内应设置 SANDBOX，sandbox_command.js 应该失败
 if (process.env.DEBUG && !sandboxCommand) {
   if (process.env.SANDBOX) {
     const port = process.env.DEBUG_PORT || '9229';
@@ -65,8 +63,8 @@ const env = {
 };
 
 if (process.env.DEBUG) {
-  // If this is not set, the debugger will pause on the outer process rather
-  // than the relaunched process making it harder to debug.
+  // 如果未设置此选项，调试器将暂停外部进程而不是重新启动的进程，
+  // 这会使调试变得更加困难。
   env.GEMINI_CLI_NO_RELAUNCH = 'true';
 }
 const child = spawn('node', nodeArgs, { stdio: 'inherit', env });

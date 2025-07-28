@@ -19,11 +19,11 @@ describe('useLoadingIndicator', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers(); // Restore real timers after each test
+    vi.useRealTimers(); // 每次测试后恢复真实计时器
     act(() => vi.runOnlyPendingTimers);
   });
 
-  it('should initialize with default values when Idle', () => {
+  it('应在空闲时使用默认值初始化', () => {
     const { result } = renderHook(() =>
       useLoadingIndicator(StreamingState.Idle),
     );
@@ -31,12 +31,12 @@ describe('useLoadingIndicator', () => {
     expect(result.current.currentLoadingPhrase).toBe(WITTY_LOADING_PHRASES[0]);
   });
 
-  it('should reflect values when Responding', async () => {
+  it('应在响应时反映值', async () => {
     const { result } = renderHook(() =>
       useLoadingIndicator(StreamingState.Responding),
     );
 
-    // Initial state before timers advance
+    // 计时器推进前的初始状态
     expect(result.current.elapsedTime).toBe(0);
     expect(WITTY_LOADING_PHRASES).toContain(
       result.current.currentLoadingPhrase,
@@ -46,13 +46,13 @@ describe('useLoadingIndicator', () => {
       await vi.advanceTimersByTimeAsync(PHRASE_CHANGE_INTERVAL_MS + 1);
     });
 
-    // Phrase should cycle if PHRASE_CHANGE_INTERVAL_MS has passed
+    // 如果已过去 PHRASE_CHANGE_INTERVAL_MS，短语应循环
     expect(WITTY_LOADING_PHRASES).toContain(
       result.current.currentLoadingPhrase,
     );
   });
 
-  it('should show waiting phrase and retain elapsedTime when WaitingForConfirmation', async () => {
+  it('在等待确认时应显示等待短语并保留 elapsedTime', async () => {
     const { result, rerender } = renderHook(
       ({ streamingState }) => useLoadingIndicator(streamingState),
       { initialProps: { streamingState: StreamingState.Responding } },
@@ -68,25 +68,25 @@ describe('useLoadingIndicator', () => {
     });
 
     expect(result.current.currentLoadingPhrase).toBe(
-      'Waiting for user confirmation...',
+      '等待用户确认...',
     );
-    expect(result.current.elapsedTime).toBe(60); // Elapsed time should be retained
+    expect(result.current.elapsedTime).toBe(60); // 应保留已用时间
 
-    // Timer should not advance further
+    // 计时器不应继续推进
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2000);
     });
     expect(result.current.elapsedTime).toBe(60);
   });
 
-  it('should reset elapsedTime and use a witty phrase when transitioning from WaitingForConfirmation to Responding', async () => {
+  it('从等待确认转换到响应时应重置 elapsedTime 并使用机智短语', async () => {
     const { result, rerender } = renderHook(
       ({ streamingState }) => useLoadingIndicator(streamingState),
       { initialProps: { streamingState: StreamingState.Responding } },
     );
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(5000); // 5s
+      await vi.advanceTimersByTimeAsync(5000); // 5秒
     });
     expect(result.current.elapsedTime).toBe(5);
 
@@ -95,13 +95,13 @@ describe('useLoadingIndicator', () => {
     });
     expect(result.current.elapsedTime).toBe(5);
     expect(result.current.currentLoadingPhrase).toBe(
-      'Waiting for user confirmation...',
+      '等待用户确认...',
     );
 
     act(() => {
       rerender({ streamingState: StreamingState.Responding });
     });
-    expect(result.current.elapsedTime).toBe(0); // Should reset
+    expect(result.current.elapsedTime).toBe(0); // 应重置
     expect(WITTY_LOADING_PHRASES).toContain(
       result.current.currentLoadingPhrase,
     );
@@ -112,14 +112,14 @@ describe('useLoadingIndicator', () => {
     expect(result.current.elapsedTime).toBe(1);
   });
 
-  it('should reset timer and phrase when streamingState changes from Responding to Idle', async () => {
+  it('当 streamingState 从响应变为空闲时应重置计时器和短语', async () => {
     const { result, rerender } = renderHook(
       ({ streamingState }) => useLoadingIndicator(streamingState),
       { initialProps: { streamingState: StreamingState.Responding } },
     );
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(10000); // 10s
+      await vi.advanceTimersByTimeAsync(10000); // 10秒
     });
     expect(result.current.elapsedTime).toBe(10);
 
@@ -130,7 +130,7 @@ describe('useLoadingIndicator', () => {
     expect(result.current.elapsedTime).toBe(0);
     expect(result.current.currentLoadingPhrase).toBe(WITTY_LOADING_PHRASES[0]);
 
-    // Timer should not advance
+    // 计时器不应推进
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2000);
     });

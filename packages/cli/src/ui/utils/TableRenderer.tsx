@@ -16,24 +16,24 @@ interface TableRendererProps {
 }
 
 /**
- * Custom table renderer for markdown tables
- * We implement our own instead of using ink-table due to module compatibility issues
+ * 用于 markdown 表格的自定义表格渲染器
+ * 我们自己实现而不是使用 ink-table 是因为模块兼容性问题
  */
 export const TableRenderer: React.FC<TableRendererProps> = ({
   headers,
   rows,
   terminalWidth,
 }) => {
-  // Calculate column widths using actual display width after markdown processing
+  // 使用 markdown 处理后的实际显示宽度来计算列宽
   const columnWidths = headers.map((header, index) => {
     const headerWidth = getPlainTextLength(header);
     const maxRowWidth = Math.max(
       ...rows.map((row) => getPlainTextLength(row[index] || '')),
     );
-    return Math.max(headerWidth, maxRowWidth) + 2; // Add padding
+    return Math.max(headerWidth, maxRowWidth) + 2; // 添加内边距
   });
 
-  // Ensure table fits within terminal width
+  // 确保表格适合终端宽度
   const totalWidth = columnWidths.reduce((sum, width) => sum + width + 1, 1);
   const scaleFactor =
     totalWidth > terminalWidth ? terminalWidth / totalWidth : 1;
@@ -41,7 +41,7 @@ export const TableRenderer: React.FC<TableRendererProps> = ({
     Math.floor(width * scaleFactor),
   );
 
-  // Helper function to render a cell with proper width
+  // 渲染具有适当宽度的单元格的辅助函数
   const renderCell = (
     content: string,
     width: number,
@@ -53,18 +53,18 @@ export const TableRenderer: React.FC<TableRendererProps> = ({
     let cellContent = content;
     if (displayWidth > contentWidth) {
       if (contentWidth <= 3) {
-        // Just truncate by character count
+        // 仅按字符数截断
         cellContent = content.substring(
           0,
           Math.min(content.length, contentWidth),
         );
       } else {
-        // Truncate preserving markdown formatting using binary search
+        // 使用二分搜索保留 markdown 格式的截断
         let left = 0;
         let right = content.length;
         let bestTruncated = content;
 
-        // Binary search to find the optimal truncation point
+        // 二分搜索找到最佳截断点
         while (left <= right) {
           const mid = Math.floor((left + right) / 2);
           const candidate = content.substring(0, mid);
@@ -82,7 +82,7 @@ export const TableRenderer: React.FC<TableRendererProps> = ({
       }
     }
 
-    // Calculate exact padding needed
+    // 计算所需的确切填充
     const actualDisplayWidth = getPlainTextLength(cellContent);
     const paddingNeeded = Math.max(0, contentWidth - actualDisplayWidth);
 
@@ -100,7 +100,7 @@ export const TableRenderer: React.FC<TableRendererProps> = ({
     );
   };
 
-  // Helper function to render border
+  // 渲染边框的辅助函数
   const renderBorder = (type: 'top' | 'middle' | 'bottom'): React.ReactNode => {
     const chars = {
       top: { left: '┌', middle: '┬', right: '┐', horizontal: '─' },
@@ -115,7 +115,7 @@ export const TableRenderer: React.FC<TableRendererProps> = ({
     return <Text>{border}</Text>;
   };
 
-  // Helper function to render a table row
+  // 渲染表格行的辅助函数
   const renderRow = (cells: string[], isHeader = false): React.ReactNode => {
     const renderedCells = cells.map((cell, index) => {
       const width = adjustedWidths[index] || 0;
@@ -138,21 +138,21 @@ export const TableRenderer: React.FC<TableRendererProps> = ({
 
   return (
     <Box flexDirection="column" marginY={1}>
-      {/* Top border */}
+      {/* 顶边框 */}
       {renderBorder('top')}
 
-      {/* Header row */}
+      {/* 表头行 */}
       {renderRow(headers, true)}
 
-      {/* Middle border */}
+      {/* 中间边框 */}
       {renderBorder('middle')}
 
-      {/* Data rows */}
+      {/* 数据行 */}
       {rows.map((row, index) => (
         <React.Fragment key={index}>{renderRow(row)}</React.Fragment>
       ))}
 
-      {/* Bottom border */}
+      {/* 底边框 */}
       {renderBorder('bottom')}
     </Box>
   );

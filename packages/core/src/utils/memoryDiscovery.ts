@@ -16,8 +16,8 @@ import {
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { processImports } from './memoryImportProcessor.js';
 
-// Simple console logger, similar to the one previously in CLI's config.ts
-// TODO: Integrate with a more robust server-side logger if available/appropriate.
+// 简单的控制台日志记录器，类似于之前 CLI config.ts 中的日志记录器
+// TODO: 如果可用/合适，集成更强大的服务器端日志记录器。
 const logger = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   debug: (...args: any[]) =>
@@ -46,27 +46,27 @@ async function findProjectRoot(startDir: string): Promise<string | null> {
         return currentDir;
       }
     } catch (error: unknown) {
-      // Don't log ENOENT errors as they're expected when .git doesn't exist
-      // Also don't log errors in test environments, which often have mocked fs
+      // 不记录 ENOENT 错误，因为当 .git 不存在时这是预期的
+      // 在测试环境中也不记录错误，测试环境通常有模拟的 fs
       const isENOENT =
         typeof error === 'object' &&
         error !== null &&
         'code' in error &&
         (error as { code: string }).code === 'ENOENT';
 
-      // Only log unexpected errors in non-test environments
-      // process.env.NODE_ENV === 'test' or VITEST are common test indicators
+      // 仅在非测试环境中记录意外错误
+      // process.env.NODE_ENV === 'test' 或 VITEST 是常见的测试环境标识
       const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST;
 
       if (!isENOENT && !isTestEnv) {
         if (typeof error === 'object' && error !== null && 'code' in error) {
           const fsError = error as { code: string; message: string };
           logger.warn(
-            `Error checking for .git directory at ${gitPath}: ${fsError.message}`,
+            `检查 .git 目录时出错 ${gitPath}: ${fsError.message}`,
           );
         } else {
           logger.warn(
-            `Non-standard error checking for .git directory at ${gitPath}: ${String(error)}`,
+            `检查 .git 目录时出现非标准错误 ${gitPath}: ${String(error)}`,
           );
         }
       }
@@ -100,49 +100,49 @@ async function getGeminiMdFilePathsInternal(
 
     if (debugMode)
       logger.debug(
-        `Searching for ${geminiMdFilename} starting from CWD: ${resolvedCwd}`,
+        `从 CWD 开始搜索 ${geminiMdFilename}: ${resolvedCwd}`,
       );
-    if (debugMode) logger.debug(`User home directory: ${resolvedHome}`);
+    if (debugMode) logger.debug(`用户主目录: ${resolvedHome}`);
 
     try {
       await fs.access(globalMemoryPath, fsSync.constants.R_OK);
       allPaths.add(globalMemoryPath);
       if (debugMode)
         logger.debug(
-          `Found readable global ${geminiMdFilename}: ${globalMemoryPath}`,
+          `找到可读的全局 ${geminiMdFilename}: ${globalMemoryPath}`,
         );
     } catch {
       if (debugMode)
         logger.debug(
-          `Global ${geminiMdFilename} not found or not readable: ${globalMemoryPath}`,
+          `全局 ${geminiMdFilename} 未找到或不可读: ${globalMemoryPath}`,
         );
     }
 
     const projectRoot = await findProjectRoot(resolvedCwd);
     if (debugMode)
-      logger.debug(`Determined project root: ${projectRoot ?? 'None'}`);
+      logger.debug(`确定项目根目录: ${projectRoot ?? 'None'}`);
 
     const upwardPaths: string[] = [];
     let currentDir = resolvedCwd;
-    // Determine the directory that signifies the top of the project or user-specific space.
+    // 确定表示项目顶部或用户特定空间的目录。
     const ultimateStopDir = projectRoot
       ? path.dirname(projectRoot)
       : path.dirname(resolvedHome);
 
     while (currentDir && currentDir !== path.dirname(currentDir)) {
-      // Loop until filesystem root or currentDir is empty
+      // 循环直到文件系统根目录或 currentDir 为空
       if (debugMode) {
         logger.debug(
-          `Checking for ${geminiMdFilename} in (upward scan): ${currentDir}`,
+          `检查 ${geminiMdFilename} (向上扫描): ${currentDir}`,
         );
       }
 
-      // Skip the global .gemini directory itself during upward scan from CWD,
-      // as global is handled separately and explicitly first.
+      // 在从 CWD 向上扫描时跳过全局 .gemini 目录本身，
+      // 因为全局路径是单独且明确地首先处理的。
       if (currentDir === path.join(resolvedHome, GEMINI_CONFIG_DIR)) {
         if (debugMode) {
           logger.debug(
-            `Upward scan reached global config dir path, stopping upward search here: ${currentDir}`,
+            `向上扫描到达全局配置目录路径，停止向上搜索: ${currentDir}`,
           );
         }
         break;
@@ -151,28 +151,28 @@ async function getGeminiMdFilePathsInternal(
       const potentialPath = path.join(currentDir, geminiMdFilename);
       try {
         await fs.access(potentialPath, fsSync.constants.R_OK);
-        // Add to upwardPaths only if it's not the already added globalMemoryPath
+        // 仅当不是已添加的 globalMemoryPath 时才添加到 upwardPaths
         if (potentialPath !== globalMemoryPath) {
           upwardPaths.unshift(potentialPath);
           if (debugMode) {
             logger.debug(
-              `Found readable upward ${geminiMdFilename}: ${potentialPath}`,
+              `找到可读的向上 ${geminiMdFilename}: ${potentialPath}`,
             );
           }
         }
       } catch {
         if (debugMode) {
           logger.debug(
-            `Upward ${geminiMdFilename} not found or not readable in: ${currentDir}`,
+            `向上 ${geminiMdFilename} 在以下位置未找到或不可读: ${currentDir}`,
           );
         }
       }
 
-      // Stop condition: if currentDir is the ultimateStopDir, break after this iteration.
+      // 停止条件：如果 currentDir 是 ultimateStopDir，则在此迭代后中断。
       if (currentDir === ultimateStopDir) {
         if (debugMode)
           logger.debug(
-            `Reached ultimate stop directory for upward scan: ${currentDir}`,
+            `到达向上扫描的最终停止目录: ${currentDir}`,
           );
         break;
       }
@@ -187,20 +187,20 @@ async function getGeminiMdFilePathsInternal(
       debug: debugMode,
       fileService,
     });
-    downwardPaths.sort(); // Sort for consistent ordering, though hierarchy might be more complex
+    downwardPaths.sort(); // 排序以保持一致的顺序，尽管层次结构可能更复杂
     if (debugMode && downwardPaths.length > 0)
       logger.debug(
-        `Found downward ${geminiMdFilename} files (sorted): ${JSON.stringify(
+        `找到向下 ${geminiMdFilename} 文件 (已排序): ${JSON.stringify(
           downwardPaths,
         )}`,
       );
-    // Add downward paths only if they haven't been included already (e.g. from upward scan)
+    // 仅当尚未包含时才添加向下路径（例如来自向上扫描）
     for (const dPath of downwardPaths) {
       allPaths.add(dPath);
     }
   }
 
-  // Add extension context file paths
+  // 添加扩展上下文文件路径
   for (const extensionPath of extensionContextFilePaths) {
     allPaths.add(extensionPath);
   }
@@ -209,7 +209,7 @@ async function getGeminiMdFilePathsInternal(
 
   if (debugMode)
     logger.debug(
-      `Final ordered ${getAllGeminiMdFilenames()} paths to read: ${JSON.stringify(
+      `最终排序的 ${getAllGeminiMdFilenames()} 路径以供读取: ${JSON.stringify(
         finalPaths,
       )}`,
     );
@@ -225,7 +225,7 @@ async function readGeminiMdFiles(
     try {
       const content = await fs.readFile(filePath, 'utf-8');
 
-      // Process imports in the content
+      // 处理内容中的导入
       const processedContent = await processImports(
         content,
         path.dirname(filePath),
@@ -235,18 +235,18 @@ async function readGeminiMdFiles(
       results.push({ filePath, content: processedContent });
       if (debugMode)
         logger.debug(
-          `Successfully read and processed imports: ${filePath} (Length: ${processedContent.length})`,
+          `成功读取并处理导入: ${filePath} (长度: ${processedContent.length})`,
         );
     } catch (error: unknown) {
       const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST;
       if (!isTestEnv) {
         const message = error instanceof Error ? error.message : String(error);
         logger.warn(
-          `Warning: Could not read ${getAllGeminiMdFilenames()} file at ${filePath}. Error: ${message}`,
+          `警告: 无法读取 ${getAllGeminiMdFilenames()} 文件 ${filePath}. 错误: ${message}`,
         );
       }
-      results.push({ filePath, content: null }); // Still include it with null content
-      if (debugMode) logger.debug(`Failed to read: ${filePath}`);
+      results.push({ filePath, content: null }); // 仍然包含但内容为 null
+      if (debugMode) logger.debug(`读取失败: ${filePath}`);
     }
   }
   return results;
@@ -254,7 +254,7 @@ async function readGeminiMdFiles(
 
 function concatenateInstructions(
   instructionContents: GeminiFileContent[],
-  // CWD is needed to resolve relative paths for display markers
+  // 需要 CWD 来解析显示标记的相对路径
   currentWorkingDirectoryForDisplay: string,
 ): string {
   return instructionContents
@@ -267,15 +267,15 @@ function concatenateInstructions(
       const displayPath = path.isAbsolute(item.filePath)
         ? path.relative(currentWorkingDirectoryForDisplay, item.filePath)
         : item.filePath;
-      return `--- Context from: ${displayPath} ---\n${trimmedContent}\n--- End of Context from: ${displayPath} ---`;
+      return `--- 来自的上下文: ${displayPath} ---\n${trimmedContent}\n--- 来自的上下文结束: ${displayPath} ---`;
     })
     .filter((block): block is string => block !== null)
     .join('\n\n');
 }
 
 /**
- * Loads hierarchical GEMINI.md files and concatenates their content.
- * This function is intended for use by the server.
+ * 加载分层的 GEMINI.md 文件并连接其内容。
+ * 此函数供服务器使用。
  */
 export async function loadServerHierarchicalMemory(
   currentWorkingDirectory: string,
@@ -285,10 +285,10 @@ export async function loadServerHierarchicalMemory(
 ): Promise<{ memoryContent: string; fileCount: number }> {
   if (debugMode)
     logger.debug(
-      `Loading server hierarchical memory for CWD: ${currentWorkingDirectory}`,
+      `为 CWD 加载服务器分层内存: ${currentWorkingDirectory}`,
     );
-  // For the server, homedir() refers to the server process's home.
-  // This is consistent with how MemoryTool already finds the global path.
+  // 对于服务器，homedir() 指的是服务器进程的主目录。
+  // 这与 MemoryTool 查找全局路径的方式一致。
   const userHomePath = homedir();
   const filePaths = await getGeminiMdFilePathsInternal(
     currentWorkingDirectory,
@@ -298,22 +298,22 @@ export async function loadServerHierarchicalMemory(
     extensionContextFilePaths,
   );
   if (filePaths.length === 0) {
-    if (debugMode) logger.debug('No GEMINI.md files found in hierarchy.');
+    if (debugMode) logger.debug('在层次结构中未找到 GEMINI.md 文件。');
     return { memoryContent: '', fileCount: 0 };
   }
   const contentsWithPaths = await readGeminiMdFiles(filePaths, debugMode);
-  // Pass CWD for relative path display in concatenated content
+  // 传递 CWD 用于连接内容中的相对路径显示
   const combinedInstructions = concatenateInstructions(
     contentsWithPaths,
     currentWorkingDirectory,
   );
   if (debugMode)
     logger.debug(
-      `Combined instructions length: ${combinedInstructions.length}`,
+      `组合指令长度: ${combinedInstructions.length}`,
     );
   if (debugMode && combinedInstructions.length > 0)
     logger.debug(
-      `Combined instructions (snippet): ${combinedInstructions.substring(0, 500)}...`,
+      `组合指令 (片段): ${combinedInstructions.substring(0, 500)}...`,
     );
   return { memoryContent: combinedInstructions, fileCount: filePaths.length };
 }

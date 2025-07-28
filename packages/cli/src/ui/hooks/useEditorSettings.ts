@@ -49,14 +49,14 @@ export const useEditorSettings = (
         addItem(
           {
             type: MessageType.INFO,
-            text: `Editor preference ${editorType ? `set to "${editorType}"` : 'cleared'} in ${scope} settings.`,
+            text: `编辑器偏好设置 ${editorType ? `已设置为 "${editorType}"` : '已清除'} 于 ${scope} 设置中。`,
           },
           Date.now(),
         );
         setEditorError(null);
         setIsEditorDialogOpen(false);
       } catch (error) {
-        setEditorError(`Failed to set editor preference: ${error}`);
+        setEditorError(`设置编辑器偏好失败: ${error}`);
       }
     },
     [loadedSettings, setEditorError, addItem],

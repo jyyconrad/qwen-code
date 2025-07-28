@@ -13,8 +13,8 @@ import { StreamingState } from '../types.js';
 
 interface GeminiRespondingSpinnerProps {
   /**
-   * Optional string to display when not in Responding state.
-   * If not provided and not Responding, renders null.
+   * 可选字符串，用于非响应状态时显示。
+   * 如果未提供且不处于响应状态，则渲染为 null。
    */
   nonRespondingDisplay?: string;
   spinnerType?: SpinnerName;

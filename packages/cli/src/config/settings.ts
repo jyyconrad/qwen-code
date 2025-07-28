@@ -71,21 +71,21 @@ export interface Settings {
   autoConfigureMaxOldSpaceSize?: boolean;
   enableOpenAILogging?: boolean;
 
-  // Git-aware file filtering settings
+  // Git感知的文件过滤设置
   fileFiltering?: {
     respectGitIgnore?: boolean;
     enableRecursiveFileSearch?: boolean;
   };
 
-  // UI setting. Does not display the ANSI-controlled terminal title.
+  // UI 设置。不显示 ANSI 控制的终端标题。
   hideWindowTitle?: boolean;
   hideTips?: boolean;
   hideBanner?: boolean;
 
-  // Setting for setting maximum number of user/model/tool turns in a session.
+  // 设置会话中用户/模型/工具交互的最大轮数。
   maxSessionTurns?: number;
 
-  // Sampling parameters for content generation
+  // 内容生成的采样参数
   sampling_params?: {
     top_p?: number;
     top_k?: number;
@@ -96,7 +96,7 @@ export interface Settings {
     max_tokens?: number;
   };
 
-  // Add other settings here.
+  // 在此处添加其他设置。
   ideMode?: boolean;
 }
 
@@ -151,7 +151,7 @@ export class LoadedSettings {
       case SettingScope.System:
         return this.system;
       default:
-        throw new Error(`Invalid scope: ${scope}`);
+        throw new Error(`无效的作用域: ${scope}`);
     }
   }
 
@@ -161,7 +161,7 @@ export class LoadedSettings {
     value: string | Record<string, MCPServerConfig> | undefined,
   ): void {
     const settingsFile = this.forScope(scope);
-    // @ts-expect-error - value can be string | Record<string, MCPServerConfig>
+    // @ts-expect-error - value 可以是 string | Record<string, MCPServerConfig>
     settingsFile.settings[key] = value;
     this._merged = this.computeMergedSettings();
     saveSettings(settingsFile);
@@ -169,7 +169,7 @@ export class LoadedSettings {
 }
 
 function resolveEnvVarsInString(value: string): string {
-  const envVarRegex = /\$(?:(\w+)|{([^}]+)})/g; // Find $VAR_NAME or ${VAR_NAME}
+  const envVarRegex = /\$(?:(\w+)|{([^}]+)})/g; // 查找 $VAR_NAME 或 ${VAR_NAME}
   return value.replace(envVarRegex, (match, varName1, varName2) => {
     const varName = varName1 || varName2;
     if (process && process.env && typeof process.env[varName] === 'string') {
@@ -213,7 +213,7 @@ function resolveEnvVarsInObject<T>(obj: T): T {
 function findEnvFile(startDir: string): string | null {
   let currentDir = path.resolve(startDir);
   while (true) {
-    // prefer gemini-specific .env under GEMINI_DIR
+    // 优先使用 GEMINI_DIR 下的 gemini-specific .env
     const geminiEnvPath = path.join(currentDir, GEMINI_DIR, '.env');
     if (fs.existsSync(geminiEnvPath)) {
       return geminiEnvPath;
@@ -224,7 +224,7 @@ function findEnvFile(startDir: string): string | null {
     }
     const parentDir = path.dirname(currentDir);
     if (parentDir === currentDir || !parentDir) {
-      // check .env under home as fallback, again preferring gemini-specific .env
+      // 检查 home 下的 .env 作为后备，同样优先使用 gemini-specific .env
       const homeGeminiEnvPath = path.join(homedir(), GEMINI_DIR, '.env');
       if (fs.existsSync(homeGeminiEnvPath)) {
         return homeGeminiEnvPath;
@@ -240,23 +240,22 @@ function findEnvFile(startDir: string): string | null {
 }
 
 export function setUpCloudShellEnvironment(envFilePath: string | null): void {
-  // Special handling for GOOGLE_CLOUD_PROJECT in Cloud Shell:
-  // Because GOOGLE_CLOUD_PROJECT in Cloud Shell tracks the project
-  // set by the user using "gcloud config set project" we do not want to
-  // use its value. So, unless the user overrides GOOGLE_CLOUD_PROJECT in
-  // one of the .env files, we set the Cloud Shell-specific default here.
+  // Cloud Shell 中 GOOGLE_CLOUD_PROJECT 的特殊处理：
+  // 因为 Cloud Shell 中的 GOOGLE_CLOUD_PROJECT 跟踪用户使用 "gcloud config set project"
+  // 设置的项目，我们不希望使用其值。因此，除非用户在 .env 文件之一中覆盖
+  // GOOGLE_CLOUD_PROJECT，否则我们在此处设置 Cloud Shell 特定的默认值。
   if (envFilePath && fs.existsSync(envFilePath)) {
     const envFileContent = fs.readFileSync(envFilePath);
     const parsedEnv = dotenv.parse(envFileContent);
     if (parsedEnv.GOOGLE_CLOUD_PROJECT) {
-      // .env file takes precedence in Cloud Shell
+      // .env 文件在 Cloud Shell 中优先
       process.env.GOOGLE_CLOUD_PROJECT = parsedEnv.GOOGLE_CLOUD_PROJECT;
     } else {
-      // If not in .env, set to default and override global
+      // 如果不在 .env 中，则设置为默认值并覆盖全局值
       process.env.GOOGLE_CLOUD_PROJECT = 'cloudshell-gca';
     }
   } else {
-    // If no .env file, set to default and override global
+    // 如果没有 .env 文件，则设置为默认值并覆盖全局值
     process.env.GOOGLE_CLOUD_PROJECT = 'cloudshell-gca';
   }
 }
@@ -274,8 +273,8 @@ export function loadEnvironment(): void {
 }
 
 /**
- * Loads settings from user and workspace directories.
- * Project settings override user settings.
+ * 从用户和工作区目录加载设置。
+ * 项目设置会覆盖用户设置。
  */
 export function loadSettings(workspaceDir: string): LoadedSettings {
   loadEnvironment();
@@ -284,7 +283,7 @@ export function loadSettings(workspaceDir: string): LoadedSettings {
   let workspaceSettings: Settings = {};
   const settingsErrors: SettingsError[] = [];
 
-  // Load system settings
+  // 加载系统设置
   try {
     if (fs.existsSync(SYSTEM_SETTINGS_PATH)) {
       const systemContent = fs.readFileSync(SYSTEM_SETTINGS_PATH, 'utf-8');
@@ -300,7 +299,7 @@ export function loadSettings(workspaceDir: string): LoadedSettings {
     });
   }
 
-  // Load user settings
+  // 加载用户设置
   try {
     if (fs.existsSync(USER_SETTINGS_PATH)) {
       const userContent = fs.readFileSync(USER_SETTINGS_PATH, 'utf-8');
@@ -308,7 +307,7 @@ export function loadSettings(workspaceDir: string): LoadedSettings {
         stripJsonComments(userContent),
       ) as Settings;
       userSettings = resolveEnvVarsInObject(parsedUserSettings);
-      // Support legacy theme names
+      // 支持旧版主题名称
       if (userSettings.theme && userSettings.theme === 'VS') {
         userSettings.theme = DefaultLight.name;
       } else if (userSettings.theme && userSettings.theme === 'VS2015') {
@@ -328,7 +327,7 @@ export function loadSettings(workspaceDir: string): LoadedSettings {
     'settings.json',
   );
 
-  // Load workspace settings
+  // 加载工作区设置
   try {
     if (fs.existsSync(workspaceSettingsPath)) {
       const projectContent = fs.readFileSync(workspaceSettingsPath, 'utf-8');
@@ -371,7 +370,7 @@ export function loadSettings(workspaceDir: string): LoadedSettings {
 
 export function saveSettings(settingsFile: SettingsFile): void {
   try {
-    // Ensure the directory exists
+    // 确保目录存在
     const dirPath = path.dirname(settingsFile.path);
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath, { recursive: true });
@@ -383,6 +382,6 @@ export function saveSettings(settingsFile: SettingsFile): void {
       'utf-8',
     );
   } catch (error) {
-    console.error('Error saving user settings file:', error);
+    console.error('保存用户设置文件时出错:', error);
   }
 }

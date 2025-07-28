@@ -16,10 +16,10 @@ export const formatMemoryUsage = (bytes: number): string => {
 };
 
 /**
- * Formats a duration in milliseconds into a concise, human-readable string (e.g., "1h 5s").
- * It omits any time units that are zero.
- * @param milliseconds The duration in milliseconds.
- * @returns A formatted string representing the duration.
+ * 将毫秒时间格式化为简洁、可读的字符串（例如："1h 5s"）。
+ * 它会省略任何为零的时间单位。
+ * @param milliseconds 持续时间（毫秒）。
+ * @returns 表示持续时间的格式化字符串。
  */
 export const formatDuration = (milliseconds: number): string => {
   if (milliseconds <= 0) {
@@ -52,7 +52,7 @@ export const formatDuration = (milliseconds: number): string => {
     parts.push(`${seconds}s`);
   }
 
-  // If all parts are zero (e.g., exactly 1 hour), return the largest unit.
+  // 如果所有部分都为零（例如，正好1小时），则返回最大单位。
   if (parts.length === 0) {
     if (hours > 0) return `${hours}h`;
     if (minutes > 0) return `${minutes}m`;

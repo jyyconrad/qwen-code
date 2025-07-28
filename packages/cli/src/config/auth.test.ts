@@ -40,7 +40,7 @@ describe('validateAuthMethod', () => {
 
     it('should return an error message if GEMINI_API_KEY is not set', () => {
       expect(validateAuthMethod(AuthType.USE_GEMINI)).toBe(
-        'GEMINI_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!',
+        '未找到 GEMINI_API_KEY 环境变量。请将其添加到您的环境中，然后重试（如果使用 .env 文件则无需重新加载）！',
       );
     });
   });
@@ -59,17 +59,17 @@ describe('validateAuthMethod', () => {
 
     it('should return an error message if no required environment variables are set', () => {
       expect(validateAuthMethod(AuthType.USE_VERTEX_AI)).toBe(
-        'When using Vertex AI, you must specify either:\n' +
-          '• GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION environment variables.\n' +
-          '• GOOGLE_API_KEY environment variable (if using express mode).\n' +
-          'Update your environment and try again (no reload needed if using .env)!',
+        '使用 Vertex AI 时，您必须指定以下之一：\n' +
+          '• GOOGLE_CLOUD_PROJECT 和 GOOGLE_CLOUD_LOCATION 环境变量。\n' +
+          '• GOOGLE_API_KEY 环境变量（如果使用快速模式）。\n' +
+          '请更新您的环境并重试（如果使用 .env 文件则无需重新加载）！',
       );
     });
   });
 
   it('should return an error message for an invalid auth method', () => {
     expect(validateAuthMethod('invalid-method')).toBe(
-      'Invalid auth method selected.',
+      '选择了无效的身份验证方法。',
     );
   });
 });

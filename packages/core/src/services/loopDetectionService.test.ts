@@ -53,8 +53,8 @@ describe('LoopDetectionService', () => {
     value: content,
   });
 
-  describe('Tool Call Loop Detection', () => {
-    it(`should not detect a loop for fewer than TOOL_CALL_LOOP_THRESHOLD identical calls`, () => {
+  describe('工具调用循环检测', () => {
+    it(`对于少于 TOOL_CALL_LOOP_THRESHOLD 次相同调用不应检测到循环`, () => {
       const event = createToolCallRequestEvent('testTool', { param: 'value' });
       for (let i = 0; i < TOOL_CALL_LOOP_THRESHOLD - 1; i++) {
         expect(service.addAndCheck(event)).toBe(false);
@@ -62,7 +62,7 @@ describe('LoopDetectionService', () => {
       expect(loggers.logLoopDetected).not.toHaveBeenCalled();
     });
 
-    it(`should detect a loop on the TOOL_CALL_LOOP_THRESHOLD-th identical call`, () => {
+    it(`应在第 TOOL_CALL_LOOP_THRESHOLD 次相同调用时检测到循环`, () => {
       const event = createToolCallRequestEvent('testTool', { param: 'value' });
       for (let i = 0; i < TOOL_CALL_LOOP_THRESHOLD - 1; i++) {
         service.addAndCheck(event);
@@ -71,7 +71,7 @@ describe('LoopDetectionService', () => {
       expect(loggers.logLoopDetected).toHaveBeenCalledTimes(1);
     });
 
-    it('should detect a loop on subsequent identical calls', () => {
+    it('应在后续相同调用时检测到循环', () => {
       const event = createToolCallRequestEvent('testTool', { param: 'value' });
       for (let i = 0; i < TOOL_CALL_LOOP_THRESHOLD; i++) {
         service.addAndCheck(event);
@@ -80,7 +80,7 @@ describe('LoopDetectionService', () => {
       expect(loggers.logLoopDetected).toHaveBeenCalledTimes(2);
     });
 
-    it('should not detect a loop for different tool calls', () => {
+    it('对于不同的工具调用不应检测到循环', () => {
       const event1 = createToolCallRequestEvent('testTool', {
         param: 'value1',
       });
@@ -99,8 +99,8 @@ describe('LoopDetectionService', () => {
     });
   });
 
-  describe('Content Loop Detection', () => {
-    it(`should not detect a loop for fewer than CONTENT_LOOP_THRESHOLD identical content strings`, () => {
+  describe('内容循环检测', () => {
+    it(`对于少于 CONTENT_LOOP_THRESHOLD 次相同内容字符串不应检测到循环`, () => {
       const event = createContentEvent('This is a test sentence.');
       for (let i = 0; i < CONTENT_LOOP_THRESHOLD - 1; i++) {
         expect(service.addAndCheck(event)).toBe(false);
@@ -108,7 +108,7 @@ describe('LoopDetectionService', () => {
       expect(loggers.logLoopDetected).not.toHaveBeenCalled();
     });
 
-    it(`should detect a loop on the CONTENT_LOOP_THRESHOLD-th identical content string`, () => {
+    it(`应在第 CONTENT_LOOP_THRESHOLD 次相同内容字符串时检测到循环`, () => {
       const event = createContentEvent('This is a test sentence.');
       for (let i = 0; i < CONTENT_LOOP_THRESHOLD - 1; i++) {
         service.addAndCheck(event);
@@ -117,7 +117,7 @@ describe('LoopDetectionService', () => {
       expect(loggers.logLoopDetected).toHaveBeenCalledTimes(1);
     });
 
-    it('should not detect a loop for different content strings', () => {
+    it('对于不同的内容字符串不应检测到循环', () => {
       const event1 = createContentEvent('Sentence A');
       const event2 = createContentEvent('Sentence B');
       for (let i = 0; i < CONTENT_LOOP_THRESHOLD - 2; i++) {
@@ -128,8 +128,8 @@ describe('LoopDetectionService', () => {
     });
   });
 
-  describe('Sentence Extraction and Punctuation', () => {
-    it('should not check for loops when content has no sentence-ending punctuation', () => {
+  describe('句子提取和标点符号', () => {
+    it('当内容没有句末标点符号时不应检查循环', () => {
       const eventNoPunct = createContentEvent('This has no punctuation');
       expect(service.addAndCheck(eventNoPunct)).toBe(false);
 
@@ -137,8 +137,8 @@ describe('LoopDetectionService', () => {
       expect(service.addAndCheck(eventWithPunct)).toBe(false);
     });
 
-    it('should not treat function calls or method calls as sentence endings', () => {
-      // These should not trigger sentence detection, so repeating them many times should never cause a loop
+    it('不应将函数调用或方法调用视为句末', () => {
+      // 这些不应触发句子检测，所以重复多次也永远不会导致循环
       for (let i = 0; i < CONTENT_LOOP_THRESHOLD + 2; i++) {
         expect(service.addAndCheck(createContentEvent('console.log()'))).toBe(
           false,
@@ -169,8 +169,8 @@ describe('LoopDetectionService', () => {
       }
     });
 
-    it('should correctly identify actual sentence endings and trigger loop detection', () => {
-      // These should trigger sentence detection, so repeating them should eventually cause a loop
+    it('应正确识别实际的句末并触发循环检测', () => {
+      // 这些应触发句子检测，所以重复它们最终应导致循环
       for (let i = 0; i < CONTENT_LOOP_THRESHOLD - 1; i++) {
         expect(
           service.addAndCheck(createContentEvent('This is a sentence.')),
@@ -201,87 +201,87 @@ describe('LoopDetectionService', () => {
       ).toBe(true);
     });
 
-    it('should handle content with mixed punctuation', () => {
+    it('应处理包含混合标点符号的内容', () => {
       service.addAndCheck(createContentEvent('Question?'));
       service.addAndCheck(createContentEvent('Exclamation!'));
       service.addAndCheck(createContentEvent('Period.'));
 
-      // Repeat one of them multiple times
+      // 重复其中一个多次
       for (let i = 0; i < CONTENT_LOOP_THRESHOLD - 1; i++) {
         service.addAndCheck(createContentEvent('Period.'));
       }
       expect(service.addAndCheck(createContentEvent('Period.'))).toBe(true);
     });
 
-    it('should handle empty sentences after trimming', () => {
+    it('应处理修剪后为空的句子', () => {
       service.addAndCheck(createContentEvent('   .'));
       expect(service.addAndCheck(createContentEvent('Normal sentence.'))).toBe(
         false,
       );
     });
 
-    it('should require at least two sentences for loop detection', () => {
+    it('循环检测至少需要两个句子', () => {
       const event = createContentEvent('Only one sentence.');
       expect(service.addAndCheck(event)).toBe(false);
 
-      // Even repeating the same single sentence shouldn't trigger detection
+      // 即使重复相同的单个句子也不应触发检测
       for (let i = 0; i < 5; i++) {
         expect(service.addAndCheck(event)).toBe(false);
       }
     });
   });
 
-  describe('Performance Optimizations', () => {
-    it('should cache sentence extraction and only re-extract when content grows significantly', () => {
-      // Add initial content
+  describe('性能优化', () => {
+    it('应缓存句子提取，仅在内容显著增长时重新提取', () => {
+      // 添加初始内容
       service.addAndCheck(createContentEvent('First sentence.'));
       service.addAndCheck(createContentEvent('Second sentence.'));
 
-      // Add small amounts of content (shouldn't trigger re-extraction)
+      // 添加少量内容（不应触发重新提取）
       for (let i = 0; i < 10; i++) {
         service.addAndCheck(createContentEvent('X'));
       }
       service.addAndCheck(createContentEvent('.'));
 
-      // Should still work correctly
+      // 应仍能正常工作
       expect(service.addAndCheck(createContentEvent('Test.'))).toBe(false);
     });
 
-    it('should re-extract sentences when content grows by more than 100 characters', () => {
+    it('当内容增长超过100个字符时应重新提取句子', () => {
       service.addAndCheck(createContentEvent('Initial sentence.'));
 
-      // Add enough content to trigger re-extraction
+      // 添加足够内容以触发重新提取
       const longContent = 'X'.repeat(101);
       service.addAndCheck(createContentEvent(longContent + '.'));
 
-      // Should work correctly after re-extraction
+      // 重新提取后应能正常工作
       expect(service.addAndCheck(createContentEvent('Test.'))).toBe(false);
     });
 
-    it('should use indexOf for efficient counting instead of regex', () => {
+    it('应使用indexOf进行高效计数而不是正则表达式', () => {
       const repeatedSentence = 'This is a repeated sentence.';
 
-      // Build up content with the sentence repeated
+      // 构建包含重复句子的内容
       for (let i = 0; i < CONTENT_LOOP_THRESHOLD - 1; i++) {
         service.addAndCheck(createContentEvent(repeatedSentence));
       }
 
-      // The threshold should be reached
+      // 应达到阈值
       expect(service.addAndCheck(createContentEvent(repeatedSentence))).toBe(
         true,
       );
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle empty content', () => {
+  describe('边缘情况', () => {
+    it('应处理空内容', () => {
       const event = createContentEvent('');
       expect(service.addAndCheck(event)).toBe(false);
     });
   });
 
-  describe('Reset Functionality', () => {
-    it('tool call should reset content count', () => {
+  describe('重置功能', () => {
+    it('工具调用应重置内容计数', () => {
       const contentEvent = createContentEvent('Some content.');
       const toolEvent = createToolCallRequestEvent('testTool', {
         param: 'value',
@@ -292,15 +292,15 @@ describe('LoopDetectionService', () => {
 
       service.addAndCheck(toolEvent);
 
-      // Should start fresh
+      // 应重新开始
       expect(service.addAndCheck(createContentEvent('Fresh content.'))).toBe(
         false,
       );
     });
   });
 
-  describe('General Behavior', () => {
-    it('should return false for unhandled event types', () => {
+  describe('通用行为', () => {
+    it('对于未处理的事件类型应返回false', () => {
       const otherEvent = {
         type: 'unhandled_event',
       } as unknown as ServerGeminiStreamEvent;

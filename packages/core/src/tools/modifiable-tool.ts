@@ -14,7 +14,7 @@ import { isNodeError } from '../utils/errors.js';
 import { Tool } from './tools.js';
 
 /**
- * A tool that supports a modify operation.
+ * 支持修改操作的工具。
  */
 export interface ModifiableTool<ToolParams> extends Tool<ToolParams> {
   getModifyContext(abortSignal: AbortSignal): ModifyContext<ToolParams>;
@@ -119,19 +119,19 @@ function deleteTempFiles(oldPath: string, newPath: string): void {
   try {
     fs.unlinkSync(oldPath);
   } catch {
-    console.error(`Error deleting temp diff file: ${oldPath}`);
+    console.error(`删除临时差异文件时出错: ${oldPath}`);
   }
 
   try {
     fs.unlinkSync(newPath);
   } catch {
-    console.error(`Error deleting temp diff file: ${newPath}`);
+    console.error(`删除临时差异文件时出错: ${newPath}`);
   }
 }
 
 /**
- * Triggers an external editor for the user to modify the proposed content,
- * and returns the updated tool parameters and the diff after the user has modified the proposed content.
+ * 触发外部编辑器以供用户修改建议内容，
+ * 并在用户修改建议内容后返回更新的工具参数和差异。
  */
 export async function modifyWithEditor<ToolParams>(
   originalParams: ToolParams,

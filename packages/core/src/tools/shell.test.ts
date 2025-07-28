@@ -11,7 +11,7 @@ import * as summarizer from '../utils/summarizer.js';
 import { GeminiClient } from '../core/client.js';
 
 describe('ShellTool', () => {
-  it('should allow a command if no restrictions are provided', async () => {
+  it('如果未提供限制条件，应允许命令执行', async () => {
     const config = {
       getCoreTools: () => undefined,
       getExcludeTools: () => undefined,
@@ -21,7 +21,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should allow a command if it is in the allowed list', async () => {
+  it('如果命令在允许列表中，应允许命令执行', async () => {
     const config = {
       getCoreTools: () => ['ShellTool(ls -l)'],
       getExcludeTools: () => undefined,
@@ -31,7 +31,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should block a command if it is not in the allowed list', async () => {
+  it('如果命令不在允许列表中，应阻止命令执行', async () => {
     const config = {
       getCoreTools: () => ['ShellTool(ls -l)'],
       getExcludeTools: () => undefined,
@@ -44,7 +44,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should block a command if it is in the blocked list', async () => {
+  it('如果命令在阻止列表中，应阻止命令执行', async () => {
     const config = {
       getCoreTools: () => undefined,
       getExcludeTools: () => ['ShellTool(rm -rf /)'],
@@ -57,7 +57,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should allow a command if it is not in the blocked list', async () => {
+  it('如果命令不在阻止列表中，应允许命令执行', async () => {
     const config = {
       getCoreTools: () => undefined,
       getExcludeTools: () => ['ShellTool(rm -rf /)'],
@@ -67,7 +67,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should block a command if it is in both the allowed and blocked lists', async () => {
+  it('如果命令同时在允许列表和阻止列表中，应阻止命令执行', async () => {
     const config = {
       getCoreTools: () => ['ShellTool(rm -rf /)'],
       getExcludeTools: () => ['ShellTool(rm -rf /)'],
@@ -80,7 +80,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should allow any command when ShellTool is in coreTools without specific commands', async () => {
+  it('当 ShellTool 在 coreTools 中但没有指定具体命令时，应允许任何命令执行', async () => {
     const config = {
       getCoreTools: () => ['ShellTool'],
       getExcludeTools: () => [],
@@ -90,7 +90,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should block any command when ShellTool is in excludeTools without specific commands', async () => {
+  it('当 ShellTool 在 excludeTools 中但没有指定具体命令时，应阻止任何命令执行', async () => {
     const config = {
       getCoreTools: () => [],
       getExcludeTools: () => ['ShellTool'],
@@ -103,7 +103,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should allow a command if it is in the allowed list using the public-facing name', async () => {
+  it('如果命令使用公开名称在允许列表中，应允许命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(ls -l)'],
       getExcludeTools: () => undefined,
@@ -113,7 +113,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should block a command if it is in the blocked list using the public-facing name', async () => {
+  it('如果命令使用公开名称在阻止列表中，应阻止命令执行', async () => {
     const config = {
       getCoreTools: () => undefined,
       getExcludeTools: () => ['run_shell_command(rm -rf /)'],
@@ -126,7 +126,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should block any command when ShellTool is in excludeTools using the public-facing name', async () => {
+  it('当 ShellTool 使用公开名称在 excludeTools 中时，应阻止任何命令执行', async () => {
     const config = {
       getCoreTools: () => [],
       getExcludeTools: () => ['run_shell_command'],
@@ -139,7 +139,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should block any command if coreTools contains an empty ShellTool command list using the public-facing name', async () => {
+  it('如果 coreTools 包含一个空的 ShellTool 命令列表（使用公开名称），应阻止任何命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command()'],
       getExcludeTools: () => [],
@@ -152,7 +152,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should block any command if coreTools contains an empty ShellTool command list', async () => {
+  it('如果 coreTools 包含一个空的 ShellTool 命令列表，应阻止任何命令执行', async () => {
     const config = {
       getCoreTools: () => ['ShellTool()'],
       getExcludeTools: () => [],
@@ -165,7 +165,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should block a command with extra whitespace if it is in the blocked list', async () => {
+  it('如果命令包含额外空格且在阻止列表中，应阻止命令执行', async () => {
     const config = {
       getCoreTools: () => undefined,
       getExcludeTools: () => ['ShellTool(rm -rf /)'],
@@ -178,7 +178,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should allow any command when ShellTool is present with specific commands', async () => {
+  it('当 ShellTool 存在并带有特定命令时，应允许任何命令执行', async () => {
     const config = {
       getCoreTools: () => ['ShellTool', 'ShellTool(ls)'],
       getExcludeTools: () => [],
@@ -188,7 +188,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should block a command on the blocklist even with a wildcard allow', async () => {
+  it('即使有通配符允许，也应阻止阻止列表中的命令执行', async () => {
     const config = {
       getCoreTools: () => ['ShellTool'],
       getExcludeTools: () => ['ShellTool(rm -rf /)'],
@@ -201,7 +201,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should allow a command that starts with an allowed command prefix', async () => {
+  it('应允许以允许的命令前缀开头的命令执行', async () => {
     const config = {
       getCoreTools: () => ['ShellTool(gh issue edit)'],
       getExcludeTools: () => [],
@@ -213,7 +213,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should allow a command that starts with an allowed command prefix using the public-facing name', async () => {
+  it('应允许以允许的命令前缀开头的命令执行（使用公开名称）', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(gh issue edit)'],
       getExcludeTools: () => [],
@@ -225,7 +225,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should not allow a command that starts with an allowed command prefix but is chained with another command', async () => {
+  it('不应允许以允许的命令前缀开头但与另一个命令链接的命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(gh issue edit)'],
       getExcludeTools: () => [],
@@ -238,7 +238,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should not allow a command that is a prefix of an allowed command', async () => {
+  it('不应允许是允许命令前缀的命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(gh issue edit)'],
       getExcludeTools: () => [],
@@ -251,7 +251,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should not allow a command that is a prefix of a blocked command', async () => {
+  it('不应阻止是阻止命令前缀的命令执行', async () => {
     const config = {
       getCoreTools: () => [],
       getExcludeTools: () => ['run_shell_command(gh issue edit)'],
@@ -261,7 +261,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should not allow a command that is chained with a pipe', async () => {
+  it('不应允许通过管道链接的命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(gh issue list)'],
       getExcludeTools: () => [],
@@ -274,7 +274,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should not allow a command that is chained with a semicolon', async () => {
+  it('不应允许通过分号链接的命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(gh issue list)'],
       getExcludeTools: () => [],
@@ -287,7 +287,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should block a chained command if any part is blocked', async () => {
+  it('如果链接命令的任何部分被阻止，应阻止整个命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(echo "hello")'],
       getExcludeTools: () => ['run_shell_command(rm)'],
@@ -300,7 +300,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should block a command if its prefix is on the blocklist, even if the command itself is on the allowlist', async () => {
+  it('如果命令前缀在阻止列表中，即使命令本身在允许列表中，也应阻止命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(git push)'],
       getExcludeTools: () => ['run_shell_command(git)'],
@@ -313,7 +313,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should be case-sensitive in its matching', async () => {
+  it('匹配时应区分大小写', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(echo)'],
       getExcludeTools: () => [],
@@ -326,7 +326,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should correctly handle commands with extra whitespace around chaining operators', async () => {
+  it('应正确处理链接操作符周围有额外空格的命令', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(ls -l)'],
       getExcludeTools: () => ['run_shell_command(rm)'],
@@ -339,7 +339,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should allow a chained command if all parts are allowed', async () => {
+  it('如果链接命令的所有部分都被允许，应允许命令执行', async () => {
     const config = {
       getCoreTools: () => [
         'run_shell_command(echo)',
@@ -352,7 +352,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should allow a command with command substitution using backticks', async () => {
+  it('应允许使用反引号进行命令替换的命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(echo)'],
       getExcludeTools: () => [],
@@ -362,7 +362,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should block a command with command substitution using $()', async () => {
+  it('应阻止使用 $() 进行命令替换的命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(echo)'],
       getExcludeTools: () => [],
@@ -375,7 +375,7 @@ describe('ShellTool', () => {
     );
   });
 
-  it('should allow a command with I/O redirection', async () => {
+  it('应允许带有 I/O 重定向的命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(echo)'],
       getExcludeTools: () => [],
@@ -385,7 +385,7 @@ describe('ShellTool', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('should not allow a command that is chained with a double pipe', async () => {
+  it('不应允许通过双管道链接的命令执行', async () => {
     const config = {
       getCoreTools: () => ['run_shell_command(gh issue list)'],
       getExcludeTools: () => [],
@@ -414,7 +414,7 @@ describe('ShellTool Bug Reproduction', () => {
     shellTool = new ShellTool(config);
   });
 
-  it('should not let the summarizer override the return display', async () => {
+  it('不应让 summarizer 覆盖返回显示', async () => {
     const summarizeSpy = vi
       .spyOn(summarizer, 'summarizeToolOutput')
       .mockResolvedValue('summarized output');

@@ -23,30 +23,30 @@ describe('displayUtils', () => {
       yellow: 50,
     };
 
-    it('should return green for values >= green threshold', () => {
+    it('应为 >= 绿色阈值的值返回绿色', () => {
       expect(getStatusColor(90, thresholds)).toBe(Colors.AccentGreen);
       expect(getStatusColor(80, thresholds)).toBe(Colors.AccentGreen);
     });
 
-    it('should return yellow for values < green and >= yellow threshold', () => {
+    it('应为 < 绿色且 >= 黄色阈值的值返回黄色', () => {
       expect(getStatusColor(79, thresholds)).toBe(Colors.AccentYellow);
       expect(getStatusColor(50, thresholds)).toBe(Colors.AccentYellow);
     });
 
-    it('should return red for values < yellow threshold', () => {
+    it('应为 < 黄色阈值的值返回红色', () => {
       expect(getStatusColor(49, thresholds)).toBe(Colors.AccentRed);
       expect(getStatusColor(0, thresholds)).toBe(Colors.AccentRed);
     });
 
-    it('should return defaultColor for values < yellow threshold when provided', () => {
+    it('当提供 defaultColor 时，应为 < 黄色阈值的值返回 defaultColor', () => {
       expect(
         getStatusColor(49, thresholds, { defaultColor: Colors.Foreground }),
       ).toBe(Colors.Foreground);
     });
   });
 
-  describe('Threshold Constants', () => {
-    it('should have the correct values', () => {
+  describe('阈值常量', () => {
+    it('应具有正确的值', () => {
       expect(TOOL_SUCCESS_RATE_HIGH).toBe(95);
       expect(TOOL_SUCCESS_RATE_MEDIUM).toBe(85);
       expect(USER_AGREEMENT_RATE_HIGH).toBe(75);

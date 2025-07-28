@@ -25,18 +25,18 @@ export interface RetryOptions {
 const DEFAULT_RETRY_OPTIONS: RetryOptions = {
   maxAttempts: 5,
   initialDelayMs: 5000,
-  maxDelayMs: 30000, // 30 seconds
+  maxDelayMs: 30000, // 30 秒
   shouldRetry: defaultShouldRetry,
 };
 
 /**
- * Default predicate function to determine if a retry should be attempted.
- * Retries on 429 (Too Many Requests) and 5xx server errors.
- * @param error The error object.
- * @returns True if the error is a transient error, false otherwise.
+ * 默认谓词函数，用于确定是否应尝试重试。
+ * 在 429（请求过多）和 5xx 服务器错误时重试。
+ * @param error 错误对象。
+ * @returns 如果错误是瞬态错误则返回 true，否则返回 false。
  */
 function defaultShouldRetry(error: Error | unknown): boolean {
-  // Check for common transient error status codes either in message or a status property
+  // 检查消息或状态属性中是否存在常见的瞬态错误状态码
   if (error && typeof (error as { status?: number }).status === 'number') {
     const status = (error as { status: number }).status;
     if (status === 429 || (status >= 500 && status < 600)) {
@@ -51,20 +51,20 @@ function defaultShouldRetry(error: Error | unknown): boolean {
 }
 
 /**
- * Delays execution for a specified number of milliseconds.
- * @param ms The number of milliseconds to delay.
- * @returns A promise that resolves after the delay.
+ * 延迟执行指定的毫秒数。
+ * @param ms 延迟的毫秒数。
+ * @returns 在延迟后解析的 Promise。
  */
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
- * Retries a function with exponential backoff and jitter.
- * @param fn The asynchronous function to retry.
- * @param options Optional retry configuration.
- * @returns A promise that resolves with the result of the function if successful.
- * @throws The last error encountered if all attempts fail.
+ * 使用指数退避和抖动重试函数。
+ * @param fn 要重试的异步函数。
+ * @param options 可选的重试配置。
+ * @returns 如果成功则解析为函数结果的 Promise。
+ * @throws 如果所有尝试都失败，则抛出遇到的最后一个错误。
  */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -93,7 +93,7 @@ export async function retryWithBackoff<T>(
     } catch (error) {
       const errorStatus = getErrorStatus(error);
 
-      // Check for Pro quota exceeded error first - immediate fallback for OAuth users
+      // 首先检查 Pro 配额超限错误 - OAuth 用户的即时回退
       if (
         errorStatus === 429 &&
         authType === AuthType.LOGIN_WITH_GOOGLE &&
@@ -103,23 +103,23 @@ export async function retryWithBackoff<T>(
         try {
           const fallbackModel = await onPersistent429(authType, error);
           if (fallbackModel !== false && fallbackModel !== null) {
-            // Reset attempt counter and try with new model
+            // 重置尝试计数器并使用新模型尝试
             attempt = 0;
             consecutive429Count = 0;
             currentDelay = initialDelayMs;
-            // With the model updated, we continue to the next attempt
+            // 模型更新后，继续下一次尝试
             continue;
           } else {
-            // Fallback handler returned null/false, meaning don't continue - stop retry process
+            // 回退处理器返回 null/false，表示不继续 - 停止重试过程
             throw error;
           }
         } catch (fallbackError) {
-          // If fallback fails, continue with original error
-          console.warn('Fallback to Flash model failed:', fallbackError);
+          // 如果回退失败，继续使用原始错误
+          console.warn('回退到 Flash 模型失败:', fallbackError);
         }
       }
 
-      // Check for generic quota exceeded error (but not Pro, which was handled above) - immediate fallback for OAuth users
+      // 检查通用配额超限错误（但不是 Pro，已在上面处理）- OAuth 用户的即时回退
       if (
         errorStatus === 429 &&
         authType === AuthType.LOGIN_WITH_GOOGLE &&
@@ -130,30 +130,30 @@ export async function retryWithBackoff<T>(
         try {
           const fallbackModel = await onPersistent429(authType, error);
           if (fallbackModel !== false && fallbackModel !== null) {
-            // Reset attempt counter and try with new model
+            // 重置尝试计数器并使用新模型尝试
             attempt = 0;
             consecutive429Count = 0;
             currentDelay = initialDelayMs;
-            // With the model updated, we continue to the next attempt
+            // 模型更新后，继续下一次尝试
             continue;
           } else {
-            // Fallback handler returned null/false, meaning don't continue - stop retry process
+            // 回退处理器返回 null/false，表示不继续 - 停止重试过程
             throw error;
           }
         } catch (fallbackError) {
-          // If fallback fails, continue with original error
-          console.warn('Fallback to Flash model failed:', fallbackError);
+          // 如果回退失败，继续使用原始错误
+          console.warn('回退到 Flash 模型失败:', fallbackError);
         }
       }
 
-      // Track consecutive 429 errors
+      // 跟踪连续的 429 错误
       if (errorStatus === 429) {
         consecutive429Count++;
       } else {
         consecutive429Count = 0;
       }
 
-      // If we have persistent 429s and a fallback callback for OAuth
+      // 如果我们有持续的 429 错误并且有 OAuth 的回退回调
       if (
         consecutive429Count >= 2 &&
         onPersistent429 &&
@@ -162,23 +162,23 @@ export async function retryWithBackoff<T>(
         try {
           const fallbackModel = await onPersistent429(authType, error);
           if (fallbackModel !== false && fallbackModel !== null) {
-            // Reset attempt counter and try with new model
+            // 重置尝试计数器并使用新模型尝试
             attempt = 0;
             consecutive429Count = 0;
             currentDelay = initialDelayMs;
-            // With the model updated, we continue to the next attempt
+            // 模型更新后，继续下一次尝试
             continue;
           } else {
-            // Fallback handler returned null/false, meaning don't continue - stop retry process
+            // 回退处理器返回 null/false，表示不继续 - 停止重试过程
             throw error;
           }
         } catch (fallbackError) {
-          // If fallback fails, continue with original error
-          console.warn('Fallback to Flash model failed:', fallbackError);
+          // 如果回退失败，继续使用原始错误
+          console.warn('回退到 Flash 模型失败:', fallbackError);
         }
       }
 
-      // Check if we've exhausted retries or shouldn't retry
+      // 检查是否已用尽重试次数或不应重试
       if (attempt >= maxAttempts || !shouldRetry(error as Error)) {
         throw error;
       }
@@ -187,18 +187,18 @@ export async function retryWithBackoff<T>(
         getDelayDurationAndStatus(error);
 
       if (delayDurationMs > 0) {
-        // Respect Retry-After header if present and parsed
+        // 如果存在并解析了 Retry-After 头，则尊重它
         console.warn(
-          `Attempt ${attempt} failed with status ${delayErrorStatus ?? 'unknown'}. Retrying after explicit delay of ${delayDurationMs}ms...`,
+          `第 ${attempt} 次尝试失败，状态为 ${delayErrorStatus ?? 'unknown'}。将在 ${delayDurationMs}ms 后重试...`,
           error,
         );
         await delay(delayDurationMs);
-        // Reset currentDelay for next potential non-429 error, or if Retry-After is not present next time
+        // 为下次可能的非 429 错误重置 currentDelay，或者如果下次没有 Retry-After
         currentDelay = initialDelayMs;
       } else {
-        // Fallback to exponential backoff with jitter
+        // 回退到带抖动的指数退避
         logRetryAttempt(attempt, error, errorStatus);
-        // Add jitter: +/- 30% of currentDelay
+        // 添加抖动：当前延迟的 +/- 30%
         const jitter = currentDelay * 0.3 * (Math.random() * 2 - 1);
         const delayWithJitter = Math.max(0, currentDelay + jitter);
         await delay(delayWithJitter);
@@ -206,22 +206,22 @@ export async function retryWithBackoff<T>(
       }
     }
   }
-  // This line should theoretically be unreachable due to the throw in the catch block.
-  // Added for type safety and to satisfy the compiler that a promise is always returned.
-  throw new Error('Retry attempts exhausted');
+  // 由于 catch 块中的 throw，这行理论上应该是不可达的。
+  // 添加以确保类型安全并满足编译器始终返回 Promise 的要求。
+  throw new Error('重试次数已用尽');
 }
 
 /**
- * Extracts the HTTP status code from an error object.
- * @param error The error object.
- * @returns The HTTP status code, or undefined if not found.
+ * 从错误对象中提取 HTTP 状态码。
+ * @param error 错误对象。
+ * @returns HTTP 状态码，如果未找到则返回 undefined。
  */
 function getErrorStatus(error: unknown): number | undefined {
   if (typeof error === 'object' && error !== null) {
     if ('status' in error && typeof error.status === 'number') {
       return error.status;
     }
-    // Check for error.response.status (common in axios errors)
+    // 检查 error.response.status（在 axios 错误中常见）
     if (
       'response' in error &&
       typeof (error as { response?: unknown }).response === 'object' &&
@@ -239,13 +239,13 @@ function getErrorStatus(error: unknown): number | undefined {
 }
 
 /**
- * Extracts the Retry-After delay from an error object's headers.
- * @param error The error object.
- * @returns The delay in milliseconds, or 0 if not found or invalid.
+ * 从错误对象的头部提取 Retry-After 延迟。
+ * @param error 错误对象。
+ * @returns 延迟的毫秒数，如果未找到或无效则返回 0。
  */
 function getRetryAfterDelayMs(error: unknown): number {
   if (typeof error === 'object' && error !== null) {
-    // Check for error.response.headers (common in axios errors)
+    // 检查 error.response.headers（在 axios 错误中常见）
     if (
       'response' in error &&
       typeof (error as { response?: unknown }).response === 'object' &&
@@ -264,7 +264,7 @@ function getRetryAfterDelayMs(error: unknown): number {
           if (!isNaN(retryAfterSeconds)) {
             return retryAfterSeconds * 1000;
           }
-          // It might be an HTTP date
+          // 它可能是一个 HTTP 日期
           const retryAfterDate = new Date(retryAfterHeader);
           if (!isNaN(retryAfterDate.getTime())) {
             return Math.max(0, retryAfterDate.getTime() - Date.now());
@@ -277,9 +277,9 @@ function getRetryAfterDelayMs(error: unknown): number {
 }
 
 /**
- * Determines the delay duration based on the error, prioritizing Retry-After header.
- * @param error The error object.
- * @returns An object containing the delay duration in milliseconds and the error status.
+ * 根据错误确定延迟持续时间，优先考虑 Retry-After 头。
+ * @param error 错误对象。
+ * @returns 包含延迟持续时间（毫秒）和错误状态的对象。
  */
 function getDelayDurationAndStatus(error: unknown): {
   delayDurationMs: number;
@@ -295,19 +295,19 @@ function getDelayDurationAndStatus(error: unknown): {
 }
 
 /**
- * Logs a message for a retry attempt when using exponential backoff.
- * @param attempt The current attempt number.
- * @param error The error that caused the retry.
- * @param errorStatus The HTTP status code of the error, if available.
+ * 当使用指数退避时记录重试尝试的消息。
+ * @param attempt 当前尝试次数。
+ * @param error 导致重试的错误。
+ * @param errorStatus 错误的 HTTP 状态码（如果可用）。
  */
 function logRetryAttempt(
   attempt: number,
   error: unknown,
   errorStatus?: number,
 ): void {
-  let message = `Attempt ${attempt} failed. Retrying with backoff...`;
+  let message = `第 ${attempt} 次尝试失败。使用退避重试...`;
   if (errorStatus) {
-    message = `Attempt ${attempt} failed with status ${errorStatus}. Retrying with backoff...`;
+    message = `第 ${attempt} 次尝试失败，状态为 ${errorStatus}。使用退避重试...`;
   }
 
   if (errorStatus === 429) {
@@ -315,21 +315,21 @@ function logRetryAttempt(
   } else if (errorStatus && errorStatus >= 500 && errorStatus < 600) {
     console.error(message, error);
   } else if (error instanceof Error) {
-    // Fallback for errors that might not have a status but have a message
+    // 为可能没有状态但有消息的错误回退
     if (error.message.includes('429')) {
       console.warn(
-        `Attempt ${attempt} failed with 429 error (no Retry-After header). Retrying with backoff...`,
+        `第 ${attempt} 次尝试失败，出现 429 错误（无 Retry-After 头）。使用退避重试...`,
         error,
       );
     } else if (error.message.match(/5\d{2}/)) {
       console.error(
-        `Attempt ${attempt} failed with 5xx error. Retrying with backoff...`,
+        `第 ${attempt} 次尝试失败，出现 5xx 错误。使用退避重试...`,
         error,
       );
     } else {
-      console.warn(message, error); // Default to warn for other errors
+      console.warn(message, error); // 默认对其他错误使用警告
     }
   } else {
-    console.warn(message, error); // Default to warn if error type is unknown
+    console.warn(message, error); // 如果错误类型未知，默认使用警告
   }
 }

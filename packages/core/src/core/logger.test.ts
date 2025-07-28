@@ -45,7 +45,7 @@ async function cleanupLogAndCheckpointFiles() {
   try {
     await fs.rm(TEST_GEMINI_DIR, { recursive: true, force: true });
   } catch (_error) {
-    // Ignore errors, as the directory may not exist, which is fine.
+    // 忽略错误，因为目录可能不存在，这是可以接受的。
   }
 }
 
@@ -73,9 +73,9 @@ describe('Logger', () => {
     vi.resetAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2025-01-01T12:00:00.000Z'));
-    // Clean up before the test
+    // 测试前清理
     await cleanupLogAndCheckpointFiles();
-    // Ensure the directory exists for the test
+    // 确保测试目录存在
     await fs.mkdir(TEST_GEMINI_DIR, { recursive: true });
     logger = new Logger(testSessionId);
     await logger.initialize();
@@ -85,19 +85,19 @@ describe('Logger', () => {
     if (logger) {
       logger.close();
     }
-    // Clean up after the test
+    // 测试后清理
     await cleanupLogAndCheckpointFiles();
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
   afterAll(async () => {
-    // Final cleanup
+    // 最终清理
     await cleanupLogAndCheckpointFiles();
   });
 
   describe('initialize', () => {
-    it('should create .gemini directory and an empty log file if none exist', async () => {
+    it('如果不存在，应创建 .gemini 目录和空日志文件', async () => {
       const dirExists = await fs
         .access(TEST_GEMINI_DIR)
         .then(() => true)
@@ -114,7 +114,7 @@ describe('Logger', () => {
       expect(logContent).toEqual([]);
     });
 
-    it('should load existing logs and set correct messageId for the current session', async () => {
+    it('应加载现有日志并为当前会话设置正确的 messageId', async () => {
       const currentSessionId = 'session-123';
       const anotherSessionId = 'session-456';
       const existingLogs: LogEntry[] = [
@@ -151,7 +151,7 @@ describe('Logger', () => {
       newLogger.close();
     });
 
-    it('should set messageId to 0 for a new session if log file exists but has no logs for current session', async () => {
+    it('如果日志文件存在但当前会话没有日志，则应为新会话将 messageId 设置为 0', async () => {
       const existingLogs: LogEntry[] = [
         {
           sessionId: 'some-other-session',
@@ -171,12 +171,12 @@ describe('Logger', () => {
       newLogger.close();
     });
 
-    it('should be idempotent', async () => {
+    it('应该是幂等的', async () => {
       await logger.logMessage(MessageSenderType.USER, 'test message');
       const initialMessageId = logger['messageId'];
       const initialLogCount = logger['logs'].length;
 
-      await logger.initialize(); // Second call should not change state
+      await logger.initialize(); // 第二次调用不应改变状态
 
       expect(logger['messageId']).toBe(initialMessageId);
       expect(logger['logs'].length).toBe(initialLogCount);
@@ -184,7 +184,7 @@ describe('Logger', () => {
       expect(logsFromFile.length).toBe(1);
     });
 
-    it('should handle invalid JSON in log file by backing it up and starting fresh', async () => {
+    it('应通过备份无效 JSON 并重新开始来处理日志文件中的无效 JSON', async () => {
       await fs.writeFile(TEST_LOG_FILE_PATH, 'invalid json');
       const consoleDebugSpy = vi
         .spyOn(console, 'debug')
@@ -194,7 +194,7 @@ describe('Logger', () => {
       await newLogger.initialize();
 
       expect(consoleDebugSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Invalid JSON in log file'),
+        expect.stringContaining('日志文件中的 JSON 无效'),
         expect.any(SyntaxError),
       );
       const logContent = await readLogFile();
@@ -209,7 +209,7 @@ describe('Logger', () => {
       newLogger.close();
     });
 
-    it('should handle non-array JSON in log file by backing it up and starting fresh', async () => {
+    it('应通过备份非数组 JSON 并重新开始来处理日志文件中的非数组 JSON', async () => {
       await fs.writeFile(
         TEST_LOG_FILE_PATH,
         JSON.stringify({ not: 'an array' }),
@@ -222,7 +222,7 @@ describe('Logger', () => {
       await newLogger.initialize();
 
       expect(consoleDebugSpy).toHaveBeenCalledWith(
-        `Log file at ${TEST_LOG_FILE_PATH} is not a valid JSON array. Starting with empty logs.`,
+        `位于 ${TEST_LOG_FILE_PATH} 的日志文件不是有效的 JSON 数组。从空日志开始。`,
       );
       const logContent = await readLogFile();
       expect(logContent).toEqual([]);
@@ -239,7 +239,7 @@ describe('Logger', () => {
   });
 
   describe('logMessage', () => {
-    it('should append a message to the log file and update in-memory logs', async () => {
+    it('应将消息追加到日志文件并更新内存中的日志', async () => {
       await logger.logMessage(MessageSenderType.USER, 'Hello, world!');
       const logsFromFile = await readLogFile();
       expect(logsFromFile.length).toBe(1);
@@ -255,7 +255,7 @@ describe('Logger', () => {
       expect(logger['messageId']).toBe(1);
     });
 
-    it('should correctly increment messageId for subsequent messages in the same session', async () => {
+    it('应为同一会话中的后续消息正确递增 messageId', async () => {
       await logger.logMessage(MessageSenderType.USER, 'First');
       vi.advanceTimersByTime(1000);
       await logger.logMessage(MessageSenderType.USER, 'Second');
@@ -267,21 +267,21 @@ describe('Logger', () => {
       expect(logger['messageId']).toBe(2);
     });
 
-    it('should handle logger not initialized', async () => {
+    it('应处理未初始化的日志记录器', async () => {
       const uninitializedLogger = new Logger(testSessionId);
-      uninitializedLogger.close(); // Ensure it's treated as uninitialized
+      uninitializedLogger.close(); // 确保被视为未初始化
       const consoleDebugSpy = vi
         .spyOn(console, 'debug')
         .mockImplementation(() => {});
       await uninitializedLogger.logMessage(MessageSenderType.USER, 'test');
       expect(consoleDebugSpy).toHaveBeenCalledWith(
-        'Logger not initialized or session ID missing. Cannot log message.',
+        '日志记录器未初始化或缺少会话 ID。无法记录消息。',
       );
       expect((await readLogFile()).length).toBe(0);
       uninitializedLogger.close();
     });
 
-    it('should simulate concurrent writes from different logger instances to the same file', async () => {
+    it('应模拟来自不同日志记录器实例对同一文件的并发写入', async () => {
       const concurrentSessionId = 'concurrent-session';
       const logger1 = new Logger(concurrentSessionId);
       await logger1.initialize();
@@ -310,7 +310,7 @@ describe('Logger', () => {
         .map((l) => l.message);
       expect(messagesInFile).toEqual(['L1M1', 'L2M1', 'L1M2', 'L2M2']);
 
-      // Check internal state (next messageId each logger would use for that session)
+      // 检查内部状态（每个记录器在该会话中将使用的下一个 messageId）
       expect(logger1['messageId']).toBe(3);
       expect(logger2['messageId']).toBe(4);
 
@@ -318,8 +318,8 @@ describe('Logger', () => {
       logger2.close();
     });
 
-    it('should not throw, not increment messageId, and log error if writing to file fails', async () => {
-      vi.spyOn(fs, 'writeFile').mockRejectedValueOnce(new Error('Disk full'));
+    it('如果写入文件失败，不应抛出异常，不递增 messageId，并记录错误', async () => {
+      vi.spyOn(fs, 'writeFile').mockRejectedValueOnce(new Error('磁盘已满'));
       const consoleDebugSpy = vi
         .spyOn(console, 'debug')
         .mockImplementation(() => {});
@@ -329,23 +329,23 @@ describe('Logger', () => {
       await logger.logMessage(MessageSenderType.USER, 'test fail write');
 
       expect(consoleDebugSpy).toHaveBeenCalledWith(
-        'Error writing to log file:',
+        '写入日志文件时出错:',
         expect.any(Error),
       );
-      expect(logger['messageId']).toBe(initialMessageId); // Not incremented
-      expect(logger['logs'].length).toBe(initialLogCount); // Log not added to in-memory cache
+      expect(logger['messageId']).toBe(initialMessageId); // 未递增
+      expect(logger['logs'].length).toBe(initialLogCount); // 未添加到内存缓存中
     });
   });
 
   describe('getPreviousUserMessages', () => {
-    it('should retrieve all user messages from logs, sorted newest first', async () => {
+    it('应从日志中检索所有用户消息，按最新排序', async () => {
       const loggerSort = new Logger('session-1');
       await loggerSort.initialize();
       await loggerSort.logMessage(MessageSenderType.USER, 'S1M0_ts100000');
       vi.advanceTimersByTime(1000);
       await loggerSort.logMessage(MessageSenderType.USER, 'S1M1_ts101000');
       vi.advanceTimersByTime(1000);
-      // Switch to a different session to log
+      // 切换到不同会话进行记录
       const loggerSort2 = new Logger('session-2');
       await loggerSort2.initialize();
       await loggerSort2.logMessage(MessageSenderType.USER, 'S2M0_ts102000');
@@ -372,13 +372,13 @@ describe('Logger', () => {
       finalLogger.close();
     });
 
-    it('should return empty array if no user messages exist', async () => {
+    it('如果没有用户消息存在，应返回空数组', async () => {
       await logger.logMessage('system' as MessageSenderType, 'System boot');
       const messages = await logger.getPreviousUserMessages();
       expect(messages).toEqual([]);
     });
 
-    it('should return empty array if logger not initialized', async () => {
+    it('如果日志记录器未初始化，应返回空数组', async () => {
       const uninitializedLogger = new Logger(testSessionId);
       uninitializedLogger.close();
       const messages = await uninitializedLogger.getPreviousUserMessages();
@@ -393,7 +393,7 @@ describe('Logger', () => {
       { role: 'model', parts: [{ text: 'Hi there' }] },
     ];
 
-    it('should save a checkpoint to a tagged file when a tag is provided', async () => {
+    it('当提供标签时，应将检查点保存到标记文件中', async () => {
       const tag = 'my-test-tag';
       await logger.saveCheckpoint(conversation, tag);
       const taggedFilePath = path.join(
@@ -404,7 +404,7 @@ describe('Logger', () => {
       expect(JSON.parse(fileContent)).toEqual(conversation);
     });
 
-    it('should not throw if logger is not initialized', async () => {
+    it('如果日志记录器未初始化，不应抛出异常', async () => {
       const uninitializedLogger = new Logger(testSessionId);
       uninitializedLogger.close();
       const consoleErrorSpy = vi
@@ -415,7 +415,7 @@ describe('Logger', () => {
         uninitializedLogger.saveCheckpoint(conversation, 'tag'),
       ).resolves.not.toThrow();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Logger not initialized or checkpoint file path not set. Cannot save a checkpoint.',
+        '日志记录器未初始化或未设置检查点文件路径。无法保存检查点。',
       );
     });
   });
@@ -433,7 +433,7 @@ describe('Logger', () => {
       );
     });
 
-    it('should load from a tagged checkpoint file when a tag is provided', async () => {
+    it('当提供标签时，应从标记的检查点文件加载', async () => {
       const tag = 'my-load-tag';
       const taggedConversation = [
         ...conversation,
@@ -452,18 +452,18 @@ describe('Logger', () => {
       expect(loaded).toEqual(taggedConversation);
     });
 
-    it('should return an empty array if a tagged checkpoint file does not exist', async () => {
+    it('如果标记的检查点文件不存在，应返回空数组', async () => {
       const loaded = await logger.loadCheckpoint('non-existent-tag');
       expect(loaded).toEqual([]);
     });
 
-    it('should return an empty array if the checkpoint file does not exist', async () => {
-      await fs.unlink(TEST_CHECKPOINT_FILE_PATH); // Ensure it's gone
+    it('如果检查点文件不存在，应返回空数组', async () => {
+      await fs.unlink(TEST_CHECKPOINT_FILE_PATH); // 确保文件已删除
       const loaded = await logger.loadCheckpoint('missing');
       expect(loaded).toEqual([]);
     });
 
-    it('should return an empty array if the file contains invalid JSON', async () => {
+    it('如果文件包含无效 JSON，应返回空数组', async () => {
       await fs.writeFile(TEST_CHECKPOINT_FILE_PATH, 'invalid json');
       const consoleErrorSpy = vi
         .spyOn(console, 'error')
@@ -471,12 +471,12 @@ describe('Logger', () => {
       const loadedCheckpoint = await logger.loadCheckpoint('missing');
       expect(loadedCheckpoint).toEqual([]);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to read or parse checkpoint file'),
+        expect.stringContaining('读取或解析检查点文件失败'),
         expect.any(Error),
       );
     });
 
-    it('should return an empty array if logger is not initialized', async () => {
+    it('如果日志记录器未初始化，应返回空数组', async () => {
       const uninitializedLogger = new Logger(testSessionId);
       uninitializedLogger.close();
       const consoleErrorSpy = vi
@@ -485,13 +485,13 @@ describe('Logger', () => {
       const loadedCheckpoint = await uninitializedLogger.loadCheckpoint('tag');
       expect(loadedCheckpoint).toEqual([]);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Logger not initialized or checkpoint file path not set. Cannot load checkpoint.',
+        '日志记录器未初始化或未设置检查点文件路径。无法加载检查点。',
       );
     });
   });
 
   describe('close', () => {
-    it('should reset logger state', async () => {
+    it('应重置日志记录器状态', async () => {
       await logger.logMessage(MessageSenderType.USER, 'A message');
       logger.close();
       const consoleDebugSpy = vi
@@ -499,7 +499,7 @@ describe('Logger', () => {
         .mockImplementation(() => {});
       await logger.logMessage(MessageSenderType.USER, 'Another message');
       expect(consoleDebugSpy).toHaveBeenCalledWith(
-        'Logger not initialized or session ID missing. Cannot log message.',
+        '日志记录器未初始化或缺少会话 ID。无法记录消息。',
       );
       const messages = await logger.getPreviousUserMessages();
       expect(messages).toEqual([]);

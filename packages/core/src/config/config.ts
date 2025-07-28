@@ -73,22 +73,22 @@ export interface ActiveExtension {
 
 export class MCPServerConfig {
   constructor(
-    // For stdio transport
+    // 用于 stdio 传输
     readonly command?: string,
     readonly args?: string[],
     readonly env?: Record<string, string>,
     readonly cwd?: string,
-    // For sse transport
+    // 用于 sse 传输
     readonly url?: string,
-    // For streamable http transport
+    // 用于可流式 HTTP 传输
     readonly httpUrl?: string,
     readonly headers?: Record<string, string>,
-    // For websocket transport
+    // 用于 websocket 传输
     readonly tcp?: string,
-    // Common
+    // 通用
     readonly timeout?: number,
     readonly trust?: boolean,
-    // Metadata
+    // 元数据
     readonly description?: string,
     readonly includeTools?: string[],
     readonly excludeTools?: string[],
@@ -272,12 +272,12 @@ export class Config {
         new StartSessionEvent(this),
       );
     } else {
-      console.log('Data collection is disabled.');
+      console.log('数据收集已禁用。');
     }
   }
 
   async initialize(): Promise<void> {
-    // Initialize centralized FileDiscoveryService
+    // 初始化集中式 FileDiscoveryService
     this.getFileService();
     if (this.getCheckpointingEnabled()) {
       await this.getGitService();
@@ -292,7 +292,7 @@ export class Config {
     );
     this.contentGeneratorConfig.enableOpenAILogging = this.enableOpenAILogging;
 
-    // Set sampling parameters from config if available
+    // 如果可用，从配置中设置采样参数
     if (this.sampling_params) {
       this.contentGeneratorConfig.samplingParams = this.sampling_params;
     }
@@ -300,7 +300,7 @@ export class Config {
     this.geminiClient = new GeminiClient(this);
     await this.geminiClient.initialize(this.contentGeneratorConfig);
 
-    // Reset the session flag since we're explicitly changing auth and using default model
+    // 重置会话标志，因为我们显式更改了认证并使用默认模型
     this.modelSwitchedDuringSession = false;
   }
 
@@ -329,7 +329,7 @@ export class Config {
 
   resetModelToDefault(): void {
     if (this.contentGeneratorConfig) {
-      this.contentGeneratorConfig.model = this.model; // Reset to the original default model
+      this.contentGeneratorConfig.model = this.model; // 重置为原始默认模型
       this.modelSwitchedDuringSession = false;
     }
   }
@@ -557,7 +557,7 @@ export class Config {
   async createToolRegistry(): Promise<ToolRegistry> {
     const registry = new ToolRegistry(this);
 
-    // helper to create & register core tools that are enabled
+    // 辅助函数用于创建并注册启用的核心工具
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const registerCoreTool = (ToolClass: any, ...args: unknown[]) => {
       const className = ToolClass.name;
@@ -600,11 +600,11 @@ export class Config {
     registerCoreTool(ReadManyFilesTool, this);
     registerCoreTool(ShellTool, this);
     registerCoreTool(MemoryTool);
-    // registerCoreTool(WebSearchTool, this); // Temporarily disabled
+    // registerCoreTool(WebSearchTool, this); // 暂时禁用
 
     await registry.discoverTools();
     return registry;
   }
 }
-// Export model constants for use in CLI
+// 导出模型常量供 CLI 使用
 export { DEFAULT_GEMINI_FLASH_MODEL };

@@ -21,9 +21,9 @@ export interface GlobPath {
 }
 
 /**
- * Sorts file entries based on recency and then alphabetically.
- * Recent files (modified within recencyThresholdMs) are listed first, newest to oldest.
- * Older files are listed after recent ones, sorted alphabetically by path.
+ * 根据最近修改时间和字母顺序对文件条目进行排序。
+ * 最近的文件（在 recencyThresholdMs 内修改的）排在前面，从最新到最旧。
+ * 较旧的文件排在最近文件之后，按路径字母顺序排序。
  */
 export function sortFileEntries(
   entries: GlobPath[],
@@ -51,32 +51,32 @@ export function sortFileEntries(
 }
 
 /**
- * Parameters for the GlobTool
+ * GlobTool 的参数
  */
 export interface GlobToolParams {
   /**
-   * The glob pattern to match files against
+   * 用于匹配文件的 glob 模式
    */
   pattern: string;
 
   /**
-   * The directory to search in (optional, defaults to current directory)
+   * 要搜索的目录（可选，默认为当前目录）
    */
   path?: string;
 
   /**
-   * Whether the search should be case-sensitive (optional, defaults to false)
+   * 搜索是否应区分大小写（可选，默认为 false）
    */
   case_sensitive?: boolean;
 
   /**
-   * Whether to respect .gitignore patterns (optional, defaults to true)
+   * 是否应遵循 .gitignore 模式（可选，默认为 true）
    */
   respect_git_ignore?: boolean;
 }
 
 /**
- * Implementation of the Glob tool logic
+ * Glob 工具逻辑的实现
  */
 export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
   static readonly Name = 'glob';
@@ -85,27 +85,27 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
     super(
       GlobTool.Name,
       'FindFiles',
-      'Efficiently finds files matching specific glob patterns (e.g., `src/**/*.ts`, `**/*.md`), returning absolute paths sorted by modification time (newest first). Ideal for quickly locating files based on their name or path structure, especially in large codebases.',
+      '高效查找匹配特定 glob 模式（例如 `src/**/*.ts`、`**/*.md`）的文件，返回按修改时间排序的绝对路径（最新优先）。非常适合根据文件名或路径结构快速定位文件，尤其是在大型代码库中。',
       {
         properties: {
           pattern: {
             description:
-              "The glob pattern to match against (e.g., '**/*.py', 'docs/*.md').",
+              "要匹配的 glob 模式（例如，'**/*.py'、'docs/*.md'）。",
             type: Type.STRING,
           },
           path: {
             description:
-              'Optional: The absolute path to the directory to search within. If omitted, searches the root directory.',
+              '可选：要搜索的目录的绝对路径。如果省略，则搜索根目录。',
             type: Type.STRING,
           },
           case_sensitive: {
             description:
-              'Optional: Whether the search should be case-sensitive. Defaults to false.',
+              '可选：搜索是否应区分大小写。默认为 false。',
             type: Type.BOOLEAN,
           },
           respect_git_ignore: {
             description:
-              'Optional: Whether to respect .gitignore patterns when finding files. Only available in git repositories. Defaults to true.',
+              '可选：查找文件时是否应遵循 .gitignore 模式。仅在 git 仓库中可用。默认为 true。',
             type: Type.BOOLEAN,
           },
         },
@@ -116,7 +116,7 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
   }
 
   /**
-   * Validates the parameters for the tool.
+   * 验证工具的参数。
    */
   validateToolParams(params: GlobToolParams): string | null {
     const errors = SchemaValidator.validate(this.schema.parameters, params);
@@ -130,19 +130,19 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
     );
 
     if (!isWithinRoot(searchDirAbsolute, this.config.getTargetDir())) {
-      return `Search path ("${searchDirAbsolute}") resolves outside the tool's root directory ("${this.config.getTargetDir()}").`;
+      return `搜索路径 ("${searchDirAbsolute}") 解析到工具根目录 ("${this.config.getTargetDir()}") 外部。`;
     }
 
     const targetDir = searchDirAbsolute || this.config.getTargetDir();
     try {
       if (!fs.existsSync(targetDir)) {
-        return `Search path does not exist ${targetDir}`;
+        return `搜索路径不存在 ${targetDir}`;
       }
       if (!fs.statSync(targetDir).isDirectory()) {
-        return `Search path is not a directory: ${targetDir}`;
+        return `搜索路径不是目录: ${targetDir}`;
       }
     } catch (e: unknown) {
-      return `Error accessing search path: ${e}`;
+      return `访问搜索路径时出错: ${e}`;
     }
 
     if (
@@ -150,14 +150,14 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
       typeof params.pattern !== 'string' ||
       params.pattern.trim() === ''
     ) {
-      return "The 'pattern' parameter cannot be empty.";
+      return "'pattern' 参数不能为空。";
     }
 
     return null;
   }
 
   /**
-   * Gets a description of the glob operation.
+   * 获取 glob 操作的描述。
    */
   getDescription(params: GlobToolParams): string {
     let description = `'${params.pattern}'`;
@@ -167,13 +167,13 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
         params.path || '.',
       );
       const relativePath = makeRelative(searchDir, this.config.getTargetDir());
-      description += ` within ${shortenPath(relativePath)}`;
+      description += ` 在 ${shortenPath(relativePath)} 内`;
     }
     return description;
   }
 
   /**
-   * Executes the glob search with the given parameters
+   * 使用给定参数执行 glob 搜索
    */
   async execute(
     params: GlobToolParams,
@@ -182,7 +182,7 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
     const validationError = this.validateToolParams(params);
     if (validationError) {
       return {
-        llmContent: `Error: Invalid parameters provided. Reason: ${validationError}`,
+        llmContent: `错误: 提供了无效参数。原因: ${validationError}`,
         returnDisplay: validationError,
       };
     }
@@ -193,7 +193,7 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
         params.path || '.',
       );
 
-      // Get centralized file discovery service
+      // 获取集中式文件发现服务
       const respectGitIgnore =
         params.respect_git_ignore ??
         this.config.getFileFilteringRespectGitIgnore();
@@ -211,7 +211,7 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
         signal,
       })) as GlobPath[];
 
-      // Apply git-aware filtering if enabled and in git repository
+      // 如果启用且在 git 仓库中，则应用 git 感知过滤
       let filteredEntries = entries;
       let gitIgnoredCount = 0;
 
@@ -235,21 +235,21 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
       }
 
       if (!filteredEntries || filteredEntries.length === 0) {
-        let message = `No files found matching pattern "${params.pattern}" within ${searchDirAbsolute}.`;
+        let message = `在 ${searchDirAbsolute} 中未找到匹配模式 "${params.pattern}" 的文件。`;
         if (gitIgnoredCount > 0) {
-          message += ` (${gitIgnoredCount} files were git-ignored)`;
+          message += ` (${gitIgnoredCount} 个文件被 git 忽略)`;
         }
         return {
           llmContent: message,
-          returnDisplay: `No files found`,
+          returnDisplay: `未找到文件`,
         };
       }
 
-      // Set filtering such that we first show the most recent files
+      // 设置过滤，使我们首先显示最近的文件
       const oneDayInMs = 24 * 60 * 60 * 1000;
       const nowTimestamp = new Date().getTime();
 
-      // Sort the filtered entries using the new helper function
+      // 使用新的辅助函数对过滤后的条目进行排序
       const sortedEntries = sortFileEntries(
         filteredEntries,
         nowTimestamp,
@@ -262,23 +262,23 @@ export class GlobTool extends BaseTool<GlobToolParams, ToolResult> {
       const fileListDescription = sortedAbsolutePaths.join('\n');
       const fileCount = sortedAbsolutePaths.length;
 
-      let resultMessage = `Found ${fileCount} file(s) matching "${params.pattern}" within ${searchDirAbsolute}`;
+      let resultMessage = `在 ${searchDirAbsolute} 中找到 ${fileCount} 个匹配 "${params.pattern}" 的文件`;
       if (gitIgnoredCount > 0) {
-        resultMessage += ` (${gitIgnoredCount} additional files were git-ignored)`;
+        resultMessage += ` (${gitIgnoredCount} 个额外文件被 git 忽略)`;
       }
-      resultMessage += `, sorted by modification time (newest first):\n${fileListDescription}`;
+      resultMessage += `，按修改时间排序（最新优先）:\n${fileListDescription}`;
 
       return {
         llmContent: resultMessage,
-        returnDisplay: `Found ${fileCount} matching file(s)`,
+        returnDisplay: `找到 ${fileCount} 个匹配文件`,
       };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       console.error(`GlobLogic execute Error: ${errorMessage}`, error);
       return {
-        llmContent: `Error during glob search operation: ${errorMessage}`,
-        returnDisplay: `Error: An unexpected error occurred.`,
+        llmContent: `glob 搜索操作期间出错: ${errorMessage}`,
+        returnDisplay: `错误: 发生意外错误。`,
       };
     }
   }

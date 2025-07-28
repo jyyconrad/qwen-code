@@ -21,27 +21,27 @@ import {
 } from '../telemetry/metrics.js';
 
 /**
- * Parameters for the ReadFile tool
+ * ReadFile 工具的参数
  */
 export interface ReadFileToolParams {
   /**
-   * The absolute path to the file to read
+   * 要读取的文件的绝对路径
    */
   absolute_path: string;
 
   /**
-   * The line number to start reading from (optional)
+   * 开始读取的行号（可选）
    */
   offset?: number;
 
   /**
-   * The number of lines to read (optional)
+   * 要读取的行数（可选）
    */
   limit?: number;
 }
 
 /**
- * Implementation of the ReadFile tool logic
+ * ReadFile 工具逻辑的实现
  */
 export class ReadFileTool extends BaseTool<ReadFileToolParams, ToolResult> {
   static readonly Name: string = 'read_file';
@@ -50,22 +50,22 @@ export class ReadFileTool extends BaseTool<ReadFileToolParams, ToolResult> {
     super(
       ReadFileTool.Name,
       'ReadFile',
-      'Reads and returns the content of a specified file from the local filesystem. Handles text, images (PNG, JPG, GIF, WEBP, SVG, BMP), and PDF files. For text files, it can read specific line ranges.',
+      '从本地文件系统读取并返回指定文件的内容。支持文本、图像（PNG、JPG、GIF、WEBP、SVG、BMP）和 PDF 文件。对于文本文件，可以读取特定的行范围。',
       {
         properties: {
           absolute_path: {
             description:
-              "The absolute path to the file to read (e.g., '/home/user/project/file.txt'). Relative paths are not supported. You must provide an absolute path.",
+              "要读取的文件的绝对路径（例如 '/home/user/project/file.txt'）。不支持相对路径。您必须提供绝对路径。",
             type: Type.STRING,
           },
           offset: {
             description:
-              "Optional: For text files, the 0-based line number to start reading from. Requires 'limit' to be set. Use for paginating through large files.",
+              "可选：对于文本文件，开始读取的基于 0 的行号。需要设置 'limit'。用于分页浏览大文件。",
             type: Type.NUMBER,
           },
           limit: {
             description:
-              "Optional: For text files, maximum number of lines to read. Use with 'offset' to paginate through large files. If omitted, reads the entire file (if feasible, up to a default limit).",
+              "可选：对于文本文件，要读取的最大行数。与 'offset' 一起使用以分页浏览大文件。如果省略，则读取整个文件（如果可行，最多到默认限制）。",
             type: Type.NUMBER,
           },
         },
@@ -83,21 +83,21 @@ export class ReadFileTool extends BaseTool<ReadFileToolParams, ToolResult> {
 
     const filePath = params.absolute_path;
     if (!path.isAbsolute(filePath)) {
-      return `File path must be absolute, but was relative: ${filePath}. You must provide an absolute path.`;
+      return `文件路径必须是绝对路径，但却是相对路径：${filePath}。您必须提供绝对路径。`;
     }
     if (!isWithinRoot(filePath, this.config.getTargetDir())) {
-      return `File path must be within the root directory (${this.config.getTargetDir()}): ${filePath}`;
+      return `文件路径必须在根目录（${this.config.getTargetDir()}）内：${filePath}`;
     }
     if (params.offset !== undefined && params.offset < 0) {
-      return 'Offset must be a non-negative number';
+      return '偏移量必须是非负数';
     }
     if (params.limit !== undefined && params.limit <= 0) {
-      return 'Limit must be a positive number';
+      return '限制必须是正数';
     }
 
     const fileService = this.config.getFileService();
     if (fileService.shouldGeminiIgnoreFile(params.absolute_path)) {
-      return `File path '${filePath}' is ignored by .geminiignore pattern(s).`;
+      return `文件路径 '${filePath}' 被 .geminiignore 模式忽略。`;
     }
 
     return null;
@@ -109,7 +109,7 @@ export class ReadFileTool extends BaseTool<ReadFileToolParams, ToolResult> {
       typeof params.absolute_path !== 'string' ||
       params.absolute_path.trim() === ''
     ) {
-      return `Path unavailable`;
+      return `路径不可用`;
     }
     const relativePath = makeRelative(
       params.absolute_path,
@@ -125,7 +125,7 @@ export class ReadFileTool extends BaseTool<ReadFileToolParams, ToolResult> {
     const validationError = this.validateToolParams(params);
     if (validationError) {
       return {
-        llmContent: `Error: Invalid parameters provided. Reason: ${validationError}`,
+        llmContent: `错误：提供了无效参数。原因：${validationError}`,
         returnDisplay: validationError,
       };
     }
@@ -139,8 +139,8 @@ export class ReadFileTool extends BaseTool<ReadFileToolParams, ToolResult> {
 
     if (result.error) {
       return {
-        llmContent: result.error, // The detailed error for LLM
-        returnDisplay: result.returnDisplay, // User-friendly error
+        llmContent: result.error, // 供 LLM 使用的详细错误信息
+        returnDisplay: result.returnDisplay, // 用户友好的错误信息
       };
     }
 

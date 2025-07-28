@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -73,7 +73,7 @@ export function logCliConfiguration(
 
   const logger = logs.getLogger(SERVICE_NAME);
   const logRecord: LogRecord = {
-    body: 'CLI configuration loaded.',
+    body: 'CLI 配置已加载。',
     attributes,
   };
   logger.emit(logRecord);
@@ -96,7 +96,7 @@ export function logUserPrompt(config: Config, event: UserPromptEvent): void {
 
   const logger = logs.getLogger(SERVICE_NAME);
   const logRecord: LogRecord = {
-    body: `User prompt. Length: ${event.prompt_length}.`,
+    body: `用户提示。长度: ${event.prompt_length}。`,
     attributes,
   };
   logger.emit(logRecord);
@@ -128,7 +128,7 @@ export function logToolCall(config: Config, event: ToolCallEvent): void {
 
   const logger = logs.getLogger(SERVICE_NAME);
   const logRecord: LogRecord = {
-    body: `Tool call: ${event.function_name}${event.decision ? `. Decision: ${event.decision}` : ''}. Success: ${event.success}. Duration: ${event.duration_ms}ms.`,
+    body: `工具调用: ${event.function_name}${event.decision ? `. 决策: ${event.decision}` : ''}. 成功: ${event.success}. 耗时: ${event.duration_ms}ms.`,
     attributes,
   };
   logger.emit(logRecord);
@@ -154,7 +154,7 @@ export function logApiRequest(config: Config, event: ApiRequestEvent): void {
 
   const logger = logs.getLogger(SERVICE_NAME);
   const logRecord: LogRecord = {
-    body: `API request to ${event.model}.`,
+    body: `API 请求发送至 ${event.model}。`,
     attributes,
   };
   logger.emit(logRecord);
@@ -176,7 +176,7 @@ export function logFlashFallback(
 
   const logger = logs.getLogger(SERVICE_NAME);
   const logRecord: LogRecord = {
-    body: `Switching to flash as Fallback.`,
+    body: `切换到 Flash 作为后备方案。`,
     attributes,
   };
   logger.emit(logRecord);
@@ -211,7 +211,7 @@ export function logApiError(config: Config, event: ApiErrorEvent): void {
 
   const logger = logs.getLogger(SERVICE_NAME);
   const logRecord: LogRecord = {
-    body: `API error for ${event.model}. Error: ${event.error}. Duration: ${event.duration_ms}ms.`,
+    body: `API 错误，模型: ${event.model}。错误: ${event.error}。耗时: ${event.duration_ms}ms.`,
     attributes,
   };
   logger.emit(logRecord);
@@ -252,7 +252,7 @@ export function logApiResponse(config: Config, event: ApiResponseEvent): void {
 
   const logger = logs.getLogger(SERVICE_NAME);
   const logRecord: LogRecord = {
-    body: `API response from ${event.model}. Status: ${event.status_code || 'N/A'}. Duration: ${event.duration_ms}ms.`,
+    body: `API 响应来自 ${event.model}。状态: ${event.status_code || 'N/A'}。耗时: ${event.duration_ms}ms.`,
     attributes,
   };
   logger.emit(logRecord);
@@ -304,7 +304,7 @@ export function logLoopDetected(
 
   const logger = logs.getLogger(SERVICE_NAME);
   const logRecord: LogRecord = {
-    body: `Loop detected. Type: ${event.loop_type}.`,
+    body: `检测到循环。类型: ${event.loop_type}。`,
     attributes,
   };
   logger.emit(logRecord);

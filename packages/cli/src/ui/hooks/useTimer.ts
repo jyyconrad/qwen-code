@@ -7,10 +7,10 @@
 import { useState, useEffect, useRef } from 'react';
 
 /**
- * Custom hook to manage a timer that increments every second.
- * @param isActive Whether the timer should be running.
- * @param resetKey A key that, when changed, will reset the timer to 0 and restart the interval.
- * @returns The elapsed time in seconds.
+ * 自定义 Hook，用于管理每秒递增的计时器。
+ * @param isActive 计时器是否应该运行。
+ * @param resetKey 一个键，当它改变时，将计时器重置为 0 并重新启动间隔。
+ * @returns 已经过的时间（秒）。
  */
 export const useTimer = (isActive: boolean, resetKey: unknown) => {
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -27,7 +27,7 @@ export const useTimer = (isActive: boolean, resetKey: unknown) => {
     }
 
     if (prevIsActiveRef.current === false && isActive) {
-      // Transitioned from inactive to active
+      // 从非活动状态转换到活动状态
       shouldResetTime = true;
     }
 
@@ -36,10 +36,10 @@ export const useTimer = (isActive: boolean, resetKey: unknown) => {
     }
     prevIsActiveRef.current = isActive;
 
-    // Manage interval
+    // 管理间隔
     if (isActive) {
-      // Clear previous interval unconditionally before starting a new one
-      // This handles resetKey changes while active, ensuring a fresh interval start.
+      // 在启动新间隔之前无条件清除之前的间隔
+      // 这处理了在活动时 resetKey 的变化，确保重新开始一个新间隔。
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }

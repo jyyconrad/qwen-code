@@ -31,7 +31,7 @@ describe('memoryCommand', () => {
       (cmd) => cmd.name === name,
     );
     if (!subCommand) {
-      throw new Error(`/memory ${name} command not found.`);
+      throw new Error(`/memory ${name} 命令未找到。`);
     }
     return subCommand;
   };
@@ -57,8 +57,8 @@ describe('memoryCommand', () => {
       });
     });
 
-    it('should display a message if memory is empty', async () => {
-      if (!showCommand.action) throw new Error('Command has no action');
+    it('如果记忆为空，应显示一条消息', async () => {
+      if (!showCommand.action) throw new Error('命令没有操作');
 
       mockGetUserMemory.mockReturnValue('');
       mockGetGeminiMdFileCount.mockReturnValue(0);
@@ -68,16 +68,16 @@ describe('memoryCommand', () => {
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: 'Memory is currently empty.',
+          text: '记忆当前为空。',
         },
         expect.any(Number),
       );
     });
 
-    it('should display the memory content and file count if it exists', async () => {
-      if (!showCommand.action) throw new Error('Command has no action');
+    it('如果存在记忆内容和文件数量，应显示它们', async () => {
+      if (!showCommand.action) throw new Error('命令没有操作');
 
-      const memoryContent = 'This is a test memory.';
+      const memoryContent = '这是一个测试记忆。';
 
       mockGetUserMemory.mockReturnValue(memoryContent);
       mockGetGeminiMdFileCount.mockReturnValue(1);
@@ -87,7 +87,7 @@ describe('memoryCommand', () => {
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: `Current memory content from 1 file(s):\n\n---\n${memoryContent}\n---`,
+          text: `来自 1 个文件的当前记忆内容：\n\n---\n${memoryContent}\n---`,
         },
         expect.any(Number),
       );
@@ -102,29 +102,29 @@ describe('memoryCommand', () => {
       mockContext = createMockCommandContext();
     });
 
-    it('should return an error message if no arguments are provided', () => {
-      if (!addCommand.action) throw new Error('Command has no action');
+    it('如果没有提供参数，应返回一条错误消息', () => {
+      if (!addCommand.action) throw new Error('命令没有操作');
 
       const result = addCommand.action(mockContext, '  ');
       expect(result).toEqual({
         type: 'message',
         messageType: 'error',
-        content: 'Usage: /memory add <text to remember>',
+        content: '用法：/memory add <要记住的文本>',
       });
 
       expect(mockContext.ui.addItem).not.toHaveBeenCalled();
     });
 
-    it('should return a tool action and add an info message when arguments are provided', () => {
-      if (!addCommand.action) throw new Error('Command has no action');
+    it('当提供参数时，应返回一个工具操作并添加一条信息消息', () => {
+      if (!addCommand.action) throw new Error('命令没有操作');
 
-      const fact = 'remember this';
+      const fact = '记住这个';
       const result = addCommand.action(mockContext, `  ${fact}  `);
 
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: `Attempting to save to memory: "${fact}"`,
+          text: `正在尝试保存到记忆："${fact}"`,
         },
         expect.any(Number),
       );
@@ -154,11 +154,11 @@ describe('memoryCommand', () => {
       });
     });
 
-    it('should display success message when memory is refreshed with content', async () => {
-      if (!refreshCommand.action) throw new Error('Command has no action');
+    it('当记忆刷新并包含内容时，应显示成功消息', async () => {
+      if (!refreshCommand.action) throw new Error('命令没有操作');
 
       const refreshResult = {
-        memoryContent: 'new memory content',
+        memoryContent: '新的记忆内容',
         fileCount: 2,
       };
       mockRefreshMemory.mockResolvedValue(refreshResult);
@@ -168,7 +168,7 @@ describe('memoryCommand', () => {
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: 'Refreshing memory from source files...',
+          text: '正在从源文件刷新记忆...',
         },
         expect.any(Number),
       );
@@ -178,14 +178,14 @@ describe('memoryCommand', () => {
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: 'Memory refreshed successfully. Loaded 18 characters from 2 file(s).',
+          text: '记忆刷新成功。从 2 个文件加载了 18 个字符。',
         },
         expect.any(Number),
       );
     });
 
-    it('should display success message when memory is refreshed with no content', async () => {
-      if (!refreshCommand.action) throw new Error('Command has no action');
+    it('当记忆刷新但没有内容时，应显示成功消息', async () => {
+      if (!refreshCommand.action) throw new Error('命令没有操作');
 
       const refreshResult = { memoryContent: '', fileCount: 0 };
       mockRefreshMemory.mockResolvedValue(refreshResult);
@@ -197,16 +197,16 @@ describe('memoryCommand', () => {
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: 'Memory refreshed successfully. No memory content found.',
+          text: '记忆刷新成功。未找到记忆内容。',
         },
         expect.any(Number),
       );
     });
 
-    it('should display an error message if refreshing fails', async () => {
-      if (!refreshCommand.action) throw new Error('Command has no action');
+    it('如果刷新失败，应显示一条错误消息', async () => {
+      if (!refreshCommand.action) throw new Error('命令没有操作');
 
-      const error = new Error('Failed to read memory files.');
+      const error = new Error('读取记忆文件失败。');
       mockRefreshMemory.mockRejectedValue(error);
 
       await refreshCommand.action(mockContext, '');
@@ -216,7 +216,7 @@ describe('memoryCommand', () => {
       expect(mockContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.ERROR,
-          text: `Error refreshing memory: ${error.message}`,
+          text: `刷新记忆时出错：${error.message}`,
         },
         expect.any(Number),
       );
@@ -224,8 +224,8 @@ describe('memoryCommand', () => {
       expect(getErrorMessage).toHaveBeenCalledWith(error);
     });
 
-    it('should not throw if config service is unavailable', async () => {
-      if (!refreshCommand.action) throw new Error('Command has no action');
+    it('如果配置服务不可用，不应抛出异常', async () => {
+      if (!refreshCommand.action) throw new Error('命令没有操作');
 
       const nullConfigContext = createMockCommandContext({
         services: { config: null },
@@ -238,7 +238,7 @@ describe('memoryCommand', () => {
       expect(nullConfigContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
-          text: 'Refreshing memory from source files...',
+          text: '正在从源文件刷新记忆...',
         },
         expect.any(Number),
       );

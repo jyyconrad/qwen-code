@@ -16,9 +16,9 @@ describe('authCommand', () => {
     mockContext = createMockCommandContext();
   });
 
-  it('should return a dialog action to open the auth dialog', () => {
+  it('应返回一个对话框操作以打开认证对话框', () => {
     if (!authCommand.action) {
-      throw new Error('The auth command must have an action.');
+      throw new Error('认证命令必须有一个操作。');
     }
 
     const result = authCommand.action(mockContext, '');
@@ -29,8 +29,8 @@ describe('authCommand', () => {
     });
   });
 
-  it('should have the correct name and description', () => {
+  it('应具有正确的名称和描述', () => {
     expect(authCommand.name).toBe('auth');
-    expect(authCommand.description).toBe('change the auth method');
+    expect(authCommand.description).toBe('更改认证方法');
   });
 });

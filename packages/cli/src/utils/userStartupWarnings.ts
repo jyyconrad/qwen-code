@@ -13,7 +13,7 @@ type WarningCheck = {
   check: (workspaceRoot: string) => Promise<string | null>;
 };
 
-// Individual warning checks
+// 单个警告检查
 const homeDirectoryCheck: WarningCheck = {
   id: 'home-directory',
   check: async (workspaceRoot: string) => {
@@ -24,11 +24,11 @@ const homeDirectoryCheck: WarningCheck = {
       ]);
 
       if (workspaceRealPath === homeRealPath) {
-        return 'You are running iFlyCode in your home directory. It is recommended to run in a project-specific directory.';
+        return '您正在主目录中运行 iFlyCode。建议在特定项目的目录中运行。';
       }
       return null;
     } catch (_err: unknown) {
-      return 'Could not verify the current directory due to a file system error.';
+      return '由于文件系统错误，无法验证当前目录。';
     }
   },
 };
@@ -39,13 +39,13 @@ const nodeVersionCheck: WarningCheck = {
     const minMajor = 20;
     const major = semver.major(process.versions.node);
     if (major < minMajor) {
-      return `You are using Node.js v${process.versions.node}. Gemini CLI requires Node.js ${minMajor} or higher for best results.`;
+      return `您正在使用 Node.js v${process.versions.node}。Gemini CLI 需要 Node.js ${minMajor} 或更高版本以获得最佳结果。`;
     }
     return null;
   },
 };
 
-// All warning checks
+// 所有警告检查
 const WARNING_CHECKS: readonly WarningCheck[] = [
   homeDirectoryCheck,
   nodeVersionCheck,

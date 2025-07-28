@@ -31,15 +31,15 @@ import {
 } from '@google/genai';
 import { spawn } from 'node:child_process';
 
-// Use vi.hoisted to define the mock function so it can be used in the vi.mock factory
+// 使用 vi.hoisted 定义模拟函数，以便在 vi.mock 工厂中使用
 const mockDiscoverMcpTools = vi.hoisted(() => vi.fn());
 
-// Mock ./mcp-client.js to control its behavior within tool-registry tests
+// 模拟 ./mcp-client.js 以控制其在 tool-registry 测试中的行为
 vi.mock('./mcp-client.js', () => ({
   discoverMcpTools: mockDiscoverMcpTools,
 }));
 
-// Mock node:child_process
+// 模拟 node:child_process
 vi.mock('node:child_process', async () => {
   const actual = await vi.importActual('node:child_process');
   return {
@@ -49,7 +49,7 @@ vi.mock('node:child_process', async () => {
   };
 });
 
-// Mock MCP SDK Client and Transports
+// 模拟 MCP SDK Client 和 Transports
 const mockMcpClientConnect = vi.fn();
 const mockMcpClientOnError = vi.fn();
 const mockStdioTransportClose = vi.fn();
@@ -82,7 +82,7 @@ vi.mock('@modelcontextprotocol/sdk/client/sse.js', () => {
   return { SSEClientTransport: MockSSEClientTransport };
 });
 
-// Mock @google/genai mcpToTool
+// 模拟 @google/genai mcpToTool
 vi.mock('@google/genai', async () => {
   const actualGenai =
     await vi.importActual<typeof import('@google/genai')>('@google/genai');
@@ -95,7 +95,7 @@ vi.mock('@google/genai', async () => {
   };
 });
 
-// Helper to create a mock CallableTool for specific test needs
+// 辅助函数，用于创建特定测试需求的模拟 CallableTool
 const createMockCallableTool = (
   toolDeclarations: FunctionDeclaration[],
 ): Mocked<CallableTool> => ({
@@ -167,7 +167,7 @@ describe('ToolRegistry', () => {
   });
 
   describe('registerTool', () => {
-    it('should register a new tool', () => {
+    it('应该注册一个新工具', () => {
       const tool = new MockTool();
       toolRegistry.registerTool(tool);
       expect(toolRegistry.getTool('mock-tool')).toBe(tool);
@@ -175,12 +175,12 @@ describe('ToolRegistry', () => {
   });
 
   describe('getToolsByServer', () => {
-    it('should return an empty array if no tools match the server name', () => {
+    it('如果没有工具匹配服务器名称，应返回空数组', () => {
       toolRegistry.registerTool(new MockTool());
       expect(toolRegistry.getToolsByServer('any-mcp-server')).toEqual([]);
     });
 
-    it('should return only tools matching the server name', async () => {
+    it('应仅返回匹配服务器名称的工具', async () => {
       const server1Name = 'mcp-server-uno';
       const server2Name = 'mcp-server-dos';
       const mockCallable = {} as CallableTool;
@@ -217,7 +217,7 @@ describe('ToolRegistry', () => {
   });
 
   describe('discoverTools', () => {
-    it('should sanitize tool parameters during discovery from command', async () => {
+    it('应在通过命令发现工具时对工具参数进行清理', async () => {
       const discoveryCommand = 'my-discovery-command';
       mockConfigGetToolDiscoveryCommand.mockReturnValue(discoveryCommand);
 
@@ -229,7 +229,7 @@ describe('ToolRegistry', () => {
           properties: {
             some_string: {
               type: Type.STRING,
-              format: 'uuid', // This is an unsupported format
+              format: 'uuid', // 这是一个不支持的格式
             },
           },
         },
@@ -243,7 +243,7 @@ describe('ToolRegistry', () => {
       };
       mockSpawn.mockReturnValue(mockChildProcess as any);
 
-      // Simulate stdout data
+      // 模拟 stdout 数据
       mockChildProcess.stdout.on.mockImplementation((event, callback) => {
         if (event === 'data') {
           callback(
@@ -257,7 +257,7 @@ describe('ToolRegistry', () => {
         return mockChildProcess as any;
       });
 
-      // Simulate process close
+      // 模拟进程关闭
       mockChildProcess.on.mockImplementation((event, callback) => {
         if (event === 'close') {
           callback(0);
@@ -279,7 +279,7 @@ describe('ToolRegistry', () => {
       );
     });
 
-    it('should discover tools using MCP servers defined in getMcpServers', async () => {
+    it('应使用 getMcpServers 中定义的 MCP 服务器发现工具', async () => {
       mockConfigGetToolDiscoveryCommand.mockReturnValue(undefined);
       vi.spyOn(config, 'getMcpServerCommand').mockReturnValue(undefined);
       const mcpServerConfigVal = {
@@ -301,7 +301,7 @@ describe('ToolRegistry', () => {
       );
     });
 
-    it('should discover tools using MCP servers defined in getMcpServers', async () => {
+    it('应使用 getMcpServers 中定义的 MCP 服务器发现工具', async () => {
       mockConfigGetToolDiscoveryCommand.mockReturnValue(undefined);
       vi.spyOn(config, 'getMcpServerCommand').mockReturnValue(undefined);
       const mcpServerConfigVal = {
@@ -326,7 +326,7 @@ describe('ToolRegistry', () => {
 });
 
 describe('sanitizeParameters', () => {
-  it('should remove default when anyOf is present', () => {
+  it('当 anyOf 存在时应移除 default', () => {
     const schema: Schema = {
       anyOf: [{ type: Type.STRING }, { type: Type.NUMBER }],
       default: 'hello',
@@ -335,7 +335,7 @@ describe('sanitizeParameters', () => {
     expect(schema.default).toBeUndefined();
   });
 
-  it('should recursively sanitize items in anyOf', () => {
+  it('应递归地清理 anyOf 中的项目', () => {
     const schema: Schema = {
       anyOf: [
         {
@@ -349,7 +349,7 @@ describe('sanitizeParameters', () => {
     expect(schema.anyOf![0].default).toBeUndefined();
   });
 
-  it('should recursively sanitize items in items', () => {
+  it('应递归地清理 items 中的项目', () => {
     const schema: Schema = {
       items: {
         anyOf: [{ type: Type.STRING }],
@@ -360,7 +360,7 @@ describe('sanitizeParameters', () => {
     expect(schema.items!.default).toBeUndefined();
   });
 
-  it('should recursively sanitize items in properties', () => {
+  it('应递归地清理 properties 中的项目', () => {
     const schema: Schema = {
       properties: {
         prop1: {
@@ -373,7 +373,7 @@ describe('sanitizeParameters', () => {
     expect(schema.properties!.prop1.default).toBeUndefined();
   });
 
-  it('should handle complex nested schemas', () => {
+  it('应处理复杂的嵌套模式', () => {
     const schema: Schema = {
       properties: {
         prop1: {
@@ -403,7 +403,7 @@ describe('sanitizeParameters', () => {
     expect(nestedProp?.default).toBeUndefined();
   });
 
-  it('should remove unsupported format from a simple string property', () => {
+  it('应从简单的字符串属性中移除不支持的格式', () => {
     const schema: Schema = {
       type: Type.OBJECT,
       properties: {
@@ -416,7 +416,7 @@ describe('sanitizeParameters', () => {
     expect(schema.properties?.['name']).not.toHaveProperty('format');
   });
 
-  it('should NOT remove supported format values', () => {
+  it('不应移除支持的格式值', () => {
     const schema: Schema = {
       type: Type.OBJECT,
       properties: {
@@ -433,7 +433,7 @@ describe('sanitizeParameters', () => {
     expect(schema).toEqual(originalSchema);
   });
 
-  it('should handle arrays of objects', () => {
+  it('应处理对象数组', () => {
     const schema: Schema = {
       type: Type.OBJECT,
       properties: {
@@ -454,7 +454,7 @@ describe('sanitizeParameters', () => {
     ).toHaveProperty('format', undefined);
   });
 
-  it('should handle schemas with no properties to sanitize', () => {
+  it('应处理没有需要清理的属性的模式', () => {
     const schema: Schema = {
       type: Type.OBJECT,
       properties: {
@@ -467,12 +467,12 @@ describe('sanitizeParameters', () => {
     expect(schema).toEqual(originalSchema);
   });
 
-  it('should not crash on an empty or undefined schema', () => {
+  it('在空或未定义的模式上不应崩溃', () => {
     expect(() => sanitizeParameters({})).not.toThrow();
     expect(() => sanitizeParameters(undefined)).not.toThrow();
   });
 
-  it('should handle complex nested schemas with cycles', () => {
+  it('应处理带有循环引用的复杂嵌套模式', () => {
     const userNode: any = {
       type: Type.OBJECT,
       properties: {

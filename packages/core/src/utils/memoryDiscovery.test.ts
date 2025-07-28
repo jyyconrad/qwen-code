@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -21,14 +21,14 @@ import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 
 const ORIGINAL_GEMINI_MD_FILENAME_CONST_FOR_TEST = DEFAULT_CONTEXT_FILENAME;
 
-// Mock the entire fs/promises module
+// 模拟整个 fs/promises 模块
 vi.mock('fs/promises');
-// Mock the parts of fsSync we might use (like constants or existsSync if needed)
+// 模拟我们可能使用的 fsSync 部分（如常量或 existsSync）
 vi.mock('fs', async (importOriginal) => {
   const actual = await importOriginal<typeof fsSync>();
   return {
-    ...actual, // Spread actual to get all exports, including Stats and Dirent if they are classes/constructors
-    constants: { ...actual.constants }, // Preserve constants
+    ...actual, // 展开 actual 以获取所有导出，包括 Stats 和 Dirent（如果它们是类/构造函数）
+    constants: { ...actual.constants }, // 保留常量
   };
 });
 vi.mock('os');
@@ -42,23 +42,23 @@ describe('loadServerHierarchicalMemory', () => {
   const USER_HOME = '/test/userhome';
 
   let GLOBAL_GEMINI_DIR: string;
-  let GLOBAL_GEMINI_FILE: string; // Defined in beforeEach
+  let GLOBAL_GEMINI_FILE: string; // 在 beforeEach 中定义
 
   const fileService = new FileDiscoveryService(PROJECT_ROOT);
   beforeEach(() => {
     vi.resetAllMocks();
-    // Set environment variables to indicate test environment
+    // 设置环境变量以指示测试环境
     process.env.NODE_ENV = 'test';
     process.env.VITEST = 'true';
 
-    setGeminiMdFilename(DEFAULT_CONTEXT_FILENAME); // Use defined const
+    setGeminiMdFilename(DEFAULT_CONTEXT_FILENAME); // 使用定义的常量
     mockOs.homedir.mockReturnValue(USER_HOME);
 
-    // Define these here to use potentially reset/updated values from imports
+    // 在此处定义这些，以使用可能从导入中重置/更新的值
     GLOBAL_GEMINI_DIR = path.join(USER_HOME, GEMINI_CONFIG_DIR);
     GLOBAL_GEMINI_FILE = path.join(
       GLOBAL_GEMINI_DIR,
-      getCurrentGeminiMdFilename(), // Use current filename
+      getCurrentGeminiMdFilename(), // 使用当前文件名
     );
 
     mockFs.stat.mockRejectedValue(new Error('File not found'));
@@ -67,7 +67,7 @@ describe('loadServerHierarchicalMemory', () => {
     mockFs.access.mockRejectedValue(new Error('File not found'));
   });
 
-  it('should return empty memory and count if no context files are found', async () => {
+  it('如果未找到上下文文件，应返回空内存和计数', async () => {
     const { memoryContent, fileCount } = await loadServerHierarchicalMemory(
       CWD,
       false,
@@ -77,7 +77,7 @@ describe('loadServerHierarchicalMemory', () => {
     expect(fileCount).toBe(0);
   });
 
-  it('should load only the global context file if present and others are not (default filename)', async () => {
+  it('如果存在全局上下文文件而其他文件不存在，则应仅加载全局上下文文件（默认文件名）', async () => {
     const globalDefaultFile = path.join(
       GLOBAL_GEMINI_DIR,
       DEFAULT_CONTEXT_FILENAME,
@@ -108,7 +108,7 @@ describe('loadServerHierarchicalMemory', () => {
     expect(mockFs.readFile).toHaveBeenCalledWith(globalDefaultFile, 'utf-8');
   });
 
-  it('should load only the global custom context file if present and filename is changed', async () => {
+  it('如果存在全局自定义上下文文件且文件名已更改，则应仅加载全局自定义上下文文件', async () => {
     const customFilename = 'CUSTOM_AGENTS.md';
     setGeminiMdFilename(customFilename);
     const globalCustomFile = path.join(GLOBAL_GEMINI_DIR, customFilename);
@@ -139,7 +139,7 @@ describe('loadServerHierarchicalMemory', () => {
     expect(mockFs.readFile).toHaveBeenCalledWith(globalCustomFile, 'utf-8');
   });
 
-  it('should load context files by upward traversal with custom filename', async () => {
+  it('应通过向上遍历加载上下文文件（使用自定义文件名）', async () => {
     const customFilename = 'PROJECT_CONTEXT.md';
     setGeminiMdFilename(customFilename);
     const projectRootCustomFile = path.join(PROJECT_ROOT, customFilename);
@@ -187,7 +187,7 @@ describe('loadServerHierarchicalMemory', () => {
     expect(mockFs.readFile).toHaveBeenCalledWith(srcCustomFile, 'utf-8');
   });
 
-  it('should load context files by downward traversal with custom filename', async () => {
+  it('应通过向下遍历加载上下文文件（使用自定义文件名）', async () => {
     const customFilename = 'LOCAL_CONTEXT.md';
     setGeminiMdFilename(customFilename);
     const subDir = path.join(CWD, 'subdir');
@@ -247,7 +247,7 @@ describe('loadServerHierarchicalMemory', () => {
     expect(fileCount).toBe(2);
   });
 
-  it('should load ORIGINAL_GEMINI_MD_FILENAME files by upward traversal from CWD to project root', async () => {
+  it('应通过从 CWD 到项目根目录的向上遍历加载 ORIGINAL_GEMINI_MD_FILENAME 文件', async () => {
     const projectRootGeminiFile = path.join(
       PROJECT_ROOT,
       ORIGINAL_GEMINI_MD_FILENAME_CONST_FOR_TEST,
@@ -299,7 +299,7 @@ describe('loadServerHierarchicalMemory', () => {
     expect(mockFs.readFile).toHaveBeenCalledWith(srcGeminiFile, 'utf-8');
   });
 
-  it('should load ORIGINAL_GEMINI_MD_FILENAME files by downward traversal from CWD', async () => {
+  it('应通过从 CWD 向下遍历加载 ORIGINAL_GEMINI_MD_FILENAME 文件', async () => {
     const subDir = path.join(CWD, 'subdir');
     const subDirGeminiFile = path.join(
       subDir,
@@ -363,8 +363,8 @@ describe('loadServerHierarchicalMemory', () => {
     expect(fileCount).toBe(2);
   });
 
-  it('should load and correctly order global, upward, and downward ORIGINAL_GEMINI_MD_FILENAME files', async () => {
-    setGeminiMdFilename(ORIGINAL_GEMINI_MD_FILENAME_CONST_FOR_TEST); // Explicitly set for this test
+  it('应加载并正确排序全局、向上和向下遍历的 ORIGINAL_GEMINI_MD_FILENAME 文件', async () => {
+    setGeminiMdFilename(ORIGINAL_GEMINI_MD_FILENAME_CONST_FOR_TEST); // 显式设置此测试
 
     const globalFileToUse = path.join(
       GLOBAL_GEMINI_DIR,
@@ -400,7 +400,7 @@ describe('loadServerHierarchicalMemory', () => {
 
     mockFs.access.mockImplementation(async (p) => {
       if (
-        p === globalFileToUse || // Use the dynamically set global file path
+        p === globalFileToUse || // 使用动态设置的全局文件路径
         p === projectParentGeminiFile ||
         p === projectRootGeminiFile ||
         p === cwdGeminiFile ||
@@ -412,7 +412,7 @@ describe('loadServerHierarchicalMemory', () => {
     });
 
     mockFs.readFile.mockImplementation(async (p) => {
-      if (p === globalFileToUse) return 'Global memory'; // Use the dynamically set global file path
+      if (p === globalFileToUse) return 'Global memory'; // 使用动态设置的全局文件路径
       if (p === projectParentGeminiFile) return 'Project parent memory';
       if (p === projectRootGeminiFile) return 'Project root memory';
       if (p === cwdGeminiFile) return 'CWD memory';
@@ -471,12 +471,12 @@ describe('loadServerHierarchicalMemory', () => {
     expect(fileCount).toBe(5);
   });
 
-  it('should ignore specified directories during downward scan', async () => {
+  it('在向下扫描期间应忽略指定的目录', async () => {
     const ignoredDir = path.join(CWD, 'node_modules');
     const ignoredDirGeminiFile = path.join(
       ignoredDir,
       ORIGINAL_GEMINI_MD_FILENAME_CONST_FOR_TEST,
-    ); // Corrected
+    ); // 已修正
     const regularSubDir = path.join(CWD, 'my_code');
     const regularSubDirGeminiFile = path.join(
       regularSubDir,
@@ -543,7 +543,7 @@ describe('loadServerHierarchicalMemory', () => {
     );
   });
 
-  it('should respect MAX_DIRECTORIES_TO_SCAN_FOR_MEMORY during downward scan', async () => {
+  it('在向下扫描期间应遵守 MAX_DIRECTORIES_TO_SCAN_FOR_MEMORY', async () => {
     const consoleDebugSpy = vi
       .spyOn(console, 'debug')
       .mockImplementation(() => {});
@@ -576,7 +576,7 @@ describe('loadServerHierarchicalMemory', () => {
     consoleDebugSpy.mockRestore();
   });
 
-  it('should load extension context file paths', async () => {
+  it('应加载扩展上下文文件路径', async () => {
     const extensionFilePath = '/test/extensions/ext1/GEMINI.md';
     mockFs.access.mockImplementation(async (p) => {
       if (p === extensionFilePath) {

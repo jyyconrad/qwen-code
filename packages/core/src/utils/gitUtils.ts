@@ -8,9 +8,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * Checks if a directory is within a git repository
- * @param directory The directory to check
- * @returns true if the directory is in a git repository, false otherwise
+ * 检查目录是否在 Git 仓库中
+ * @param directory 要检查的目录
+ * @returns 如果目录在 Git 仓库中则返回 true，否则返回 false
  */
 export function isGitRepository(directory: string): boolean {
   try {
@@ -19,14 +19,14 @@ export function isGitRepository(directory: string): boolean {
     while (true) {
       const gitDir = path.join(currentDir, '.git');
 
-      // Check if .git exists (either as directory or file for worktrees)
+      // 检查 .git 是否存在（可能是目录或文件（适用于工作树））
       if (fs.existsSync(gitDir)) {
         return true;
       }
 
       const parentDir = path.dirname(currentDir);
 
-      // If we've reached the root directory, stop searching
+      // 如果已到达根目录，则停止搜索
       if (parentDir === currentDir) {
         break;
       }
@@ -36,15 +36,15 @@ export function isGitRepository(directory: string): boolean {
 
     return false;
   } catch (_error) {
-    // If any filesystem error occurs, assume not a git repo
+    // 如果发生任何文件系统错误，则假定不是 Git 仓库
     return false;
   }
 }
 
 /**
- * Finds the root directory of a git repository
- * @param directory Starting directory to search from
- * @returns The git repository root path, or null if not in a git repository
+ * 查找 Git 仓库的根目录
+ * @param directory 开始搜索的目录
+ * @returns Git 仓库根路径，如果不在 Git 仓库中则返回 null
  */
 export function findGitRoot(directory: string): string | null {
   try {

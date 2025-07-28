@@ -25,7 +25,7 @@ import { Extension, filterActiveExtensions } from './extension.js';
 import { getCliVersion } from '../utils/version.js';
 import { loadSandboxConfig } from './sandboxConfig.js';
 
-// Simple console logger for now - replace with actual logger if available
+// 简单的控制台记录器 - 如果有实际记录器则替换
 const logger = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   debug: (...args: any[]) => console.debug('[DEBUG]', ...args),
@@ -66,139 +66,139 @@ export async function parseArguments(): Promise<CliArgs> {
     .scriptName('iflycode')
     .usage(
       '$0 [options]',
-      'iFlyCode - Launch an interactive CLI, use -p/--prompt for non-interactive mode',
+      'iFlyCode - 启动交互式 CLI，使用 -p/--prompt 进入非交互模式',
     )
     .option('model', {
       alias: 'm',
       type: 'string',
-      description: `Model`,
+      description: `模型`,
       default: process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL,
     })
     .option('prompt', {
       alias: 'p',
       type: 'string',
-      description: 'Prompt. Appended to input on stdin (if any).',
+      description: '提示。附加到标准输入（如果有）。',
     })
     .option('prompt-interactive', {
       alias: 'i',
       type: 'string',
       description:
-        'Execute the provided prompt and continue in interactive mode',
+        '执行提供的提示并继续进入交互模式',
     })
     .option('sandbox', {
       alias: 's',
       type: 'boolean',
-      description: 'Run in sandbox?',
+      description: '在沙箱中运行？',
     })
     .option('sandbox-image', {
       type: 'string',
-      description: 'Sandbox image URI.',
+      description: '沙箱镜像 URI。',
     })
     .option('debug', {
       alias: 'd',
       type: 'boolean',
-      description: 'Run in debug mode?',
+      description: '在调试模式下运行？',
       default: false,
     })
     .option('all-files', {
       alias: ['a'],
       type: 'boolean',
-      description: 'Include ALL files in context?',
+      description: '在上下文中包含所有文件？',
       default: false,
     })
     .option('all_files', {
       type: 'boolean',
-      description: 'Include ALL files in context?',
+      description: '在上下文中包含所有文件？',
       default: false,
     })
     .deprecateOption(
       'all_files',
-      'Use --all-files instead. We will be removing --all_files in the coming weeks.',
+      '请改用 --all-files。我们将在未来几周内移除 --all_files。',
     )
     .option('show-memory-usage', {
       type: 'boolean',
-      description: 'Show memory usage in status bar',
+      description: '在状态栏中显示内存使用情况',
       default: false,
     })
     .option('show_memory_usage', {
       type: 'boolean',
-      description: 'Show memory usage in status bar',
+      description: '在状态栏中显示内存使用情况',
       default: false,
     })
     .deprecateOption(
       'show_memory_usage',
-      'Use --show-memory-usage instead. We will be removing --show_memory_usage in the coming weeks.',
+      '请改用 --show-memory-usage。我们将在未来几周内移除 --show_memory_usage。',
     )
     .option('yolo', {
       alias: 'y',
       type: 'boolean',
       description:
-        'Automatically accept all actions (aka YOLO mode, see https://www.youtube.com/watch?v=xvFZjo5PgG0 for more details)?',
+        '自动接受所有操作（即 YOLO 模式，详情请见 https://www.youtube.com/watch?v=xvFZjo5PgG0）？',
       default: false,
     })
     .option('telemetry', {
       type: 'boolean',
       description:
-        'Enable telemetry? This flag specifically controls if telemetry is sent. Other --telemetry-* flags set specific values but do not enable telemetry on their own.',
+        '启用遥测？此标志专门控制是否发送遥测数据。其他 --telemetry-* 标志设置特定值但不会单独启用遥测。',
     })
     .option('telemetry-target', {
       type: 'string',
       choices: ['local', 'gcp'],
       description:
-        'Set the telemetry target (local or gcp). Overrides settings files.',
+        '设置遥测目标（local 或 gcp）。覆盖设置文件。',
     })
     .option('telemetry-otlp-endpoint', {
       type: 'string',
       description:
-        'Set the OTLP endpoint for telemetry. Overrides environment variables and settings files.',
+        '设置遥测的 OTLP 端点。覆盖环境变量和设置文件。',
     })
     .option('telemetry-log-prompts', {
       type: 'boolean',
       description:
-        'Enable or disable logging of user prompts for telemetry. Overrides settings files.',
+        '启用或禁用遥测的用户提示日志记录。覆盖设置文件。',
     })
     .option('checkpointing', {
       alias: 'c',
       type: 'boolean',
-      description: 'Enables checkpointing of file edits',
+      description: '启用文件编辑的检查点功能',
       default: false,
     })
     .option('allowed-mcp-server-names', {
       type: 'array',
       string: true,
-      description: 'Allowed MCP server names',
+      description: '允许的 MCP 服务器名称',
     })
     .option('extensions', {
       alias: 'e',
       type: 'array',
       string: true,
       description:
-        'A list of extensions to use. If not provided, all extensions are used.',
+        '要使用的扩展列表。如果未提供，则使用所有扩展。',
     })
     .option('list-extensions', {
       alias: 'l',
       type: 'boolean',
-      description: 'List all available extensions and exit.',
+      description: '列出所有可用扩展并退出。',
     })
     .option('ide-mode', {
       type: 'boolean',
-      description: 'Run in IDE mode?',
+      description: '在 IDE 模式下运行？',
     })
     .option('openai-logging', {
       type: 'boolean',
       description:
-        'Enable logging of OpenAI API calls for debugging and analysis',
+        '启用 OpenAI API 调用的日志记录以进行调试和分析',
     })
     .option('openai-api-key', {
       type: 'string',
-      description: 'OpenAI API key to use for authentication',
+      description: '用于身份验证的 OpenAI API 密钥',
     })
     .option('openai-base-url', {
       type: 'string',
-      description: 'OpenAI base URL (for custom endpoints)',
+      description: 'OpenAI 基础 URL（用于自定义端点）',
     })
 
-    .version(await getCliVersion()) // This will enable the --version flag based on package.json
+    .version(await getCliVersion()) // 这将根据 package.json 启用 --version 标志
     .alias('v', 'version')
     .help()
     .alias('h', 'help')
@@ -206,7 +206,7 @@ export async function parseArguments(): Promise<CliArgs> {
     .check((argv) => {
       if (argv.prompt && argv.promptInteractive) {
         throw new Error(
-          'Cannot use both --prompt (-p) and --prompt-interactive (-i) together',
+          '不能同时使用 --prompt (-p) 和 --prompt-interactive (-i)',
         );
       }
       return true;
@@ -216,9 +216,9 @@ export async function parseArguments(): Promise<CliArgs> {
   return yargsInstance.argv;
 }
 
-// This function is now a thin wrapper around the server's implementation.
-// It's kept in the CLI for now as App.tsx directly calls it for memory refresh.
-// TODO: Consider if App.tsx should get memory via a server call or if Config should refresh itself.
+// 此函数现在是服务器实现的简单包装器。
+// 目前保留在 CLI 中，因为 App.tsx 直接调用它来刷新内存。
+// TODO: 考虑 App.tsx 是否应该通过服务器调用获取内存，或者 Config 是否应该自行刷新。
 export async function loadHierarchicalGeminiMemory(
   currentWorkingDirectory: string,
   debugMode: boolean,
@@ -227,11 +227,11 @@ export async function loadHierarchicalGeminiMemory(
 ): Promise<{ memoryContent: string; fileCount: number }> {
   if (debugMode) {
     logger.debug(
-      `CLI: Delegating hierarchical memory load to server for CWD: ${currentWorkingDirectory}`,
+      `CLI: 将分层内存加载委托给服务器，当前工作目录: ${currentWorkingDirectory}`,
     );
   }
-  // Directly call the server function.
-  // The server function will use its own homedir() for the global path.
+  // 直接调用服务器函数。
+  // 服务器函数将使用其自己的 homedir() 获取全局路径。
   return loadServerHierarchicalMemory(
     currentWorkingDirectory,
     debugMode,
@@ -262,24 +262,24 @@ export async function loadCliConfig(
     argv.extensions || [],
   );
 
-  // Handle OpenAI API key from command line
+  // 处理命令行中的 OpenAI API 密钥
   if (argv.openaiApiKey) {
     process.env.OPENAI_API_KEY = argv.openaiApiKey;
   }
 
-  // Handle OpenAI base URL from command line
+  // 处理命令行中的 OpenAI 基础 URL
   if (argv.openaiBaseUrl) {
     process.env.OPENAI_BASE_URL = argv.openaiBaseUrl;
   }
 
-  // Set the context filename in the server's memoryTool module BEFORE loading memory
-  // TODO(b/343434939): This is a bit of a hack. The contextFileName should ideally be passed
-  // directly to the Config constructor in core, and have core handle setGeminiMdFilename.
-  // However, loadHierarchicalGeminiMemory is called *before* createServerConfig.
+  // 在加载内存之前设置服务器 memoryTool 模块中的上下文文件名
+  // TODO(b/343434939): 这有点 hack。contextFileName 理想情况下应该直接传递
+  // 给 core 中的 Config 构造函数，并让 core 处理 setGeminiMdFilename。
+  // 然而，loadHierarchicalGeminiMemory 在 createServerConfig 之前被调用。
   if (settings.contextFileName) {
     setServerGeminiMdFilename(settings.contextFileName);
   } else {
-    // Reset to default if not provided in settings.
+    // 如果设置中未提供，则重置为默认值。
     setServerGeminiMdFilename(getCurrentGeminiMdFilename());
   }
 
@@ -288,7 +288,7 @@ export async function loadCliConfig(
   );
 
   const fileService = new FileDiscoveryService(process.cwd());
-  // Call the (now wrapper) loadHierarchicalGeminiMemory which calls the server's version
+  // 调用（现在是包装器的）loadHierarchicalGeminiMemory，它调用服务器版本
   const { memoryContent, fileCount } = await loadHierarchicalGeminiMemory(
     process.cwd(),
     debugMode,
@@ -322,7 +322,7 @@ export async function loadCliConfig(
       undefined, // tcp
       undefined, // timeout
       false, // trust
-      'IDE connection', // description
+      'IDE 连接', // description
       undefined, // includeTools
       undefined, // excludeTools
     );
@@ -364,7 +364,7 @@ export async function loadCliConfig(
       logPrompts: argv.telemetryLogPrompts ?? settings.telemetry?.logPrompts,
     },
     usageStatisticsEnabled: settings.usageStatisticsEnabled ?? true,
-    // Git-aware file filtering settings
+    // Git 感知文件过滤设置
     fileFiltering: {
       respectGitIgnore: settings.fileFiltering?.respectGitIgnore,
       enableRecursiveFileSearch:
@@ -404,7 +404,7 @@ function mergeMcpServers(settings: Settings, extensions: Extension[]) {
       ([key, server]) => {
         if (mcpServers[key]) {
           logger.warn(
-            `Skipping extension MCP config for server with key "${key}" as it already exists.`,
+            `跳过扩展 MCP 配置，因为服务器键 "${key}" 已存在。`,
           );
           return;
         }

@@ -28,8 +28,8 @@ const server = new McpServer({
 server.registerTool(
   'add',
   {
-    title: 'Addition Tool',
-    description: 'Add two numbers',
+    title: '加法工具',
+    description: '将两个数字相加',
     inputSchema: { a: z.number(), b: z.number() },
   },
   async ({ a, b }) => ({
@@ -53,7 +53,7 @@ describe('simple-mcp-server', () => {
     child.stderr.on('data', (data) => {
       console.error(`stderr: ${data}`);
     });
-    // Wait for the server to be ready
+    // 等待服务器准备就绪
     return new Promise((resolve) => setTimeout(resolve, 500));
   });
 

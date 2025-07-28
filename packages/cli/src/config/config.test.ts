@@ -60,7 +60,7 @@ vi.mock('@iflytek/iflycode-core', async () => {
         return this.enableOpenAILogging;
       }
 
-      // Override other methods to ensure they work correctly
+      // 覆盖其他方法以确保它们正常工作
       getShowMemoryUsage(): boolean {
         return (
           (this as unknown as { showMemoryUsage?: boolean }).showMemoryUsage ??
@@ -109,7 +109,7 @@ describe('parseArguments', () => {
     process.argv = originalArgv;
   });
 
-  it('should throw an error when both --prompt and --prompt-interactive are used together', async () => {
+  it('当同时使用 --prompt 和 --prompt-interactive 时应抛出错误', async () => {
     process.argv = [
       'node',
       'script.js',
@@ -139,7 +139,7 @@ describe('parseArguments', () => {
     mockConsoleError.mockRestore();
   });
 
-  it('should throw an error when using short flags -p and -i together', async () => {
+  it('当同时使用短标志 -p 和 -i 时应抛出错误', async () => {
     process.argv = [
       'node',
       'script.js',
@@ -169,14 +169,14 @@ describe('parseArguments', () => {
     mockConsoleError.mockRestore();
   });
 
-  it('should allow --prompt without --prompt-interactive', async () => {
+  it('应允许使用 --prompt 而不使用 --prompt-interactive', async () => {
     process.argv = ['node', 'script.js', '--prompt', 'test prompt'];
     const argv = await parseArguments();
     expect(argv.prompt).toBe('test prompt');
     expect(argv.promptInteractive).toBeUndefined();
   });
 
-  it('should allow --prompt-interactive without --prompt', async () => {
+  it('应允许使用 --prompt-interactive 而不使用 --prompt', async () => {
     process.argv = [
       'node',
       'script.js',
@@ -188,7 +188,7 @@ describe('parseArguments', () => {
     expect(argv.prompt).toBeUndefined();
   });
 
-  it('should allow -i flag as alias for --prompt-interactive', async () => {
+  it('应允许使用 -i 标志作为 --prompt-interactive 的别名', async () => {
     process.argv = ['node', 'script.js', '-i', 'interactive prompt'];
     const argv = await parseArguments();
     expect(argv.promptInteractive).toBe('interactive prompt');
@@ -203,7 +203,7 @@ describe('loadCliConfig', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
-    process.env.GEMINI_API_KEY = 'test-api-key'; // Ensure API key is set for tests
+    process.env.GEMINI_API_KEY = 'test-api-key'; // 确保为测试设置 API 密钥
   });
 
   afterEach(() => {
@@ -212,7 +212,7 @@ describe('loadCliConfig', () => {
     vi.restoreAllMocks();
   });
 
-  it('should set showMemoryUsage to true when --show-memory-usage flag is present', async () => {
+  it('当存在 --show-memory-usage 标志时，应将 showMemoryUsage 设置为 true', async () => {
     process.argv = ['node', 'script.js', '--show-memory-usage'];
     const argv = await parseArguments();
     const settings: Settings = {};
@@ -220,7 +220,7 @@ describe('loadCliConfig', () => {
     expect(config.getShowMemoryUsage()).toBe(true);
   });
 
-  it('should set showMemoryUsage to false when --memory flag is not present', async () => {
+  it('当未提供 --memory 标志时，应将 showMemoryUsage 设置为 false', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {};
@@ -228,7 +228,7 @@ describe('loadCliConfig', () => {
     expect(config.getShowMemoryUsage()).toBe(false);
   });
 
-  it('should set showMemoryUsage to false by default from settings if CLI flag is not present', async () => {
+  it('当 CLI 标志不存在时，应从设置中默认设置 showMemoryUsage 为 false', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { showMemoryUsage: false };
@@ -236,7 +236,7 @@ describe('loadCliConfig', () => {
     expect(config.getShowMemoryUsage()).toBe(false);
   });
 
-  it('should prioritize CLI flag over settings for showMemoryUsage (CLI true, settings false)', async () => {
+  it('当 showMemoryUsage 存在时，应优先使用 CLI 标志而非设置 (CLI true, settings false)', async () => {
     process.argv = ['node', 'script.js', '--show-memory-usage'];
     const argv = await parseArguments();
     const settings: Settings = { showMemoryUsage: false };
@@ -261,7 +261,7 @@ describe('loadCliConfig telemetry', () => {
     vi.restoreAllMocks();
   });
 
-  it('should set telemetry to false by default when no flag or setting is present', async () => {
+  it('当没有提供标志或设置时，遥测应默认设置为 false', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {};
@@ -269,7 +269,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryEnabled()).toBe(false);
   });
 
-  it('should set telemetry to true when --telemetry flag is present', async () => {
+  it('当存在 --telemetry 标志时，应将遥测设置为 true', async () => {
     process.argv = ['node', 'script.js', '--telemetry'];
     const argv = await parseArguments();
     const settings: Settings = {};
@@ -277,7 +277,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryEnabled()).toBe(true);
   });
 
-  it('should set telemetry to false when --no-telemetry flag is present', async () => {
+  it('当存在 --no-telemetry 标志时，应将遥测设置为 false', async () => {
     process.argv = ['node', 'script.js', '--no-telemetry'];
     const argv = await parseArguments();
     const settings: Settings = {};
@@ -285,7 +285,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryEnabled()).toBe(false);
   });
 
-  it('should use telemetry value from settings if CLI flag is not present (settings true)', async () => {
+  it('如果未提供 CLI 标志，应使用设置中的遥测值 (settings true)', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: true } };
@@ -293,7 +293,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryEnabled()).toBe(true);
   });
 
-  it('should use telemetry value from settings if CLI flag is not present (settings false)', async () => {
+  it('如果未提供 CLI 标志，应使用设置中的遥测值 (settings false)', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: false } };
@@ -301,7 +301,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryEnabled()).toBe(false);
   });
 
-  it('should prioritize --telemetry CLI flag (true) over settings (false)', async () => {
+  it('应优先使用 --telemetry CLI 标志 (true) 而非设置 (false)', async () => {
     process.argv = ['node', 'script.js', '--telemetry'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: false } };
@@ -309,7 +309,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryEnabled()).toBe(true);
   });
 
-  it('should prioritize --no-telemetry CLI flag (false) over settings (true)', async () => {
+  it('应优先使用 --no-telemetry CLI 标志 (false) 而非设置 (true)', async () => {
     process.argv = ['node', 'script.js', '--no-telemetry'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: true } };
@@ -317,7 +317,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryEnabled()).toBe(false);
   });
 
-  it('should use telemetry OTLP endpoint from settings if CLI flag is not present', async () => {
+  it('如果未提供 CLI 标志，应使用设置中的遥测 OTLP 端点', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -329,7 +329,7 @@ describe('loadCliConfig telemetry', () => {
     );
   });
 
-  it('should prioritize --telemetry-otlp-endpoint CLI flag over settings', async () => {
+  it('应优先使用 --telemetry-otlp-endpoint CLI 标志而非设置', async () => {
     process.argv = [
       'node',
       'script.js',
@@ -344,7 +344,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryOtlpEndpoint()).toBe('http://cli.example.com');
   });
 
-  it('should use default endpoint if no OTLP endpoint is provided via CLI or settings', async () => {
+  it('如果未通过 CLI 或设置提供 OTLP 端点，应使用默认端点', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: true } };
@@ -352,7 +352,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryOtlpEndpoint()).toBe('http://localhost:4317');
   });
 
-  it('should use telemetry target from settings if CLI flag is not present', async () => {
+  it('如果未提供 CLI 标志，应使用设置中的遥测目标', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -364,7 +364,7 @@ describe('loadCliConfig telemetry', () => {
     );
   });
 
-  it('should prioritize --telemetry-target CLI flag over settings', async () => {
+  it('应优先使用 --telemetry-target CLI 标志而非设置', async () => {
     process.argv = ['node', 'script.js', '--telemetry-target', 'gcp'];
     const argv = await parseArguments();
     const settings: Settings = {
@@ -374,7 +374,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryTarget()).toBe('gcp');
   });
 
-  it('should use default target if no target is provided via CLI or settings', async () => {
+  it('如果未通过 CLI 或设置提供目标，应使用默认目标', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: true } };
@@ -384,7 +384,7 @@ describe('loadCliConfig telemetry', () => {
     );
   });
 
-  it('should use telemetry log prompts from settings if CLI flag is not present', async () => {
+  it('如果未提供 CLI 标志，应使用设置中的遥测日志提示', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { logPrompts: false } };
@@ -392,7 +392,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
   });
 
-  it('should prioritize --telemetry-log-prompts CLI flag (true) over settings (false)', async () => {
+  it('应优先使用 --telemetry-log-prompts CLI 标志 (true) 而非设置 (false)', async () => {
     process.argv = ['node', 'script.js', '--telemetry-log-prompts'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { logPrompts: false } };
@@ -400,7 +400,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryLogPromptsEnabled()).toBe(true);
   });
 
-  it('should prioritize --no-telemetry-log-prompts CLI flag (false) over settings (true)', async () => {
+  it('应优先使用 --no-telemetry-log-prompts CLI 标志 (false) 而非设置 (true)', async () => {
     process.argv = ['node', 'script.js', '--no-telemetry-log-prompts'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { logPrompts: true } };
@@ -408,7 +408,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryLogPromptsEnabled()).toBe(false);
   });
 
-  it('should use default log prompts (true) if no value is provided via CLI or settings', async () => {
+  it('如果未通过 CLI 或设置提供值，应使用默认日志提示 (true)', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { telemetry: { enabled: true } };
@@ -416,7 +416,7 @@ describe('loadCliConfig telemetry', () => {
     expect(config.getTelemetryLogPromptsEnabled()).toBe(true);
   });
 
-  it('should set enableOpenAILogging to true when --openai-logging flag is present', async () => {
+  it('当存在 --openai-logging 标志时，应将 enableOpenAILogging 设置为 true', async () => {
     const settings: Settings = {};
     const argv = await parseArguments();
     argv.openaiLogging = true;
@@ -428,7 +428,7 @@ describe('loadCliConfig telemetry', () => {
     ).toBe(true);
   });
 
-  it('should set enableOpenAILogging to false when --openai-logging flag is not present', async () => {
+  it('当不存在 --openai-logging 标志时，应将 enableOpenAILogging 设置为 false', async () => {
     const settings: Settings = {};
     const argv = await parseArguments();
     const config = await loadCliConfig(settings, [], 'test-session', argv);
@@ -439,7 +439,7 @@ describe('loadCliConfig telemetry', () => {
     ).toBe(false);
   });
 
-  it('should use enableOpenAILogging value from settings if CLI flag is not present (settings true)', async () => {
+  it('如果未提供 CLI 标志，应使用设置中的 enableOpenAILogging 值 (settings true)', async () => {
     const settings: Settings = { enableOpenAILogging: true };
     const argv = await parseArguments();
     const config = await loadCliConfig(settings, [], 'test-session', argv);
@@ -450,7 +450,7 @@ describe('loadCliConfig telemetry', () => {
     ).toBe(true);
   });
 
-  it('should use enableOpenAILogging value from settings if CLI flag is not present (settings false)', async () => {
+  it('如果未提供 CLI 标志，应使用设置中的 enableOpenAILogging 值 (settings false)', async () => {
     const settings: Settings = { enableOpenAILogging: false };
     const argv = await parseArguments();
     const config = await loadCliConfig(settings, [], 'test-session', argv);
@@ -461,7 +461,7 @@ describe('loadCliConfig telemetry', () => {
     ).toBe(false);
   });
 
-  it('should prioritize --openai-logging CLI flag (true) over settings (false)', async () => {
+  it('应优先使用 --openai-logging CLI 标志 (true) 而非设置 (false)', async () => {
     const settings: Settings = { enableOpenAILogging: false };
     const argv = await parseArguments();
     argv.openaiLogging = true;
@@ -473,7 +473,7 @@ describe('loadCliConfig telemetry', () => {
     ).toBe(true);
   });
 
-  it('should prioritize --openai-logging CLI flag (false) over settings (true)', async () => {
+  it('应优先使用 --openai-logging CLI 标志 (false) 而非设置 (true)', async () => {
     const settings: Settings = { enableOpenAILogging: true };
     const argv = await parseArguments();
     argv.openaiLogging = false;
@@ -486,18 +486,18 @@ describe('loadCliConfig telemetry', () => {
   });
 });
 
-describe('Hierarchical Memory Loading (config.ts) - Placeholder Suite', () => {
+describe('Hierarchical Memory Loading (config.ts) - 占位符套件', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
-    // Other common mocks would be reset here.
+    // 其他常见模拟将在此处重置。
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('should pass extension context file paths to loadServerHierarchicalMemory', async () => {
+  it('应将扩展上下文文件路径传递给 loadServerHierarchicalMemory', async () => {
     process.argv = ['node', 'script.js'];
     const settings: Settings = {};
     const extensions: Extension[] = [
@@ -540,16 +540,16 @@ describe('Hierarchical Memory Loading (config.ts) - Placeholder Suite', () => {
     );
   });
 
-  // NOTE TO FUTURE DEVELOPERS:
-  // To re-enable tests for loadHierarchicalGeminiMemory, ensure that:
-  // 1. os.homedir() is reliably mocked *before* the config.ts module is loaded
-  //    and its functions (which use os.homedir()) are called.
-  // 2. fs/promises and fs mocks correctly simulate file/directory existence,
-  //    readability, and content based on paths derived from the mocked os.homedir().
-  // 3. Spies on console functions (for logger output) are correctly set up if needed.
-  // Example of a previously failing test structure:
+  // 给未来开发者的注意事项：
+  // 要重新启用 loadHierarchicalGeminiMemory 的测试，请确保：
+  // 1. os.homedir() 在 config.ts 模块加载之前可靠地被模拟
+  //    并且其函数（使用 os.homedir()）被调用。
+  // 2. fs/promises 和 fs 模拟正确模拟基于模拟 os.homedir() 路径的文件/目录存在性、
+  //    可读性和内容。
+  // 3. 如果需要，正确设置控制台函数（用于记录器输出）的监视器。
+  // 以前失败的测试结构示例：
   /*
-  it('should correctly use mocked homedir for global path', async () => {
+  it('应正确使用模拟的 homedir 用于全局路径', async () => {
     const MOCK_GEMINI_DIR_LOCAL = path.join('/mock/home/user', '.iflycode');
     const MOCK_GLOBAL_PATH_LOCAL = path.join(MOCK_GEMINI_DIR_LOCAL, 'IFLYCODE.md');
     mockFs({
@@ -564,7 +564,7 @@ describe('Hierarchical Memory Loading (config.ts) - Placeholder Suite', () => {
 });
 
 describe('mergeMcpServers', () => {
-  it('should not modify the original settings object', async () => {
+  it('不应修改原始设置对象', async () => {
     const settings: Settings = {
       mcpServers: {
         'test-server': {
@@ -595,7 +595,7 @@ describe('mergeMcpServers', () => {
 });
 
 describe('mergeExcludeTools', () => {
-  it('should merge excludeTools from settings and extensions', async () => {
+  it('应合并来自设置和扩展的 excludeTools', async () => {
     const settings: Settings = { excludeTools: ['tool1', 'tool2'] };
     const extensions: Extension[] = [
       {
@@ -629,7 +629,7 @@ describe('mergeExcludeTools', () => {
     expect(config.getExcludeTools()).toHaveLength(5);
   });
 
-  it('should handle overlapping excludeTools between settings and extensions', async () => {
+  it('应处理设置和扩展之间的重叠 excludeTools', async () => {
     const settings: Settings = { excludeTools: ['tool1', 'tool2'] };
     const extensions: Extension[] = [
       {
@@ -655,7 +655,7 @@ describe('mergeExcludeTools', () => {
     expect(config.getExcludeTools()).toHaveLength(3);
   });
 
-  it('should handle overlapping excludeTools between extensions', async () => {
+  it('应处理扩展之间的重叠 excludeTools', async () => {
     const settings: Settings = { excludeTools: ['tool1'] };
     const extensions: Extension[] = [
       {
@@ -689,7 +689,7 @@ describe('mergeExcludeTools', () => {
     expect(config.getExcludeTools()).toHaveLength(4);
   });
 
-  it('should return an empty array when no excludeTools are specified', async () => {
+  it('当未指定 excludeTools 时，应返回空数组', async () => {
     const settings: Settings = {};
     const extensions: Extension[] = [];
     process.argv = ['node', 'script.js'];
@@ -703,7 +703,7 @@ describe('mergeExcludeTools', () => {
     expect(config.getExcludeTools()).toEqual([]);
   });
 
-  it('should handle settings with excludeTools but no extensions', async () => {
+  it('应处理有 excludeTools 但无扩展的设置', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { excludeTools: ['tool1', 'tool2'] };
@@ -720,7 +720,7 @@ describe('mergeExcludeTools', () => {
     expect(config.getExcludeTools()).toHaveLength(2);
   });
 
-  it('should handle extensions with excludeTools but no settings', async () => {
+  it('应处理有 excludeTools 但无设置的扩展', async () => {
     const settings: Settings = {};
     const extensions: Extension[] = [
       {
@@ -746,7 +746,7 @@ describe('mergeExcludeTools', () => {
     expect(config.getExcludeTools()).toHaveLength(2);
   });
 
-  it('should not modify the original settings object', async () => {
+  it('不应修改原始设置对象', async () => {
     const settings: Settings = { excludeTools: ['tool1'] };
     const extensions: Extension[] = [
       {
@@ -790,14 +790,14 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
     },
   };
 
-  it('should allow all MCP servers if the flag is not provided', async () => {
+  it('如果未提供标志，应允许所有 MCP 服务器', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const config = await loadCliConfig(baseSettings, [], 'test-session', argv);
     expect(config.getMcpServers()).toEqual(baseSettings.mcpServers);
   });
 
-  it('should allow only the specified MCP server', async () => {
+  it('应仅允许指定的 MCP 服务器', async () => {
     process.argv = [
       'node',
       'script.js',
@@ -811,7 +811,7 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
     });
   });
 
-  it('should allow multiple specified MCP servers', async () => {
+  it('应允许多个指定的 MCP 服务器', async () => {
     process.argv = [
       'node',
       'script.js',
@@ -828,7 +828,7 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
     });
   });
 
-  it('should handle server names that do not exist', async () => {
+  it('应处理不存在的服务器名称', async () => {
     process.argv = [
       'node',
       'script.js',
@@ -844,7 +844,7 @@ describe('loadCliConfig with allowed-mcp-server-names', () => {
     });
   });
 
-  it('should allow no MCP servers if the flag is provided but empty', async () => {
+  it('如果提供了标志但为空，应不允许任何 MCP 服务器', async () => {
     process.argv = ['node', 'script.js', '--allowed-mcp-server-names', ''];
     const argv = await parseArguments();
     const config = await loadCliConfig(baseSettings, [], 'test-session', argv);
@@ -864,7 +864,7 @@ describe('loadCliConfig extensions', () => {
     },
   ];
 
-  it('should not filter extensions if --extensions flag is not used', async () => {
+  it('如果未使用 --extensions 标志，不应过滤扩展', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = {};
@@ -880,7 +880,7 @@ describe('loadCliConfig extensions', () => {
     ]);
   });
 
-  it('should filter extensions if --extensions flag is used', async () => {
+  it('如果使用了 --extensions 标志，应过滤扩展', async () => {
     process.argv = ['node', 'script.js', '--extensions', 'ext1'];
     const argv = await parseArguments();
     const settings: Settings = {};
@@ -902,7 +902,7 @@ describe('loadCliConfig ideMode', () => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
     process.env.GEMINI_API_KEY = 'test-api-key';
-    // Explicitly delete TERM_PROGRAM and SANDBOX before each test
+    // 在每次测试前显式删除 TERM_PROGRAM 和 SANDBOX
     delete process.env.TERM_PROGRAM;
     delete process.env.SANDBOX;
   });
@@ -913,7 +913,7 @@ describe('loadCliConfig ideMode', () => {
     vi.restoreAllMocks();
   });
 
-  it('should be false by default', async () => {
+  it('应默认为 false', async () => {
     process.argv = ['node', 'script.js'];
     const settings: Settings = {};
     const argv = await parseArguments();
@@ -921,7 +921,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(false);
   });
 
-  it('should be false if --ide-mode is true but TERM_PROGRAM is not vscode', async () => {
+  it('如果 --ide-mode 为 true 但 TERM_PROGRAM 不是 vscode，应为 false', async () => {
     process.argv = ['node', 'script.js', '--ide-mode'];
     const settings: Settings = {};
     const argv = await parseArguments();
@@ -929,7 +929,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(false);
   });
 
-  it('should be false if settings.ideMode is true but TERM_PROGRAM is not vscode', async () => {
+  it('如果 settings.ideMode 为 true 但 TERM_PROGRAM 不是 vscode，应为 false', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     const settings: Settings = { ideMode: true };
@@ -937,7 +937,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(false);
   });
 
-  it('should be true when --ide-mode is set and TERM_PROGRAM is vscode', async () => {
+  it('当设置 --ide-mode 且 TERM_PROGRAM 为 vscode 时，应为 true', async () => {
     process.argv = ['node', 'script.js', '--ide-mode'];
     const argv = await parseArguments();
     process.env.TERM_PROGRAM = 'vscode';
@@ -946,7 +946,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(true);
   });
 
-  it('should be true when settings.ideMode is true and TERM_PROGRAM is vscode', async () => {
+  it('当 settings.ideMode 为 true 且 TERM_PROGRAM 为 vscode 时，应为 true', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     process.env.TERM_PROGRAM = 'vscode';
@@ -955,7 +955,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(true);
   });
 
-  it('should prioritize --ide-mode (true) over settings (false) when TERM_PROGRAM is vscode', async () => {
+  it('当 TERM_PROGRAM 为 vscode 时，应优先使用 --ide-mode (true) 而非设置 (false)', async () => {
     process.argv = ['node', 'script.js', '--ide-mode'];
     const argv = await parseArguments();
     process.env.TERM_PROGRAM = 'vscode';
@@ -964,7 +964,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(true);
   });
 
-  it('should prioritize --no-ide-mode (false) over settings (true) even when TERM_PROGRAM is vscode', async () => {
+  it('即使 TERM_PROGRAM 为 vscode，也应优先使用 --no-ide-mode (false) 而非设置 (true)', async () => {
     process.argv = ['node', 'script.js', '--no-ide-mode'];
     const argv = await parseArguments();
     process.env.TERM_PROGRAM = 'vscode';
@@ -973,7 +973,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(false);
   });
 
-  it('should be false when --ide-mode is true, TERM_PROGRAM is vscode, but SANDBOX is set', async () => {
+  it('当 --ide-mode 为 true，TERM_PROGRAM 为 vscode，但设置了 SANDBOX 时，应为 false', async () => {
     process.argv = ['node', 'script.js', '--ide-mode'];
     const argv = await parseArguments();
     process.env.TERM_PROGRAM = 'vscode';
@@ -983,7 +983,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(false);
   });
 
-  it('should be false when settings.ideMode is true, TERM_PROGRAM is vscode, but SANDBOX is set', async () => {
+  it('当 settings.ideMode 为 true，TERM_PROGRAM 为 vscode，但设置了 SANDBOX 时，应为 false', async () => {
     process.argv = ['node', 'script.js'];
     const argv = await parseArguments();
     process.env.TERM_PROGRAM = 'vscode';
@@ -993,7 +993,7 @@ describe('loadCliConfig ideMode', () => {
     expect(config.getIdeMode()).toBe(false);
   });
 
-  it('should add __ide_server when ideMode is true', async () => {
+  it('当 ideMode 为 true 时，应添加 __ide_server', async () => {
     process.argv = ['node', 'script.js', '--ide-mode'];
     const argv = await parseArguments();
     process.env.TERM_PROGRAM = 'vscode';

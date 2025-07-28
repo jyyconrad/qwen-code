@@ -29,7 +29,7 @@ class MockTool extends BaseTool<Record<string, unknown>, ToolResult> {
   executeFn = vi.fn();
 
   constructor(name = 'mockTool') {
-    super(name, name, 'A mock tool', {});
+    super(name, name, '一个模拟工具', {});
   }
 
   async shouldConfirmExecute(
@@ -39,7 +39,7 @@ class MockTool extends BaseTool<Record<string, unknown>, ToolResult> {
     if (this.shouldConfirm) {
       return {
         type: 'exec',
-        title: 'Confirm Mock Tool',
+        title: '确认模拟工具',
         command: 'do_thing',
         rootCommand: 'do_thing',
         onConfirm: async () => {},
@@ -53,7 +53,7 @@ class MockTool extends BaseTool<Record<string, unknown>, ToolResult> {
     _abortSignal: AbortSignal,
   ): Promise<ToolResult> {
     this.executeFn(params);
-    return { llmContent: 'Tool executed', returnDisplay: 'Tool executed' };
+    return { llmContent: '工具已执行', returnDisplay: '工具已执行' };
   }
 }
 
@@ -71,8 +71,8 @@ class MockModifiableTool
   ): ModifyContext<Record<string, unknown>> {
     return {
       getFilePath: () => 'test.txt',
-      getCurrentContent: async () => 'old content',
-      getProposedContent: async () => 'new content',
+      getCurrentContent: async () => '旧内容',
+      getProposedContent: async () => '新内容',
       createUpdatedParams: (
         _oldContent: string,
         modifiedProposedContent: string,
@@ -88,7 +88,7 @@ class MockModifiableTool
     if (this.shouldConfirm) {
       return {
         type: 'edit',
-        title: 'Confirm Mock Tool',
+        title: '确认模拟工具',
         fileName: 'test.txt',
         fileDiff: 'diff',
         onConfirm: async () => {},
@@ -99,7 +99,7 @@ class MockModifiableTool
 }
 
 describe('CoreToolScheduler', () => {
-  it('should cancel a tool call if the signal is aborted before confirmation', async () => {
+  it('如果信号在确认前被中止，应取消工具调用', async () => {
     const mockTool = new MockTool();
     mockTool.shouldConfirm = true;
     const toolRegistry = {
@@ -168,7 +168,7 @@ describe('CoreToolScheduler', () => {
 });
 
 describe('CoreToolScheduler with payload', () => {
-  it('should update args and diff and execute tool when payload is provided', async () => {
+  it('当提供 payload 时，应更新参数和差异并执行工具', async () => {
     const mockTool = new MockModifiableTool();
     const toolRegistry = {
       getTool: () => mockTool,
@@ -218,7 +218,7 @@ describe('CoreToolScheduler with payload', () => {
     );
 
     if (confirmationDetails) {
-      const payload: ToolConfirmationPayload = { newContent: 'final version' };
+      const payload: ToolConfirmationPayload = { newContent: '最终版本' };
       await scheduler.handleConfirmationResponse(
         '1',
         confirmationDetails.onConfirm,
@@ -233,7 +233,7 @@ describe('CoreToolScheduler with payload', () => {
       .calls[0][0] as ToolCall[];
     expect(completedCalls[0].status).toBe('success');
     expect(mockTool.executeFn).toHaveBeenCalledWith({
-      newContent: 'final version',
+      newContent: '最终版本',
     });
   });
 });
@@ -242,43 +242,43 @@ describe('convertToFunctionResponse', () => {
   const toolName = 'testTool';
   const callId = 'call1';
 
-  it('should handle simple string llmContent', () => {
-    const llmContent = 'Simple text output';
+  it('应处理简单的字符串 llmContent', () => {
+    const llmContent = '简单文本输出';
     const result = convertToFunctionResponse(toolName, callId, llmContent);
     expect(result).toEqual({
       functionResponse: {
         name: toolName,
         id: callId,
-        response: { output: 'Simple text output' },
+        response: { output: '简单文本输出' },
       },
     });
   });
 
-  it('should handle llmContent as a single Part with text', () => {
-    const llmContent: Part = { text: 'Text from Part object' };
+  it('应处理作为单个带文本 Part 的 llmContent', () => {
+    const llmContent: Part = { text: '来自 Part 对象的文本' };
     const result = convertToFunctionResponse(toolName, callId, llmContent);
     expect(result).toEqual({
       functionResponse: {
         name: toolName,
         id: callId,
-        response: { output: 'Text from Part object' },
+        response: { output: '来自 Part 对象的文本' },
       },
     });
   });
 
-  it('should handle llmContent as a PartListUnion array with a single text Part', () => {
-    const llmContent: PartListUnion = [{ text: 'Text from array' }];
+  it('应处理作为带单个文本 Part 的 PartListUnion 数组的 llmContent', () => {
+    const llmContent: PartListUnion = [{ text: '来自数组的文本' }];
     const result = convertToFunctionResponse(toolName, callId, llmContent);
     expect(result).toEqual({
       functionResponse: {
         name: toolName,
         id: callId,
-        response: { output: 'Text from array' },
+        response: { output: '来自数组的文本' },
       },
     });
   });
 
-  it('should handle llmContent with inlineData', () => {
+  it('应处理带有 inlineData 的 llmContent', () => {
     const llmContent: Part = {
       inlineData: { mimeType: 'image/png', data: 'base64...' },
     };
@@ -289,7 +289,7 @@ describe('convertToFunctionResponse', () => {
           name: toolName,
           id: callId,
           response: {
-            output: 'Binary content of type image/png was processed.',
+            output: '类型为 image/png 的二进制内容已处理。',
           },
         },
       },
@@ -297,7 +297,7 @@ describe('convertToFunctionResponse', () => {
     ]);
   });
 
-  it('should handle llmContent with fileData', () => {
+  it('应处理带有 fileData 的 llmContent', () => {
     const llmContent: Part = {
       fileData: { mimeType: 'application/pdf', fileUri: 'gs://...' },
     };
@@ -308,7 +308,7 @@ describe('convertToFunctionResponse', () => {
           name: toolName,
           id: callId,
           response: {
-            output: 'Binary content of type application/pdf was processed.',
+            output: '类型为 application/pdf 的二进制内容已处理。',
           },
         },
       },
@@ -316,11 +316,11 @@ describe('convertToFunctionResponse', () => {
     ]);
   });
 
-  it('should handle llmContent as an array of multiple Parts (text and inlineData)', () => {
+  it('应处理作为多个 Parts（文本和 inlineData）数组的 llmContent', () => {
     const llmContent: PartListUnion = [
-      { text: 'Some textual description' },
+      { text: '一些文本描述' },
       { inlineData: { mimeType: 'image/jpeg', data: 'base64data...' } },
-      { text: 'Another text part' },
+      { text: '另一个文本部分' },
     ];
     const result = convertToFunctionResponse(toolName, callId, llmContent);
     expect(result).toEqual([
@@ -328,14 +328,14 @@ describe('convertToFunctionResponse', () => {
         functionResponse: {
           name: toolName,
           id: callId,
-          response: { output: 'Tool execution succeeded.' },
+          response: { output: '工具执行成功。' },
         },
       },
       ...llmContent,
     ]);
   });
 
-  it('should handle llmContent as an array with a single inlineData Part', () => {
+  it('应处理作为带单个 inlineData Part 的数组的 llmContent', () => {
     const llmContent: PartListUnion = [
       { inlineData: { mimeType: 'image/gif', data: 'gifdata...' } },
     ];
@@ -346,7 +346,7 @@ describe('convertToFunctionResponse', () => {
           name: toolName,
           id: callId,
           response: {
-            output: 'Binary content of type image/gif was processed.',
+            output: '类型为 image/gif 的二进制内容已处理。',
           },
         },
       },
@@ -354,19 +354,19 @@ describe('convertToFunctionResponse', () => {
     ]);
   });
 
-  it('should handle llmContent as a generic Part (not text, inlineData, or fileData)', () => {
+  it('应处理作为通用 Part（非文本、inlineData 或 fileData）的 llmContent', () => {
     const llmContent: Part = { functionCall: { name: 'test', args: {} } };
     const result = convertToFunctionResponse(toolName, callId, llmContent);
     expect(result).toEqual({
       functionResponse: {
         name: toolName,
         id: callId,
-        response: { output: 'Tool execution succeeded.' },
+        response: { output: '工具执行成功。' },
       },
     });
   });
 
-  it('should handle empty string llmContent', () => {
+  it('应处理空字符串 llmContent', () => {
     const llmContent = '';
     const result = convertToFunctionResponse(toolName, callId, llmContent);
     expect(result).toEqual({
@@ -378,7 +378,7 @@ describe('convertToFunctionResponse', () => {
     });
   });
 
-  it('should handle llmContent as an empty array', () => {
+  it('应处理作为空数组的 llmContent', () => {
     const llmContent: PartListUnion = [];
     const result = convertToFunctionResponse(toolName, callId, llmContent);
     expect(result).toEqual([
@@ -386,20 +386,20 @@ describe('convertToFunctionResponse', () => {
         functionResponse: {
           name: toolName,
           id: callId,
-          response: { output: 'Tool execution succeeded.' },
+          response: { output: '工具执行成功。' },
         },
       },
     ]);
   });
 
-  it('should handle llmContent as a Part with undefined inlineData/fileData/text', () => {
-    const llmContent: Part = {}; // An empty part object
+  it('应处理带有未定义 inlineData/fileData/text 的 Part 的 llmContent', () => {
+    const llmContent: Part = {}; // 一个空的 part 对象
     const result = convertToFunctionResponse(toolName, callId, llmContent);
     expect(result).toEqual({
       functionResponse: {
         name: toolName,
         id: callId,
-        response: { output: 'Tool execution succeeded.' },
+        response: { output: '工具执行成功。' },
       },
     });
   });

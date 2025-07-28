@@ -30,7 +30,7 @@ function getResponseText(response: GenerateContentResponse): string | null {
       candidate.content.parts &&
       candidate.content.parts.length > 0
     ) {
-      // We are running in headless mode so we don't need to return thoughts to STDOUT.
+      // 我们在无头模式下运行，因此无需将思考内容返回到 STDOUT。
       const thoughtPart = candidate.content.parts[0];
       if (thoughtPart?.thought) {
         return null;
@@ -44,10 +44,10 @@ function getResponseText(response: GenerateContentResponse): string | null {
   return null;
 }
 
-// Helper function to format tool call arguments for display
+// 辅助函数，用于格式化工具调用参数以供显示
 function formatToolArgs(args: Record<string, unknown>): string {
   if (!args || Object.keys(args).length === 0) {
-    return '(no arguments)';
+    return '(无参数)';
   }
 
   const formattedArgs = Object.entries(args)
@@ -64,7 +64,7 @@ function formatToolArgs(args: Record<string, unknown>): string {
 
   return `(${formattedArgs})`;
 }
-// Helper function to display tool call information
+// 辅助函数，用于显示工具调用信息
 function displayToolCallInfo(
   toolName: string,
   args: Record<string, unknown>,
@@ -78,44 +78,44 @@ function displayToolCallInfo(
   switch (status) {
     case 'start':
       process.stdout.write(
-        `\n[${timestamp}] 🔧 Executing tool: ${toolName} ${argsStr}\n`,
+        `\n[${timestamp}] 🔧 正在执行工具: ${toolName} ${argsStr}\n`,
       );
       break;
     case 'success':
       if (resultDisplay) {
         if (typeof resultDisplay === 'string' && resultDisplay.trim()) {
           process.stdout.write(
-            `[${timestamp}] ✅ Tool ${toolName} completed successfully\n`,
+            `[${timestamp}] ✅ 工具 ${toolName} 成功完成\n`,
           );
-          process.stdout.write(`📋 Result:\n${resultDisplay}\n`);
+          process.stdout.write(`📋 结果:\n${resultDisplay}\n`);
         } else if (
           typeof resultDisplay === 'object' &&
           'fileDiff' in resultDisplay
         ) {
           process.stdout.write(
-            `[${timestamp}] ✅ Tool ${toolName} completed successfully\n`,
+            `[${timestamp}] ✅ 工具 ${toolName} 成功完成\n`,
           );
-          process.stdout.write(`📋 File: ${resultDisplay.fileName}\n`);
-          process.stdout.write(`📋 Diff:\n${resultDisplay.fileDiff}\n`);
+          process.stdout.write(`📋 文件: ${resultDisplay.fileName}\n`);
+          process.stdout.write(`📋 差异:\n${resultDisplay.fileDiff}\n`);
         } else {
           process.stdout.write(
-            `[${timestamp}] ✅ Tool ${toolName} completed successfully (no output)\n`,
+            `[${timestamp}] ✅ 工具 ${toolName} 成功完成 (无输出)\n`,
           );
         }
       } else {
         process.stdout.write(
-          `[${timestamp}] ✅ Tool ${toolName} completed successfully (no output)\n`,
+          `[${timestamp}] ✅ 工具 ${toolName} 成功完成 (无输出)\n`,
         );
       }
       break;
     case 'error':
       process.stdout.write(
-        `[${timestamp}] ❌ Tool ${toolName} failed: ${errorMessage}\n`,
+        `[${timestamp}] ❌ 工具 ${toolName} 失败: ${errorMessage}\n`,
       );
       break;
     default:
       process.stdout.write(
-        `[${timestamp}] ⚠️ Tool ${toolName} reported unknown status: ${status}\n`,
+        `[${timestamp}] ⚠️ 工具 ${toolName} 报告未知状态: ${status}\n`,
       );
       break;
   }
@@ -127,10 +127,10 @@ export async function runNonInteractive(
   prompt_id: string,
 ): Promise<void> {
   await config.initialize();
-  // Handle EPIPE errors when the output is piped to a command that closes early.
+  // 处理当输出被管道传输到提前关闭的命令时的 EPIPE 错误。
   process.stdout.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EPIPE') {
-      // Exit gracefully if the pipe is closed.
+      // 如果管道已关闭，则正常退出。
       process.exit(0);
     }
   });
@@ -150,7 +150,7 @@ export async function runNonInteractive(
         turnCount > config.getMaxSessionTurns()
       ) {
         console.error(
-          '\n Reached max session turns for this session. Increase the number of turns by specifying maxSessionTurns in settings.json.',
+          '\n 已达到此会话的最大轮次。通过在 settings.json 中指定 maxSessionTurns 来增加轮次数量。',
         );
         return;
       }
@@ -158,7 +158,7 @@ export async function runNonInteractive(
 
       const responseStream = await chat.sendMessageStream(
         {
-          message: currentMessages[0]?.parts || [], // Ensure parts are always provided
+          message: currentMessages[0]?.parts || [], // 确保始终提供 parts
           config: {
             abortSignal: abortController.signal,
             tools: [
@@ -171,7 +171,7 @@ export async function runNonInteractive(
 
       for await (const resp of responseStream) {
         if (abortController.signal.aborted) {
-          console.error('Operation cancelled.');
+          console.error('操作已取消。');
           return;
         }
         const textPart = getResponseText(resp);
@@ -196,7 +196,7 @@ export async function runNonInteractive(
             prompt_id,
           };
 
-          //Display tool call start information
+          // 显示工具调用开始信息
           displayToolCallInfo(fc.name as string, fc.args ?? {}, 'start');
 
           const toolResponse = await executeToolCall(
@@ -207,7 +207,7 @@ export async function runNonInteractive(
           );
 
           if (toolResponse.error) {
-            // Display tool call error information
+            // 显示工具调用错误信息
             const errorMessage =
               typeof toolResponse.resultDisplay === 'string'
                 ? toolResponse.resultDisplay
@@ -225,13 +225,13 @@ export async function runNonInteractive(
               'not found in registry',
             );
             console.error(
-              `Error executing tool ${fc.name}: ${toolResponse.resultDisplay || toolResponse.error.message}`,
+              `执行工具 ${fc.name} 时出错: ${toolResponse.resultDisplay || toolResponse.error.message}`,
             );
             if (!isToolNotFound) {
               process.exit(1);
             }
           } else {
-            // Display tool call success information
+            // 显示工具调用成功信息
             displayToolCallInfo(
               fc.name as string,
               fc.args ?? {},
@@ -255,7 +255,7 @@ export async function runNonInteractive(
         }
         currentMessages = [{ role: 'user', parts: toolResponseParts }];
       } else {
-        process.stdout.write('\n'); // Ensure a final newline
+        process.stdout.write('\n'); // 确保最后有一个换行符
         return;
       }
     }

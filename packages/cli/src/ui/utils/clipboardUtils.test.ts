@@ -13,63 +13,63 @@ import {
 
 describe('clipboardUtils', () => {
   describe('clipboardHasImage', () => {
-    it('should return false on non-macOS platforms', async () => {
+    it('在非 macOS 平台上应返回 false', async () => {
       if (process.platform !== 'darwin') {
         const result = await clipboardHasImage();
         expect(result).toBe(false);
       } else {
-        // Skip on macOS as it would require actual clipboard state
+        // 在 macOS 上跳过，因为需要实际的剪贴板状态
         expect(true).toBe(true);
       }
     });
 
-    it('should return boolean on macOS', async () => {
+    it('在 macOS 上应返回布尔值', async () => {
       if (process.platform === 'darwin') {
         const result = await clipboardHasImage();
         expect(typeof result).toBe('boolean');
       } else {
-        // Skip on non-macOS
+        // 在非 macOS 上跳过
         expect(true).toBe(true);
       }
     });
   });
 
   describe('saveClipboardImage', () => {
-    it('should return null on non-macOS platforms', async () => {
+    it('在非 macOS 平台上应返回 null', async () => {
       if (process.platform !== 'darwin') {
         const result = await saveClipboardImage();
         expect(result).toBe(null);
       } else {
-        // Skip on macOS
+        // 在 macOS 上跳过
         expect(true).toBe(true);
       }
     });
 
-    it('should handle errors gracefully', async () => {
-      // Test with invalid directory (should not throw)
+    it('应优雅地处理错误', async () => {
+      // 使用无效目录进行测试（不应抛出异常）
       const result = await saveClipboardImage(
         '/invalid/path/that/does/not/exist',
       );
 
       if (process.platform === 'darwin') {
-        // On macOS, might return null due to various errors
+        // 在 macOS 上，可能由于各种错误而返回 null
         expect(result === null || typeof result === 'string').toBe(true);
       } else {
-        // On other platforms, should always return null
+        // 在其他平台上，应始终返回 null
         expect(result).toBe(null);
       }
     });
   });
 
   describe('cleanupOldClipboardImages', () => {
-    it('should not throw errors', async () => {
-      // Should handle missing directories gracefully
+    it('不应抛出错误', async () => {
+      // 应优雅地处理缺失的目录
       await expect(
         cleanupOldClipboardImages('/path/that/does/not/exist'),
       ).resolves.not.toThrow();
     });
 
-    it('should complete without errors on valid directory', async () => {
+    it('在有效目录上应无错误地完成', async () => {
       await expect(cleanupOldClipboardImages('.')).resolves.not.toThrow();
     });
   });

@@ -1,70 +1,70 @@
-# Gemini CLI: Quotas and Pricing
+# Gemini CLI：配额与价格
 
-Your Gemini CLI quotas and pricing depend on the type of account you use to authenticate with Google. Additionally, both quotas and pricing may be calculated differently based on the model version, requests, and tokens used. A summary of model usage is available through the `/stats` command and presented on exit at the end of a session. See [privacy and terms](./tos-privacy.md) for details on Privacy policy and Terms of Service. Note: published prices are list price; additional negotiated commercial discounting may apply.
+你的 Gemini CLI 配额与价格取决于你用于向 Google 进行身份验证的账户类型。此外，根据所使用的模型版本、请求和令牌，配额和价格的计算方式也可能不同。可以通过 `/stats` 命令查看模型使用情况的摘要，并在会话结束时退出时查看。详细信息请参见[隐私与条款](./tos-privacy.md)。注意：公布的价格为标价；可能适用额外协商的商业折扣。
 
-This article outlines the specific quotas and pricing applicable to the Gemini CLI when using different authentication methods.
+本文概述了使用不同身份验证方法时适用于 Gemini CLI 的具体配额与价格。
 
-## 1. Log in with Google (Gemini Code Assist Free Tier)
+## 1. 使用 Google 登录（Gemini Code Assist 免费版）
 
-For users who authenticate by using their Google account to access Gemini Code Assist for individuals:
+适用于通过 Google 账户进行身份验证以访问面向个人用户的 Gemini Code Assist 的用户：
 
-- **Quota:**
-  - 60 requests per minute
-  - 1000 requests per day
-  - Token usage is not applicable
-- **Cost:** Free
-- **Details:** [Gemini Code Assist Quotas](https://developers.google.com/gemini-code-assist/resources/quotas#quotas-for-agent-mode-gemini-cli)
-- **Notes:** A specific quota for different models is not specified; model fallback may occur to preserve shared experience quality.
+- **配额：**
+  - 每分钟 60 个请求
+  - 每日 1000 个请求
+  - 不适用令牌使用
+- **费用：** 免费
+- **详细信息：** [Gemini Code Assist 配额](https://developers.google.com/gemini-code-assist/resources/quotas#quotas-for-agent-mode-gemini-cli)
+- **备注：** 未指定不同模型的具体配额；为保持共享体验的质量，可能会发生模型回退。
 
-## 2. Gemini API Key (Unpaid)
+## 2. Gemini API 密钥（免费版）
 
-If you are using a Gemini API key for the free tier:
+如果你使用的是免费版的 Gemini API 密钥：
 
-- **Quota:**
-  - Flash model only
-  - 10 requests per minute
-  - 250 requests per day
-- **Cost:** Free
-- **Details:** [Gemini API Rate Limits](https://ai.google.dev/gemini-api/docs/rate-limits)
+- **配额：**
+  - 仅限 Flash 模型
+  - 每分钟 10 个请求
+  - 每日 250 个请求
+- **费用：** 免费
+- **详细信息：** [Gemini API 速率限制](https://ai.google.dev/gemini-api/docs/rate-limits)
 
-## 3. Gemini API Key (Paid)
+## 3. Gemini API 密钥（付费版）
 
-If you are using a Gemini API key with a paid plan:
+如果你使用的是付费计划的 Gemini API 密钥：
 
-- **Quota:** Varies by pricing tier.
-- **Cost:** Varies by pricing tier and model/token usage.
-- **Details:** [Gemini API Rate Limits](https://ai.google.dev/gemini-api/docs/rate-limits), [Gemini API Pricing](https://ai.google.dev/gemini-api/docs/pricing)
+- **配额：** 因价格层级不同而异。
+- **费用：** 因价格层级及模型/令牌使用而异。
+- **详细信息：** [Gemini API 速率限制](https://ai.google.dev/gemini-api/docs/rate-limits)、[Gemini API 定价](https://ai.google.dev/gemini-api/docs/pricing)
 
-## 4. Login with Google (for Workspace or Licensed Code Assist users)
+## 4. 使用 Google 登录（适用于 Workspace 或已授权的 Code Assist 用户）
 
-For users of Standard or Enterprise editions of Gemini Code Assist, quotas and pricing are based on a fixed price subscription with assigned license seats:
+适用于 Gemini Code Assist 的标准版或企业版用户，配额与价格基于固定价格订阅并分配了授权席位：
 
-- **Standard Tier:**
-  - **Quota:** 120 requests per minute, 1500 per day
-- **Enterprise Tier:**
-  - **Quota:** 120 requests per minute, 2000 per day
-- **Cost:** Fixed price included with your Gemini for Google Workspace or Gemini Code Assist subscription.
-- **Details:** [Gemini Code Assist Quotas](https://developers.google.com/gemini-code-assist/resources/quotas#quotas-for-agent-mode-gemini-cli), [Gemini Code Assist Pricing](https://cloud.google.com/products/gemini/pricing)
-- **Notes:**
-  - Specific quota for different models is not specified; model fallback may occur to preserve shared experience quality.
-  - Members of the Google Developer Program may have Gemini Code Assist licenses through their membership.
+- **标准版：**
+  - **配额：** 每分钟 120 个请求，每日 1500 个请求
+- **企业版：**
+  - **配额：** 每分钟 120 个请求，每日 2000 个请求
+- **费用：** 固定价格，包含在你的 Gemini for Google Workspace 或 Gemini Code Assist 订阅中。
+- **详细信息：** [Gemini Code Assist 配额](https://developers.google.com/gemini-code-assist/resources/quotas#quotas-for-agent-mode-gemini-cli)、[Gemini Code Assist 定价](https://cloud.google.com/products/gemini/pricing)
+- **备注：**
+  - 未指定不同模型的具体配额；为保持共享体验的质量，可能会发生模型回退。
+  - Google 开发者计划的成员可能通过其会员资格获得 Gemini Code Assist 授权。
 
-## 5. Vertex AI (Express Mode)
+## 5. Vertex AI（Express 模式）
 
-If you are using Vertex AI in Express Mode:
+如果你在 Express 模式下使用 Vertex AI：
 
-- **Quota:** Quotas are variable and specific to your account. See the source for more details.
-- **Cost:** After your Express Mode usage is consumed and you enable billing for your project, cost is based on standard [Vertex AI Pricing](https://cloud.google.com/vertex-ai/pricing).
-- **Details:** [Vertex AI Express Mode Quotas](https://cloud.google.com/vertex-ai/generative-ai/docs/start/express-mode/overview#quotas)
+- **配额：** 配额因账户而异，请参见来源以获取更多详细信息。
+- **费用：** 在你用完 Express 模式使用量并为项目启用计费后，费用基于标准的 [Vertex AI 定价](https://cloud.google.com/vertex-ai/pricing)。
+- **详细信息：** [Vertex AI Express 模式配额](https://cloud.google.com/vertex-ai/generative-ai/docs/start/express-mode/overview#quotas)
 
-## 6. Vertex AI (Regular Mode)
+## 6. Vertex AI（常规模式）
 
-If you are using the standard Vertex AI service:
+如果你使用的是标准版 Vertex AI 服务：
 
-- **Quota:** Governed by a dynamic shared quota system or pre-purchased provisioned throughput.
-- **Cost:** Based on model and token usage. See [Vertex AI Pricing](https://cloud.google.com/vertex-ai/pricing).
-- **Details:** [Vertex AI Dynamic Shared Quota](https://cloud.google.com/vertex-ai/generative-ai/docs/resources/dynamic-shared-quota)
+- **配额：** 由动态共享配额系统或预购的预配吞吐量管理。
+- **费用：** 基于模型和令牌的使用情况。请参见 [Vertex AI 定价](https://cloud.google.com/vertex-ai/pricing)。
+- **详细信息：** [Vertex AI 动态共享配额](https://cloud.google.com/vertex-ai/generative-ai/docs/resources/dynamic-shared-quota)
 
-## 7. Google One and Ultra plans, Gemini for Workspace plans
+## 7. Google One 和 Ultra 计划、Gemini for Workspace 计划
 
-These plans currently apply only to the use of Gemini web-based products provided by Google-based experiences (for example, the Gemini web app or the Flow video editor). These plans do not apply to the API usage which powers the Gemini CLI. Supporting these plans is under active consideration for future support.
+这些计划目前仅适用于 Google 提供的基于网络的 Gemini 产品（例如，Gemini 网页应用或 Flow 视频编辑器）。这些计划不适用于为 Gemini CLI 提供支持的 API 使用。我们正在积极考虑未来对这些计划的支持。

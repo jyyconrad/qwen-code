@@ -1,3 +1,4 @@
+```markdown
 # Gemini CLI
 
 [![Gemini CLI CI](https://github.com/google-gemini/gemini-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/google-gemini/gemini-cli/actions/workflows/ci.yml)
@@ -156,3 +157,4 @@ gemini
 ## 服务条款和隐私声明
 
 有关适用于您使用 Gemini CLI 的服务条款和隐私声明的详细信息，请参阅 [服务条款和隐私声明](./docs/tos-privacy.md)。
+```

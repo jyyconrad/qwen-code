@@ -6,13 +6,13 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
 
-// Use a type alias for SpyInstance as it's not directly exported
+// 使用类型别名定义 SpyInstance，因为它未被直接导出
 type SpyInstance = ReturnType<typeof vi.spyOn>;
 import { reportError } from './errorReporting.js';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 
-// Mock dependencies
+// 模拟依赖项
 vi.mock('node:fs/promises');
 vi.mock('node:os');
 
@@ -35,11 +35,11 @@ describe('reportError', () => {
   const getExpectedReportPath = (type: string) =>
     `${MOCK_TMP_DIR}/gemini-client-error-${type}-${MOCK_TIMESTAMP}.json`;
 
-  it('should generate a report and log the path', async () => {
-    const error = new Error('Test error');
-    error.stack = 'Test stack';
-    const baseMessage = 'An error occurred.';
-    const context = { data: 'test context' };
+  it('应生成报告并记录路径', async () => {
+    const error = new Error('测试错误');
+    error.stack = '测试堆栈';
+    const baseMessage = '发生了一个错误。';
+    const context = { data: '测试上下文' };
     const type = 'test-type';
     const expectedReportPath = getExpectedReportPath(type);
 
@@ -52,7 +52,7 @@ describe('reportError', () => {
       expectedReportPath,
       JSON.stringify(
         {
-          error: { message: 'Test error', stack: error.stack },
+          error: { message: '测试错误', stack: error.stack },
           context,
         },
         null,
@@ -60,13 +60,13 @@ describe('reportError', () => {
       ),
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      `${baseMessage} Full report available at: ${expectedReportPath}`,
+      `${baseMessage} 完整报告位于：${expectedReportPath}`,
     );
   });
 
-  it('should handle errors that are plain objects with a message property', async () => {
-    const error = { message: 'Test plain object error' };
-    const baseMessage = 'Another error.';
+  it('应处理具有 message 属性的普通对象错误', async () => {
+    const error = { message: '测试普通对象错误' };
+    const baseMessage = '另一个错误。';
     const type = 'general';
     const expectedReportPath = getExpectedReportPath(type);
 
@@ -77,20 +77,20 @@ describe('reportError', () => {
       expectedReportPath,
       JSON.stringify(
         {
-          error: { message: 'Test plain object error' },
+          error: { message: '测试普通对象错误' },
         },
         null,
         2,
       ),
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      `${baseMessage} Full report available at: ${expectedReportPath}`,
+      `${baseMessage} 完整报告位于：${expectedReportPath}`,
     );
   });
 
-  it('should handle string errors', async () => {
-    const error = 'Just a string error';
-    const baseMessage = 'String error occurred.';
+  it('应处理字符串错误', async () => {
+    const error = '只是一个字符串错误';
+    const baseMessage = '发生了字符串错误。';
     const type = 'general';
     const expectedReportPath = getExpectedReportPath(type);
 
@@ -101,22 +101,22 @@ describe('reportError', () => {
       expectedReportPath,
       JSON.stringify(
         {
-          error: { message: 'Just a string error' },
+          error: { message: '只是一个字符串错误' },
         },
         null,
         2,
       ),
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      `${baseMessage} Full report available at: ${expectedReportPath}`,
+      `${baseMessage} 完整报告位于：${expectedReportPath}`,
     );
   });
 
-  it('should log fallback message if writing report fails', async () => {
-    const error = new Error('Main error');
-    const baseMessage = 'Failed operation.';
-    const writeError = new Error('Failed to write file');
-    const context = ['some context'];
+  it('如果写入报告失败应记录备用消息', async () => {
+    const error = new Error('主要错误');
+    const baseMessage = '操作失败。';
+    const writeError = new Error('无法写入文件');
+    const context = ['一些上下文'];
     const type = 'general';
     const expectedReportPath = getExpectedReportPath(type);
 
@@ -127,58 +127,58 @@ describe('reportError', () => {
     expect(fs.writeFile).toHaveBeenCalledWith(
       expectedReportPath,
       expect.any(String),
-    ); // It still tries to write
+    ); // 仍会尝试写入
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      `${baseMessage} Additionally, failed to write detailed error report:`,
+      `${baseMessage} 此外，无法写入详细错误报告：`,
       writeError,
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Original error that triggered report generation:',
+      '触发报告生成的原始错误：',
       error,
     );
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Original context:', context);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('原始上下文：', context);
   });
 
-  it('should handle stringification failure of report content (e.g. BigInt in context)', async () => {
-    const error = new Error('Main error');
-    error.stack = 'Main stack';
-    const baseMessage = 'Failed operation with BigInt.';
-    const context = { a: BigInt(1) }; // BigInt cannot be stringified by JSON.stringify
+  it('应处理报告内容的字符串化失败（例如上下文中的 BigInt）', async () => {
+    const error = new Error('主要错误');
+    error.stack = '主要堆栈';
+    const baseMessage = '包含 BigInt 的失败操作。';
+    const context = { a: BigInt(1) }; // BigInt 无法通过 JSON.stringify 进行字符串化
     const type = 'bigint-fail';
     const stringifyError = new TypeError(
-      'Do not know how to serialize a BigInt',
+      '不知道如何序列化 BigInt',
     );
     const expectedMinimalReportPath = getExpectedReportPath(type);
 
-    // Simulate JSON.stringify throwing an error for the full report
+    // 模拟 JSON.stringify 在完整报告时抛出错误
     const originalJsonStringify = JSON.stringify;
     let callCount = 0;
     vi.spyOn(JSON, 'stringify').mockImplementation((value, replacer, space) => {
       callCount++;
       if (callCount === 1) {
-        // First call is for the full report content
+        // 第一次调用是用于完整报告内容
         throw stringifyError;
       }
-      // Subsequent calls (for minimal report) should succeed
+      // 后续调用（用于最小报告）应成功
       return originalJsonStringify(value, replacer, space);
     });
 
-    (fs.writeFile as Mock).mockResolvedValue(undefined); // Mock for the minimal report write
+    (fs.writeFile as Mock).mockResolvedValue(undefined); // 模拟最小报告写入
 
     await reportError(error, baseMessage, context, type);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      `${baseMessage} Could not stringify report content (likely due to context):`,
+      `${baseMessage} 无法对报告内容进行字符串化（可能由于上下文）：`,
       stringifyError,
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Original error that triggered report generation:',
+      '触发报告生成的原始错误：',
       error,
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Original context could not be stringified or included in report.',
+      '原始上下文无法进行字符串化或包含在报告中。',
     );
-    // Check that it attempts to write a minimal report
+    // 检查是否尝试写入最小报告
     expect(fs.writeFile).toHaveBeenCalledWith(
       expectedMinimalReportPath,
       originalJsonStringify(
@@ -188,14 +188,14 @@ describe('reportError', () => {
       ),
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      `${baseMessage} Partial report (excluding context) available at: ${expectedMinimalReportPath}`,
+      `${baseMessage} 部分报告（不包括上下文）位于：${expectedMinimalReportPath}`,
     );
   });
 
-  it('should generate a report without context if context is not provided', async () => {
-    const error = new Error('Error without context');
-    error.stack = 'No context stack';
-    const baseMessage = 'Simple error.';
+  it('如果未提供上下文，则应生成不带上下文的报告', async () => {
+    const error = new Error('无上下文错误');
+    error.stack = '无上下文堆栈';
+    const baseMessage = '简单错误。';
     const type = 'general';
     const expectedReportPath = getExpectedReportPath(type);
 
@@ -206,14 +206,14 @@ describe('reportError', () => {
       expectedReportPath,
       JSON.stringify(
         {
-          error: { message: 'Error without context', stack: error.stack },
+          error: { message: '无上下文错误', stack: error.stack },
         },
         null,
         2,
       ),
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      `${baseMessage} Full report available at: ${expectedReportPath}`,
+      `${baseMessage} 完整报告位于：${expectedReportPath}`,
     );
   });
 });

@@ -12,7 +12,7 @@ import { StreamingContext } from '../contexts/StreamingContext.js';
 import { StreamingState } from '../types.js';
 import { vi } from 'vitest';
 
-// Mock GeminiRespondingSpinner
+// 模拟 GeminiRespondingSpinner
 vi.mock('./GeminiRespondingSpinner.js', () => ({
   GeminiRespondingSpinner: ({
     nonRespondingDisplay,
@@ -43,11 +43,11 @@ const renderWithContext = (
 
 describe('<LoadingIndicator />', () => {
   const defaultProps = {
-    currentLoadingPhrase: 'Loading...',
+    currentLoadingPhrase: '加载中...',
     elapsedTime: 5,
   };
 
-  it('should not render when streamingState is Idle', () => {
+  it('当 streamingState 为 Idle 时不应渲染', () => {
     const { lastFrame } = renderWithContext(
       <LoadingIndicator {...defaultProps} />,
       StreamingState.Idle,
@@ -55,20 +55,20 @@ describe('<LoadingIndicator />', () => {
     expect(lastFrame()).toBe('');
   });
 
-  it('should render spinner, phrase, and time when streamingState is Responding', () => {
+  it('当 streamingState 为 Responding 时应渲染旋转器、短语和时间', () => {
     const { lastFrame } = renderWithContext(
       <LoadingIndicator {...defaultProps} />,
       StreamingState.Responding,
     );
     const output = lastFrame();
     expect(output).toContain('MockRespondingSpinner');
-    expect(output).toContain('Loading...');
-    expect(output).toContain('(esc to cancel, 5s)');
+    expect(output).toContain('加载中...');
+    expect(output).toContain('(按 esc 取消, 5s)');
   });
 
-  it('should render spinner (static), phrase but no time/cancel when streamingState is WaitingForConfirmation', () => {
+  it('当 streamingState 为 WaitingForConfirmation 时应渲染旋转器(静态)、短语但不显示时间/取消', () => {
     const props = {
-      currentLoadingPhrase: 'Confirm action',
+      currentLoadingPhrase: '确认操作',
       elapsedTime: 10,
     };
     const { lastFrame } = renderWithContext(
@@ -76,94 +76,94 @@ describe('<LoadingIndicator />', () => {
       StreamingState.WaitingForConfirmation,
     );
     const output = lastFrame();
-    expect(output).toContain('⠏'); // Static char for WaitingForConfirmation
-    expect(output).toContain('Confirm action');
-    expect(output).not.toContain('(esc to cancel)');
+    expect(output).toContain('⠏'); // WaitingForConfirmation 的静态字符
+    expect(output).toContain('确认操作');
+    expect(output).not.toContain('(按 esc 取消)');
     expect(output).not.toContain(', 10s');
   });
 
-  it('should display the currentLoadingPhrase correctly', () => {
+  it('应正确显示 currentLoadingPhrase', () => {
     const props = {
-      currentLoadingPhrase: 'Processing data...',
+      currentLoadingPhrase: '处理数据...',
       elapsedTime: 3,
     };
     const { lastFrame } = renderWithContext(
       <LoadingIndicator {...props} />,
       StreamingState.Responding,
     );
-    expect(lastFrame()).toContain('Processing data...');
+    expect(lastFrame()).toContain('处理数据...');
   });
 
-  it('should display the elapsedTime correctly when Responding', () => {
+  it('当 Responding 时应正确显示 elapsedTime', () => {
     const props = {
-      currentLoadingPhrase: 'Working...',
+      currentLoadingPhrase: '工作中...',
       elapsedTime: 60,
     };
     const { lastFrame } = renderWithContext(
       <LoadingIndicator {...props} />,
       StreamingState.Responding,
     );
-    expect(lastFrame()).toContain('(esc to cancel, 1m)');
+    expect(lastFrame()).toContain('(按 esc 取消, 1m)');
   });
 
-  it('should display the elapsedTime correctly in human-readable format', () => {
+  it('应以人类可读格式正确显示 elapsedTime', () => {
     const props = {
-      currentLoadingPhrase: 'Working...',
+      currentLoadingPhrase: '工作中...',
       elapsedTime: 125,
     };
     const { lastFrame } = renderWithContext(
       <LoadingIndicator {...props} />,
       StreamingState.Responding,
     );
-    expect(lastFrame()).toContain('(esc to cancel, 2m 5s)');
+    expect(lastFrame()).toContain('(按 esc 取消, 2m 5s)');
   });
 
-  it('should render rightContent when provided', () => {
-    const rightContent = <Text>Extra Info</Text>;
+  it('当提供 rightContent 时应渲染', () => {
+    const rightContent = <Text>额外信息</Text>;
     const { lastFrame } = renderWithContext(
       <LoadingIndicator {...defaultProps} rightContent={rightContent} />,
       StreamingState.Responding,
     );
-    expect(lastFrame()).toContain('Extra Info');
+    expect(lastFrame()).toContain('额外信息');
   });
 
-  it('should transition correctly between states using rerender', () => {
+  it('使用 rerender 在状态间正确转换', () => {
     const { lastFrame, rerender } = renderWithContext(
       <LoadingIndicator {...defaultProps} />,
       StreamingState.Idle,
     );
-    expect(lastFrame()).toBe(''); // Initial: Idle
+    expect(lastFrame()).toBe(''); // 初始: Idle
 
-    // Transition to Responding
+    // 转换到 Responding
     rerender(
       <StreamingContext.Provider value={StreamingState.Responding}>
         <LoadingIndicator
-          currentLoadingPhrase="Now Responding"
+          currentLoadingPhrase="现在响应中"
           elapsedTime={2}
         />
       </StreamingContext.Provider>,
     );
     let output = lastFrame();
     expect(output).toContain('MockRespondingSpinner');
-    expect(output).toContain('Now Responding');
-    expect(output).toContain('(esc to cancel, 2s)');
+    expect(output).toContain('现在响应中');
+    expect(output).toContain('(按 esc 取消, 2s)');
 
-    // Transition to WaitingForConfirmation
+    // 转换到 WaitingForConfirmation
     rerender(
       <StreamingContext.Provider value={StreamingState.WaitingForConfirmation}>
         <LoadingIndicator
-          currentLoadingPhrase="Please Confirm"
+          currentLoadingPhrase="请确认"
           elapsedTime={15}
         />
       </StreamingContext.Provider>,
     );
     output = lastFrame();
     expect(output).toContain('⠏');
-    expect(output).toContain('Please Confirm');
-    expect(output).not.toContain('(esc to cancel)');
+    expect(output).toContain('请确认');
+    expect(output).not.toContain('(按 esc 取消)');
     expect(output).not.toContain(', 15s');
 
-    // Transition back to Idle
+    // 转换回 Idle
     rerender(
       <StreamingContext.Provider value={StreamingState.Idle}>
         <LoadingIndicator {...defaultProps} />
@@ -172,10 +172,10 @@ describe('<LoadingIndicator />', () => {
     expect(lastFrame()).toBe('');
   });
 
-  it('should display fallback phrase if thought is empty', () => {
+  it('当 thought 为空时应显示备用短语', () => {
     const props = {
       thought: null,
-      currentLoadingPhrase: 'Loading...',
+      currentLoadingPhrase: '加载中...',
       elapsedTime: 5,
     };
     const { lastFrame } = renderWithContext(
@@ -183,14 +183,14 @@ describe('<LoadingIndicator />', () => {
       StreamingState.Responding,
     );
     const output = lastFrame();
-    expect(output).toContain('Loading...');
+    expect(output).toContain('加载中...');
   });
 
-  it('should display the subject of a thought', () => {
+  it('应显示 thought 的主题', () => {
     const props = {
       thought: {
-        subject: 'Thinking about something...',
-        description: 'and other stuff.',
+        subject: '正在思考某事...',
+        description: '和其他内容。',
       },
       elapsedTime: 5,
     };
@@ -201,18 +201,18 @@ describe('<LoadingIndicator />', () => {
     const output = lastFrame();
     expect(output).toBeDefined();
     if (output) {
-      expect(output).toContain('Thinking about something...');
-      expect(output).not.toContain('and other stuff.');
+      expect(output).toContain('正在思考某事...');
+      expect(output).not.toContain('和其他内容。');
     }
   });
 
-  it('should prioritize thought.subject over currentLoadingPhrase', () => {
+  it('应优先显示 thought.subject 而不是 currentLoadingPhrase', () => {
     const props = {
       thought: {
-        subject: 'This should be displayed',
-        description: 'A description',
+        subject: '这应该被显示',
+        description: '一个描述',
       },
-      currentLoadingPhrase: 'This should not be displayed',
+      currentLoadingPhrase: '这不应该被显示',
       elapsedTime: 5,
     };
     const { lastFrame } = renderWithContext(
@@ -220,7 +220,7 @@ describe('<LoadingIndicator />', () => {
       StreamingState.Responding,
     );
     const output = lastFrame();
-    expect(output).toContain('This should be displayed');
-    expect(output).not.toContain('This should not be displayed');
+    expect(output).toContain('这应该被显示');
+    expect(output).not.toContain('这不应该被显示');
   });
 });

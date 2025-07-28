@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,8 +9,8 @@ import * as path from 'path';
 import { Dirent } from 'fs';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 
-// Simple console logger for now.
-// TODO: Integrate with a more robust server-side logger.
+// 简单的控制台记录器。
+// TODO: 集成更强大的服务器端记录器。
 const logger = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   debug: (...args: any[]) => console.debug('[DEBUG] [BfsFileSearch]', ...args),
@@ -25,11 +25,11 @@ interface BfsFileSearchOptions {
 }
 
 /**
- * Performs a breadth-first search for a specific file within a directory structure.
+ * 在目录结构中对特定文件执行广度优先搜索。
  *
- * @param rootDir The directory to start the search from.
- * @param options Configuration for the search.
- * @returns A promise that resolves to an array of paths where the file was found.
+ * @param rootDir 开始搜索的目录。
+ * @param options 搜索的配置。
+ * @returns 解析为找到文件的路径数组的 Promise。
  */
 export async function bfsFileSearch(
   rootDir: string,
@@ -56,14 +56,14 @@ export async function bfsFileSearch(
     scannedDirCount++;
 
     if (debug) {
-      logger.debug(`Scanning [${scannedDirCount}/${maxDirs}]: ${currentDir}`);
+      logger.debug(`扫描中 [${scannedDirCount}/${maxDirs}]: ${currentDir}`);
     }
 
     let entries: Dirent[];
     try {
       entries = await fs.readdir(currentDir, { withFileTypes: true });
     } catch {
-      // Ignore errors for directories we can't read (e.g., permissions)
+      // 忽略无法读取的目录错误（例如，权限问题）
       continue;
     }
 

@@ -15,7 +15,7 @@ vi.mock('../code_assist/server.js');
 const mockPaidTier: GeminiUserTier = {
   id: UserTierId.STANDARD,
   name: 'paid',
-  description: 'Paid tier',
+  description: '付费层级',
 };
 
 describe('setupUser', () => {
@@ -70,7 +70,7 @@ describe('setupUser', () => {
 
   it('should throw ProjectIdRequiredError when no project ID is available', async () => {
     delete process.env.GOOGLE_CLOUD_PROJECT;
-    // And the server itself requires a project ID internally
+    // 并且服务器本身在内部需要项目 ID
     vi.mocked(CodeAssistServer).mockImplementation(() => {
       throw new ProjectIdRequiredError();
     });

@@ -5,11 +5,11 @@
  */
 
 /**
- * Safely stringifies an object to JSON, handling circular references by replacing them with [Circular].
+ * 安全地将对象序列化为 JSON，通过将循环引用替换为 [Circular] 来处理循环引用。
  *
- * @param obj - The object to stringify
- * @param space - Optional space parameter for formatting (defaults to no formatting)
- * @returns JSON string with circular references replaced by [Circular]
+ * @param obj - 要序列化的对象
+ * @param space - 可选的格式化空格参数（默认为无格式化）
+ * @returns 循环引用被替换为 [Circular] 的 JSON 字符串
  */
 export function safeJsonStringify(
   obj: unknown,

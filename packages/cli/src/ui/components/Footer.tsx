@@ -16,6 +16,7 @@ import { ConsoleSummaryDisplay } from './ConsoleSummaryDisplay.js';
 import process from 'node:process';
 import Gradient from 'ink-gradient';
 import { MemoryUsageDisplay } from './MemoryUsageDisplay.js';
+import { SessionStatsState } from '../contexts/SessionContext.js';
 
 interface FooterProps {
   model: string;
@@ -28,6 +29,7 @@ interface FooterProps {
   showErrorDetails: boolean;
   showMemoryUsage?: boolean;
   promptTokenCount: number;
+  sessionStats: SessionStatsState;
   nightly: boolean;
 }
 
@@ -43,13 +45,25 @@ export const Footer: React.FC<FooterProps> = ({
   showMemoryUsage,
   promptTokenCount,
   nightly,
+  sessionStats
 }) => {
   const limit = tokenLimit(model);
   const percentage = promptTokenCount / limit;
+  const needLimit = model.indexOf("gemini") > -1;
+  const totalUsed = sessionStats?.metrics?.models[model]?.tokens.total || 0;
+  const formatFriendlyNumber = (num: number): string => {
+    if (num >= 10000) {
+      return (num / 10000).toFixed(1).replace(/\.0$/, '') + '万';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + '千';
+    } else {
+      return num.toString();
+    }
+  }
 
   return (
     <Box marginTop={1} justifyContent="space-between" width="100%">
-      <Box>
+      <Box marginRight={3}>
         {nightly ? (
           <Gradient colors={Colors.GradientColors}>
             <Text>
@@ -63,19 +77,18 @@ export const Footer: React.FC<FooterProps> = ({
             {branchName && <Text color={Colors.Gray}> ({branchName}*)</Text>}
           </Text>
         )}
-        {debugMode && (
-          <Text color={Colors.AccentRed}>
-            {' ' + (debugMessage || '--debug')}
-          </Text>
-        )}
+        <Text color={Colors.AccentPurple}>
+          {' ' + (debugMessage || '--debug')}
+        </Text>
       </Box>
 
-      {/* Middle Section: Centered Sandbox Info */}
+      {/* 中间部分：居中的沙箱信息 */}
       <Box
         flexGrow={1}
         alignItems="center"
         justifyContent="center"
         display="flex"
+        marginRight={3}
       >
         {process.env.SANDBOX && process.env.SANDBOX !== 'sandbox-exec' ? (
           <Text color="green">
@@ -88,18 +101,25 @@ export const Footer: React.FC<FooterProps> = ({
           </Text>
         ) : (
           <Text color={Colors.AccentRed}>
-            no sandbox <Text color={Colors.Gray}>(see /docs)</Text>
+            无沙箱 <Text color={Colors.Gray}>(参见 /docs)</Text>
           </Text>
         )}
       </Box>
 
-      {/* Right Section: Gemini Label and Console Summary */}
-      <Box alignItems="center">
+      {/* 右侧部分：Gemini 标签和控制台摘要 */}
+      <Box flexGrow={1}
+        alignItems="center"
+        justifyContent="center"
+        display="flex" >
         <Text color={Colors.AccentBlue}>
-          {' '}
-          {model}{' '}
+          <Text>{model}{' '}</Text>
+          {needLimit && (
+            <Text color={Colors.Gray}>
+              {'剩余'}{((1 - percentage) * 100).toFixed(0)}{'%上下文 '}
+            
+          </Text>)}
           <Text color={Colors.Gray}>
-            ({((1 - percentage) * 100).toFixed(0)}% context left)
+            (已使用 {formatFriendlyNumber(totalUsed)} 上下文)
           </Text>
         </Text>
         {corgiMode && (

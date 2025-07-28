@@ -42,7 +42,7 @@ export interface LoadCodeAssistRequest {
 }
 
 /**
- * Represents LoadCodeAssistResponse proto json field
+ * 表示 LoadCodeAssistResponse proto json 字段
  * http://google3/google/internal/cloud/code/v1internal/cloudcode.proto;l=224
  */
 export interface LoadCodeAssistResponse {
@@ -53,13 +53,13 @@ export interface LoadCodeAssistResponse {
 }
 
 /**
- * GeminiUserTier reflects the structure received from the CodeAssist when calling LoadCodeAssist.
+ * GeminiUserTier 反映了调用 LoadCodeAssist 时从 CodeAssist 接收到的结构。
  */
 export interface GeminiUserTier {
   id: UserTierId;
   name: string;
   description: string;
-  // This value is used to declare whether a given tier requires the user to configure the project setting on the IDE settings or not.
+  // 此值用于声明给定层级是否要求用户在 IDE 设置中配置项目设置。
   userDefinedCloudaicompanionProject?: boolean | null;
   isDefault?: boolean;
   privacyNotice?: PrivacyNotice;
@@ -68,11 +68,11 @@ export interface GeminiUserTier {
 }
 
 /**
- * Includes information specifying the reasons for a user's ineligibility for a specific tier.
- * @param reasonCode mnemonic code representing the reason for in-eligibility.
- * @param reasonMessage message to display to the user.
- * @param tierId id of the tier.
- * @param tierName name of the tier.
+ * 包含指定用户不符合特定层级资格的原因信息。
+ * @param reasonCode 表示不符合资格原因的助记代码。
+ * @param reasonMessage 显示给用户的消息。
+ * @param tierId 层级 ID。
+ * @param tierName 层级名称。
  */
 export interface IneligibleTier {
   reasonCode: IneligibleTierReasonCode;
@@ -82,7 +82,7 @@ export interface IneligibleTier {
 }
 
 /**
- * List of predefined reason codes when a tier is blocked from a specific tier.
+ * 当层级被阻止时的预定义原因代码列表。
  * https://source.corp.google.com/piper///depot/google3/google/internal/cloud/code/v1internal/cloudcode.proto;l=378
  */
 export enum IneligibleTierReasonCode {
@@ -98,7 +98,7 @@ export enum IneligibleTierReasonCode {
   // go/keep-sorted end
 }
 /**
- * UserTierId represents IDs returned from the Cloud Code Private API representing a user's tier
+ * UserTierId 表示从 Cloud Code 私有 API 返回的表示用户层级的 ID
  *
  * //depot/google3/cloud/developer_experience/cloudcode/pa/service/usertier.go;l=16
  */
@@ -109,8 +109,7 @@ export enum UserTierId {
 }
 
 /**
- * PrivacyNotice reflects the structure received from the CodeAssist in regards to a tier
- * privacy notice.
+ * PrivacyNotice 反映了从 CodeAssist 接收到的关于层级隐私声明的结构。
  */
 export interface PrivacyNotice {
   showNotice: boolean;
@@ -118,7 +117,7 @@ export interface PrivacyNotice {
 }
 
 /**
- * Proto signature of OnboardUserRequest as payload to OnboardUser call
+ * OnboardUserRequest 的 Proto 签名，作为 OnboardUser 调用的载荷
  */
 export interface OnboardUserRequest {
   tierId: string | undefined;
@@ -127,7 +126,7 @@ export interface OnboardUserRequest {
 }
 
 /**
- * Represents LongrunningOperation proto
+ * 表示 LongrunningOperation proto
  * http://google3/google/longrunning/operations.proto;rcl=698857719;l=107
  */
 export interface LongrunningOperationResponse {
@@ -137,11 +136,11 @@ export interface LongrunningOperationResponse {
 }
 
 /**
- * Represents OnboardUserResponse proto
+ * 表示 OnboardUserResponse proto
  * http://google3/google/internal/cloud/code/v1internal/cloudcode.proto;l=215
  */
 export interface OnboardUserResponse {
-  // tslint:disable-next-line:enforce-name-casing This is the name of the field in the proto.
+  // tslint:disable-next-line:enforce-name-casing 这是 proto 中字段的名称。
   cloudaicompanionProject?: {
     id: string;
     name: string;
@@ -149,9 +148,9 @@ export interface OnboardUserResponse {
 }
 
 /**
- * Status code of user license status
- * it does not strictly correspond to the proto
- * Error value is an additional value assigned to error responses from OnboardUser
+ * 用户许可证状态的状态码
+ * 它不严格对应于 proto
+ * Error 值是分配给 OnboardUser 错误响应的附加值
  */
 export enum OnboardUserStatusCode {
   Default = 'DEFAULT',
@@ -161,7 +160,7 @@ export enum OnboardUserStatusCode {
 }
 
 /**
- * Status of user onboarded to gemini
+ * 用户加入 gemini 的状态
  */
 export interface OnboardUserStatus {
   statusCode: OnboardUserStatusCode;

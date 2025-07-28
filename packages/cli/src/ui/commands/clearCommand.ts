@@ -8,9 +8,9 @@ import { SlashCommand } from './types.js';
 
 export const clearCommand: SlashCommand = {
   name: 'clear',
-  description: 'clear the screen and conversation history',
+  description: '清除屏幕和对话历史',
   action: async (context, _args) => {
-    context.ui.setDebugMessage('Clearing terminal and resetting chat.');
+    context.ui.setDebugMessage('正在清除终端并重置聊天。');
     await context.services.config?.getGeminiClient()?.resetChat();
     context.ui.clear();
   },

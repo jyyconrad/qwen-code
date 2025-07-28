@@ -20,7 +20,7 @@ const TEST_CONTENT_GENERATOR_CONFIG: ContentGeneratorConfig = {
   userAgent: 'test-agent',
 };
 
-// Mock file discovery service and tool registry
+// 模拟文件发现服务和工具注册表
 vi.mock('@iflytek/iflycode-core', async () => {
   const actual = await vi.importActual('@iflytek/iflycode-core');
   return {
@@ -32,7 +32,7 @@ vi.mock('@iflytek/iflycode-core', async () => {
   };
 });
 
-describe('Configuration Integration Tests', () => {
+describe('配置集成测试', () => {
   let tempDir: string;
   let originalEnv: NodeJS.ProcessEnv;
 
@@ -50,8 +50,8 @@ describe('Configuration Integration Tests', () => {
     }
   });
 
-  describe('File Filtering Configuration', () => {
-    it('should load default file filtering settings', async () => {
+  describe('文件过滤配置', () => {
+    it('应加载默认的文件过滤设置', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -59,7 +59,7 @@ describe('Configuration Integration Tests', () => {
         sandbox: false,
         targetDir: tempDir,
         debugMode: false,
-        fileFilteringRespectGitIgnore: undefined, // Should default to true
+        fileFilteringRespectGitIgnore: undefined, // 应默认为 true
       };
 
       const config = new Config(configParams);
@@ -67,7 +67,7 @@ describe('Configuration Integration Tests', () => {
       expect(config.getFileFilteringRespectGitIgnore()).toBe(true);
     });
 
-    it('should load custom file filtering settings from configuration', async () => {
+    it('应从配置中加载自定义的文件过滤设置', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -85,7 +85,7 @@ describe('Configuration Integration Tests', () => {
       expect(config.getFileFilteringRespectGitIgnore()).toBe(false);
     });
 
-    it('should merge user and workspace file filtering settings', async () => {
+    it('应合并用户和工作区的文件过滤设置', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -102,8 +102,8 @@ describe('Configuration Integration Tests', () => {
     });
   });
 
-  describe('Configuration Integration', () => {
-    it('should handle partial configuration objects gracefully', async () => {
+  describe('配置集成', () => {
+    it('应优雅地处理部分配置对象', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -118,11 +118,11 @@ describe('Configuration Integration Tests', () => {
 
       const config = new Config(configParams);
 
-      // Specified settings should be applied
+      // 指定的设置应被应用
       expect(config.getFileFilteringRespectGitIgnore()).toBe(false);
     });
 
-    it('should handle empty configuration objects gracefully', async () => {
+    it('应优雅地处理空配置对象', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -135,11 +135,11 @@ describe('Configuration Integration Tests', () => {
 
       const config = new Config(configParams);
 
-      // All settings should use defaults
+      // 所有设置应使用默认值
       expect(config.getFileFilteringRespectGitIgnore()).toBe(true);
     });
 
-    it('should handle missing configuration sections gracefully', async () => {
+    it('应优雅地处理缺失的配置部分', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -147,18 +147,18 @@ describe('Configuration Integration Tests', () => {
         sandbox: false,
         targetDir: tempDir,
         debugMode: false,
-        // Missing fileFiltering configuration
+        // 缺少 fileFiltering 配置
       };
 
       const config = new Config(configParams);
 
-      // All git-aware settings should use defaults
+      // 所有 git 相关设置应使用默认值
       expect(config.getFileFilteringRespectGitIgnore()).toBe(true);
     });
   });
 
-  describe('Real-world Configuration Scenarios', () => {
-    it('should handle a security-focused configuration', async () => {
+  describe('真实世界的配置场景', () => {
+    it('应处理安全导向的配置', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -174,7 +174,7 @@ describe('Configuration Integration Tests', () => {
       expect(config.getFileFilteringRespectGitIgnore()).toBe(true);
     });
 
-    it('should handle a CI/CD environment configuration', async () => {
+    it('应处理 CI/CD 环境配置', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -184,7 +184,7 @@ describe('Configuration Integration Tests', () => {
         debugMode: false,
         fileFiltering: {
           respectGitIgnore: false,
-        }, // CI might need to see all files
+        }, // CI 可能需要查看所有文件
       };
 
       const config = new Config(configParams);
@@ -193,8 +193,8 @@ describe('Configuration Integration Tests', () => {
     });
   });
 
-  describe('Checkpointing Configuration', () => {
-    it('should enable checkpointing when the setting is true', async () => {
+  describe('检查点配置', () => {
+    it('当设置为 true 时应启用检查点', async () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -211,8 +211,8 @@ describe('Configuration Integration Tests', () => {
     });
   });
 
-  describe('Extension Context Files', () => {
-    it('should have an empty array for extension context files by default', () => {
+  describe('扩展上下文文件', () => {
+    it('默认情况下扩展上下文文件应为空数组', () => {
       const configParams: ConfigParameters = {
         cwd: '/tmp',
         contentGeneratorConfig: TEST_CONTENT_GENERATOR_CONFIG,
@@ -225,7 +225,7 @@ describe('Configuration Integration Tests', () => {
       expect(config.getExtensionContextFilePaths()).toEqual([]);
     });
 
-    it('should correctly store and return extension context file paths', () => {
+    it('应正确存储并返回扩展上下文文件路径', () => {
       const contextFiles = ['/path/to/file1.txt', '/path/to/file2.js'];
       const configParams: ConfigParameters = {
         cwd: '/tmp',

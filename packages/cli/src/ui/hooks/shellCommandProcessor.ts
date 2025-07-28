@@ -23,7 +23,7 @@ const OUTPUT_UPDATE_INTERVAL_MS = 1000;
 const MAX_OUTPUT_LENGTH = 10000;
 
 /**
- * A structured result from a shell command execution.
+ * Shell 命令执行的结构化结果。
  */
 interface ShellExecutionResult {
   rawOutput: Buffer;
@@ -35,15 +35,15 @@ interface ShellExecutionResult {
 }
 
 /**
- * Executes a shell command using `spawn`, capturing all output and lifecycle events.
- * This is the single, unified implementation for shell execution.
+ * 使用 `spawn` 执行 shell 命令，捕获所有输出和生命周期事件。
+ * 这是 shell 执行的统一实现。
  *
- * @param commandToExecute The exact command string to run.
- * @param cwd The working directory to execute the command in.
- * @param abortSignal An AbortSignal to terminate the process.
- * @param onOutputChunk A callback for streaming real-time output.
- * @param onDebugMessage A callback for logging debug information.
- * @returns A promise that resolves with the complete execution result.
+ * @param commandToExecute 要运行的确切命令字符串。
+ * @param cwd 执行命令的工作目录。
+ * @param abortSignal 用于终止进程的 AbortSignal。
+ * @param onOutputChunk 流式实时输出的回调。
+ * @param onDebugMessage 记录调试信息的回调。
+ * @returns 解析为完整执行结果的 Promise。
  */
 function executeShellCommand(
   commandToExecute: string,
@@ -62,10 +62,10 @@ function executeShellCommand(
     const child = spawn(shell, shellArgs, {
       cwd,
       stdio: ['ignore', 'pipe', 'pipe'],
-      detached: !isWindows, // Use process groups on non-Windows for robust killing
+      detached: !isWindows, // 在非 Windows 上使用进程组以实现可靠的终止
     });
 
-    // Use decoders to handle multi-byte characters safely (for streaming output).
+    // 使用解码器安全处理多字节字符（用于流式输出）。
     const stdoutDecoder = new StringDecoder('utf8');
     const stderrDecoder = new StringDecoder('utf8');
 
@@ -83,14 +83,14 @@ function executeShellCommand(
       outputChunks.push(data);
 
       if (streamToUi && sniffedBytes < MAX_SNIFF_SIZE) {
-        // Use a limited-size buffer for the check to avoid performance issues.
+        // 使用有限大小的缓冲区进行检查以避免性能问题。
         const sniffBuffer = Buffer.concat(outputChunks.slice(0, 20));
         sniffedBytes = sniffBuffer.length;
 
         if (isBinary(sniffBuffer)) {
           streamToUi = false;
-          // Overwrite any garbled text that may have streamed with a clear message.
-          onOutputChunk('[Binary output detected. Halting stream...]');
+          // 用清晰的消息覆盖可能已流式传输的乱码文本。
+          onOutputChunk('[检测到二进制输出。停止流式传输...]');
         }
       }
 
@@ -105,17 +105,17 @@ function executeShellCommand(
       }
 
       if (!exited && streamToUi) {
-        // Send only the new chunk to avoid re-rendering the whole output.
+        // 仅发送新块以避免重新渲染整个输出。
         const combinedOutput = stdout + (stderr ? `\n${stderr}` : '');
         onOutputChunk(combinedOutput);
       } else if (!exited && !streamToUi) {
-        // Send progress updates for the binary stream
+        // 发送二进制流的进度更新
         const totalBytes = outputChunks.reduce(
           (sum, chunk) => sum + chunk.length,
           0,
         );
         onOutputChunk(
-          `[Receiving binary output... ${formatMemoryUsage(totalBytes)} received]`,
+          `[正在接收二进制输出... 已接收 ${formatMemoryUsage(totalBytes)}]`,
         );
       }
     };
@@ -128,20 +128,20 @@ function executeShellCommand(
 
     const abortHandler = async () => {
       if (child.pid && !exited) {
-        onDebugMessage(`Aborting shell command (PID: ${child.pid})`);
+        onDebugMessage(`中止 shell 命令 (PID: ${child.pid})`);
         if (isWindows) {
           spawn('taskkill', ['/pid', child.pid.toString(), '/f', '/t']);
         } else {
           try {
-            // Kill the entire process group (negative PID).
-            // SIGTERM first, then SIGKILL if it doesn't die.
+            // 终止整个进程组（负 PID）。
+            // 先发送 SIGTERM，如果未终止再发送 SIGKILL。
             process.kill(-child.pid, 'SIGTERM');
             await new Promise((res) => setTimeout(res, 200));
             if (!exited) {
               process.kill(-child.pid, 'SIGKILL');
             }
           } catch (_e) {
-            // Fallback to killing just the main process if group kill fails.
+            // 如果组终止失败，则回退到仅终止主进程。
             if (!exited) child.kill('SIGKILL');
           }
         }
@@ -154,7 +154,7 @@ function executeShellCommand(
       exited = true;
       abortSignal.removeEventListener('abort', abortHandler);
 
-      // Handle any final bytes lingering in the decoders
+      // 处理解码器中残留的最终字节
       stdout += stdoutDecoder.end();
       stderr += stderrDecoder.end();
 
@@ -179,19 +179,19 @@ function addShellCommandToGeminiHistory(
 ) {
   const modelContent =
     resultText.length > MAX_OUTPUT_LENGTH
-      ? resultText.substring(0, MAX_OUTPUT_LENGTH) + '\n... (truncated)'
+      ? resultText.substring(0, MAX_OUTPUT_LENGTH) + '\n... (已截断)'
       : resultText;
 
   geminiClient.addHistory({
     role: 'user',
     parts: [
       {
-        text: `I ran the following shell command:
+        text: `我运行了以下 shell 命令:
 \`\`\`sh
 ${rawQuery}
 \`\`\`
 
-This produced the following result:
+产生了以下结果:
 \`\`\`
 ${modelContent}
 \`\`\``,
@@ -201,8 +201,8 @@ ${modelContent}
 }
 
 /**
- * Hook to process shell commands.
- * Orchestrates command execution and updates history and agent context.
+ * 处理 shell 命令的 Hook。
+ * 协调命令执行并更新历史记录和代理上下文。
  */
 export const useShellCommandProcessor = (
   addItemToHistory: UseHistoryManagerReturn['addItem'],
@@ -231,12 +231,12 @@ export const useShellCommandProcessor = (
       let commandToExecute = rawQuery;
       let pwdFilePath: string | undefined;
 
-      // On non-windows, wrap the command to capture the final working directory.
+      // 在非 Windows 上，包装命令以捕获最终工作目录。
       if (!isWindows) {
         let command = rawQuery.trim();
         const pwdFileName = `shell_pwd_${crypto.randomBytes(6).toString('hex')}.tmp`;
         pwdFilePath = path.join(os.tmpdir(), pwdFileName);
-        // Ensure command ends with a separator before adding our own.
+        // 确保命令以分隔符结尾再添加我们自己的命令。
         if (!command.endsWith(';') && !command.endsWith('&')) {
           command += ';';
         }
@@ -246,13 +246,13 @@ export const useShellCommandProcessor = (
       const execPromise = new Promise<void>((resolve) => {
         let lastUpdateTime = 0;
 
-        onDebugMessage(`Executing in ${targetDir}: ${commandToExecute}`);
+        onDebugMessage(`在 ${targetDir} 中执行: ${commandToExecute}`);
         executeShellCommand(
           commandToExecute,
           targetDir,
           abortSignal,
           (streamedOutput) => {
-            // Throttle pending UI updates to avoid excessive re-renders.
+            // 限制待处理 UI 更新以避免过度重新渲染。
             if (Date.now() - lastUpdateTime > OUTPUT_UPDATE_INTERVAL_MS) {
               setPendingHistoryItem({ type: 'info', text: streamedOutput });
               lastUpdateTime = Date.now();
@@ -261,22 +261,22 @@ export const useShellCommandProcessor = (
           onDebugMessage,
         )
           .then((result) => {
-            // TODO(abhipatel12) - Consider updating pending item and using timeout to ensure
-            // there is no jump where intermediate output is skipped.
+            // TODO(abhipatel12) - 考虑更新待处理项目并使用超时以确保
+            // 不会出现跳过中间输出的情况。
             setPendingHistoryItem(null);
 
             let historyItemType: HistoryItemWithoutId['type'] = 'info';
             let mainContent: string;
 
-            // The context sent to the model utilizes a text tokenizer which means raw binary data is
-            // cannot be parsed and understood and thus would only pollute the context window and waste
-            // tokens.
+            // 发送给模型的上下文使用文本分词器，这意味着原始二进制数据
+            // 无法被解析和理解，因此只会污染上下文窗口并浪费
+            // 令牌。
             if (isBinary(result.rawOutput)) {
               mainContent =
-                '[Command produced binary output, which is not shown.]';
+                '[命令产生了二进制输出，未显示。]';
             } else {
               mainContent =
-                result.output.trim() || '(Command produced no output)';
+                result.output.trim() || '(命令未产生输出)';
             }
 
             let finalOutput = mainContent;
@@ -285,30 +285,30 @@ export const useShellCommandProcessor = (
               historyItemType = 'error';
               finalOutput = `${result.error.message}\n${finalOutput}`;
             } else if (result.aborted) {
-              finalOutput = `Command was cancelled.\n${finalOutput}`;
+              finalOutput = `命令已被取消。\n${finalOutput}`;
             } else if (result.signal) {
               historyItemType = 'error';
-              finalOutput = `Command terminated by signal: ${result.signal}.\n${finalOutput}`;
+              finalOutput = `命令被信号终止: ${result.signal}。\n${finalOutput}`;
             } else if (result.exitCode !== 0) {
               historyItemType = 'error';
-              finalOutput = `Command exited with code ${result.exitCode}.\n${finalOutput}`;
+              finalOutput = `命令退出代码 ${result.exitCode}。\n${finalOutput}`;
             }
 
             if (pwdFilePath && fs.existsSync(pwdFilePath)) {
               const finalPwd = fs.readFileSync(pwdFilePath, 'utf8').trim();
               if (finalPwd && finalPwd !== targetDir) {
-                const warning = `WARNING: shell mode is stateless; the directory change to '${finalPwd}' will not persist.`;
+                const warning = `警告: shell 模式是无状态的; 目录更改到 '${finalPwd}' 将不会持久化。`;
                 finalOutput = `${warning}\n\n${finalOutput}`;
               }
             }
 
-            // Add the complete, contextual result to the local UI history.
+            // 将完整、有上下文的结果添加到本地 UI 历史记录。
             addItemToHistory(
               { type: historyItemType, text: finalOutput },
               userMessageTimestamp,
             );
 
-            // Add the same complete, contextual result to the LLM's history.
+            // 将相同的完整、有上下文的结果添加到 LLM 的历史记录。
             addShellCommandToGeminiHistory(geminiClient, rawQuery, finalOutput);
           })
           .catch((err) => {
@@ -318,7 +318,7 @@ export const useShellCommandProcessor = (
             addItemToHistory(
               {
                 type: 'error',
-                text: `An unexpected error occurred: ${errorMessage}`,
+                text: `发生意外错误: ${errorMessage}`,
               },
               userMessageTimestamp,
             );
@@ -332,7 +332,7 @@ export const useShellCommandProcessor = (
       });
 
       onExec(execPromise);
-      return true; // Command was initiated
+      return true; // 命令已启动
     },
     [
       config,

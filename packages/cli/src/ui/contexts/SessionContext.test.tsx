@@ -17,9 +17,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { uiTelemetryService } from '@iflytek/iflycode-core';
 
 /**
- * A test harness component that uses the hook and exposes the context value
- * via a mutable ref. This allows us to interact with the context's functions
- * and assert against its state directly in our tests.
+ * 一个测试工具组件，使用该 hook 并通过可变引用暴露上下文值。
+ * 这允许我们在测试中直接与上下文的函数交互并对其状态进行断言。
  */
 const TestHarness = ({
   contextRef,
@@ -31,7 +30,7 @@ const TestHarness = ({
 };
 
 describe('SessionStatsContext', () => {
-  it('should provide the correct initial state', () => {
+  it('应提供正确的初始状态', () => {
     const contextRef: MutableRefObject<
       ReturnType<typeof useSessionStats> | undefined
     > = { current: undefined };
@@ -49,7 +48,7 @@ describe('SessionStatsContext', () => {
     expect(stats?.metrics.models).toEqual({});
   });
 
-  it('should update metrics when the uiTelemetryService emits an update', () => {
+  it('当 uiTelemetryService 发出更新时应更新指标', () => {
     const contextRef: MutableRefObject<
       ReturnType<typeof useSessionStats> | undefined
     > = { current: undefined };
@@ -116,12 +115,12 @@ describe('SessionStatsContext', () => {
     expect(stats?.lastPromptTokenCount).toBe(100);
   });
 
-  it('should throw an error when useSessionStats is used outside of a provider', () => {
-    // Suppress console.error for this test since we expect an error
+  it('当 useSessionStats 在提供者外部使用时应抛出错误', () => {
+    // 为此测试抑制 console.error，因为我们预期会出现错误
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     try {
-      // Expect renderHook itself to throw when the hook is used outside a provider
+      // 期望 renderHook 本身在 hook 在提供者外部使用时抛出异常
       expect(() => {
         renderHook(() => useSessionStats());
       }).toThrow('useSessionStats must be used within a SessionStatsProvider');

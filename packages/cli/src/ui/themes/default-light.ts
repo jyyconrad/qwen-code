@@ -7,7 +7,7 @@
 import { lightTheme, Theme } from './theme.js';
 
 export const DefaultLight: Theme = new Theme(
-  'Default Light',
+  '默认浅色',
   'light',
   {
     hljs: {

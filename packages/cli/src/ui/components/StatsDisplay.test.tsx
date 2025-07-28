@@ -10,7 +10,7 @@ import { StatsDisplay } from './StatsDisplay.js';
 import * as SessionContext from '../contexts/SessionContext.js';
 import { SessionMetrics } from '../contexts/SessionContext.js';
 
-// Mock the context to provide controlled data for testing
+// 模拟上下文以提供受控数据用于测试
 vi.mock('../contexts/SessionContext.js', async (importOriginal) => {
   const actual = await importOriginal<typeof SessionContext>();
   return {
@@ -38,7 +38,7 @@ const renderWithMockedStats = (metrics: SessionMetrics) => {
 };
 
 describe('<StatsDisplay />', () => {
-  it('renders only the Performance section in its zero state', () => {
+  it('仅在其零状态下渲染 Performance 部分', () => {
     const zeroMetrics: SessionMetrics = {
       models: {},
       tools: {
@@ -57,11 +57,11 @@ describe('<StatsDisplay />', () => {
     expect(output).toContain('Performance');
     expect(output).not.toContain('Interaction Summary');
     expect(output).not.toContain('Efficiency & Optimizations');
-    expect(output).not.toContain('Model'); // The table header
+    expect(output).not.toContain('Model'); // 表格标题
     expect(output).toMatchSnapshot();
   });
 
-  it('renders a table with two models correctly', () => {
+  it('正确渲染包含两个模型的表格', () => {
     const metrics: SessionMetrics = {
       models: {
         'gemini-2.5-pro': {
@@ -107,7 +107,7 @@ describe('<StatsDisplay />', () => {
     expect(output).toMatchSnapshot();
   });
 
-  it('renders all sections when all data is present', () => {
+  it('当所有数据都存在时渲染所有部分', () => {
     const metrics: SessionMetrics = {
       models: {
         'gemini-2.5-pro': {
@@ -151,8 +151,8 @@ describe('<StatsDisplay />', () => {
     expect(output).toMatchSnapshot();
   });
 
-  describe('Conditional Rendering Tests', () => {
-    it('hides User Agreement when no decisions are made', () => {
+  describe('条件渲染测试', () => {
+    it('当未做出决策时隐藏 User Agreement', () => {
       const metrics: SessionMetrics = {
         models: {},
         tools: {
@@ -160,7 +160,7 @@ describe('<StatsDisplay />', () => {
           totalSuccess: 1,
           totalFail: 1,
           totalDurationMs: 123,
-          totalDecisions: { accept: 0, reject: 0, modify: 0 }, // No decisions
+          totalDecisions: { accept: 0, reject: 0, modify: 0 }, // 无决策
           byName: {
             'test-tool': {
               count: 2,
@@ -182,7 +182,7 @@ describe('<StatsDisplay />', () => {
       expect(output).toMatchSnapshot();
     });
 
-    it('hides Efficiency section when cache is not used', () => {
+    it('当未使用缓存时隐藏 Efficiency 部分', () => {
       const metrics: SessionMetrics = {
         models: {
           'gemini-2.5-pro': {
@@ -215,8 +215,8 @@ describe('<StatsDisplay />', () => {
     });
   });
 
-  describe('Conditional Color Tests', () => {
-    it('renders success rate in green for high values', () => {
+  describe('条件颜色测试', () => {
+    it('高值时以绿色渲染成功率', () => {
       const metrics: SessionMetrics = {
         models: {},
         tools: {
@@ -232,7 +232,7 @@ describe('<StatsDisplay />', () => {
       expect(lastFrame()).toMatchSnapshot();
     });
 
-    it('renders success rate in yellow for medium values', () => {
+    it('中等值时以黄色渲染成功率', () => {
       const metrics: SessionMetrics = {
         models: {},
         tools: {
@@ -248,7 +248,7 @@ describe('<StatsDisplay />', () => {
       expect(lastFrame()).toMatchSnapshot();
     });
 
-    it('renders success rate in red for low values', () => {
+    it('低值时以红色渲染成功率', () => {
       const metrics: SessionMetrics = {
         models: {},
         tools: {
@@ -265,7 +265,7 @@ describe('<StatsDisplay />', () => {
     });
   });
 
-  describe('Title Rendering', () => {
+  describe('标题渲染', () => {
     const zeroMetrics: SessionMetrics = {
       models: {},
       tools: {
@@ -278,7 +278,7 @@ describe('<StatsDisplay />', () => {
       },
     };
 
-    it('renders the default title when no title prop is provided', () => {
+    it('未提供 title 属性时渲染默认标题', () => {
       const { lastFrame } = renderWithMockedStats(zeroMetrics);
       const output = lastFrame();
       expect(output).toContain('Session Stats');
@@ -286,7 +286,7 @@ describe('<StatsDisplay />', () => {
       expect(output).toMatchSnapshot();
     });
 
-    it('renders the custom title when a title prop is provided', () => {
+    it('提供 title 属性时渲染自定义标题', () => {
       useSessionStatsMock.mockReturnValue({
         stats: {
           sessionStartTime: new Date(),

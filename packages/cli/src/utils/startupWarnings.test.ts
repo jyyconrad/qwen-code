@@ -23,7 +23,7 @@ describe.skip('startupWarnings', () => {
     vi.resetAllMocks();
   });
 
-  it('should return warnings from the file and delete it', async () => {
+  it('应返回文件中的警告并删除该文件', async () => {
     const mockWarnings = 'Warning 1\nWarning 2';
     vi.spyOn(fs, 'access').mockResolvedValue();
     vi.spyOn(fs, 'readFile').mockResolvedValue(mockWarnings);
@@ -37,7 +37,7 @@ describe.skip('startupWarnings', () => {
     expect(warnings).toEqual(['Warning 1', 'Warning 2']);
   });
 
-  it('should return an empty array if the file does not exist', async () => {
+  it('如果文件不存在，应返回一个空数组', async () => {
     const error = new Error('File not found');
     (error as Error & { code: string }).code = 'ENOENT';
     vi.spyOn(fs, 'access').mockRejectedValue(error);
@@ -47,7 +47,7 @@ describe.skip('startupWarnings', () => {
     expect(warnings).toEqual([]);
   });
 
-  it('should return an error message if reading the file fails', async () => {
+  it('如果读取文件失败，应返回一条错误信息', async () => {
     const error = new Error('Permission denied');
     vi.spyOn(fs, 'access').mockRejectedValue(error);
     vi.mocked(getErrorMessage).mockReturnValue('Permission denied');
@@ -59,7 +59,7 @@ describe.skip('startupWarnings', () => {
     ]);
   });
 
-  it('should return a warning if deleting the file fails', async () => {
+  it('如果删除文件失败，应返回一条警告', async () => {
     const mockWarnings = 'Warning 1';
     vi.spyOn(fs, 'access').mockResolvedValue();
     vi.spyOn(fs, 'readFile').mockResolvedValue(mockWarnings);

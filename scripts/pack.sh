@@ -1,21 +1,21 @@
 #!/bin/bash
 
-# Build the packages first
+# 首先构建包
 npm run build:packages
 
-# Pack CLI package
+# 打包 CLI 包
 cd packages/cli && npm pack && cd ../../
 
-# Pack Core package  
+# 打包核心包  
 cd packages/core && npm pack && cd ../../
 
-# Move the tgz files to root directory using absolute paths
+# 使用绝对路径将 tgz 文件移动到根目录
 cp packages/cli/*.tgz ./
 cp packages/core/*.tgz ./
 
-# Remove the original files from package directories
+# 从包目录中删除原始文件
 rm packages/cli/*.tgz
 rm packages/core/*.tgz
 
-echo "Packages created successfully:"
+echo "包创建成功："
 ls -la *.tgz

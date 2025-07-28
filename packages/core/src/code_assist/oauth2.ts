@@ -28,19 +28,19 @@ import {
 import { AuthType } from '../core/contentGenerator.js';
 import readline from 'node:readline';
 
-//  OAuth Client ID used to initiate OAuth2Client class.
+// 用于初始化 OAuth2Client 类的 OAuth 客户端 ID。
 const OAUTH_CLIENT_ID =
   '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com';
 
-// OAuth Secret value used to initiate OAuth2Client class.
-// Note: It's ok to save this in git because this is an installed application
-// as described here: https://developers.google.com/identity/protocols/oauth2#installed
-// "The process results in a client ID and, in some cases, a client secret,
-// which you embed in the source code of your application. (In this context,
-// the client secret is obviously not treated as a secret.)"
+// 用于初始化 OAuth2Client 类的 OAuth 密钥值。
+// 注意：可以将其保存在 Git 中，因为这是一个已安装的应用程序，
+// 如此处所述：https://developers.google.com/identity/protocols/oauth2#installed
+// “该过程会生成客户端 ID，在某些情况下还会生成客户端密钥，
+// 您可以将其嵌入到应用程序的源代码中。（在这种情况下，
+// 客户端密钥显然不被视为机密。）”
 const OAUTH_CLIENT_SECRET = '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';
 
-// OAuth Scopes for Cloud Code authorization.
+// Cloud Code 授权的 OAuth 范围。
 const OAUTH_SCOPE = [
   'https://www.googleapis.com/auth/cloud-platform',
   'https://www.googleapis.com/auth/userinfo.email',
@@ -57,9 +57,8 @@ const GEMINI_DIR = '.iflycode';
 const CREDENTIAL_FILENAME = 'oauth_creds.json';
 
 /**
- * An Authentication URL for updating the credentials of a Oauth2Client
- * as well as a promise that will resolve when the credentials have
- * been refreshed (or which throws error when refreshing credentials failed).
+ * 一个用于更新 Oauth2Client 凭据的认证 URL，
+ * 以及一个在凭据刷新完成时解析的 Promise（或在刷新凭据失败时抛出错误）。
  */
 export interface OauthWebLogin {
   authUrl: string;
@@ -79,39 +78,37 @@ export async function getOauthClient(
     await cacheCredentials(tokens);
   });
 
-  // If there are cached creds on disk, they always take precedence
+  // 如果磁盘上有缓存的凭据，则始终优先使用
   if (await loadCachedCredentials(client)) {
-    // Found valid cached credentials.
-    // Check if we need to retrieve Google Account ID or Email
+    // 找到有效的缓存凭据。
+    // 检查是否需要获取 Google 账户 ID 或邮箱
     if (!getCachedGoogleAccount()) {
       try {
         await fetchAndCacheUserInfo(client);
       } catch {
-        // Non-fatal, continue with existing auth.
+        // 非致命错误，继续使用现有认证。
       }
     }
-    console.log('Loaded cached credentials.');
+    console.log('已加载缓存凭据。');
     return client;
   }
 
-  // In Google Cloud Shell, we can use Application Default Credentials (ADC)
-  // provided via its metadata server to authenticate non-interactively using
-  // the identity of the user logged into Cloud Shell.
+  // 在 Google Cloud Shell 中，我们可以使用通过其元数据服务器提供的
+  // 应用默认凭据 (ADC) 来使用登录到 Cloud Shell 的用户身份进行非交互式认证。
   if (authType === AuthType.CLOUD_SHELL) {
     try {
-      console.log("Attempting to authenticate via Cloud Shell VM's ADC.");
+      console.log("正在尝试通过 Cloud Shell VM 的 ADC 进行认证。");
       const computeClient = new Compute({
-        // We can leave this empty, since the metadata server will provide
-        // the service account email.
+        // 可以留空，因为元数据服务器将提供服务账户邮箱。
       });
       await computeClient.getAccessToken();
-      console.log('Authentication successful.');
+      console.log('认证成功。');
 
-      // Do not cache creds in this case; note that Compute client will handle its own refresh
+      // 在这种情况下不缓存凭据；注意 Compute 客户端将处理自己的刷新
       return computeClient;
     } catch (e) {
       throw new Error(
-        `Could not authenticate using Cloud Shell credentials. Please select a different authentication method or ensure you are in a properly configured environment. Error: ${getErrorMessage(
+        `无法使用 Cloud Shell 凭据进行认证。请选择其他认证方法或确保您在正确配置的环境中。错误：${getErrorMessage(
           e,
         )}`,
       );
@@ -125,8 +122,8 @@ export async function getOauthClient(
       success = await authWithUserCode(client);
       if (!success) {
         console.error(
-          '\nFailed to authenticate with user code.',
-          i === maxRetries - 1 ? '' : 'Retrying...\n',
+          '\n使用用户代码认证失败。',
+          i === maxRetries - 1 ? '' : '正在重试...\n',
         );
       }
     }
@@ -136,14 +133,14 @@ export async function getOauthClient(
   } else {
     const webLogin = await authWithWeb(client);
 
-    // This does basically nothing, as it isn't show to the user.
+    // 这基本上什么都不做，因为它不会显示给用户。
     console.log(
-      `\n\nCode Assist login required.\n` +
-        `Attempting to open authentication page in your browser.\n` +
-        `Otherwise navigate to:\n\n${webLogin.authUrl}\n\n`,
+      `\n\nCode Assist 需要登录。\n` +
+        `正在尝试在浏览器中打开认证页面。\n` +
+        `或者导航到：\n\n${webLogin.authUrl}\n\n`,
     );
     await open(webLogin.authUrl);
-    console.log('Waiting for authentication...');
+    console.log('正在等待认证...');
 
     await webLogin.loginCompletePromise;
   }
@@ -163,7 +160,7 @@ async function authWithUserCode(client: OAuth2Client): Promise<boolean> {
     code_challenge: codeVerifier.codeChallenge,
     state,
   });
-  console.log('Please visit the following URL to authorize the application:');
+  console.log('请访问以下 URL 来授权应用程序：');
   console.log('');
   console.log(authUrl);
   console.log('');
@@ -173,14 +170,14 @@ async function authWithUserCode(client: OAuth2Client): Promise<boolean> {
       input: process.stdin,
       output: process.stdout,
     });
-    rl.question('Enter the authorization code: ', (code) => {
+    rl.question('输入授权代码：', (code) => {
       rl.close();
       resolve(code.trim());
     });
   });
 
   if (!code) {
-    console.error('Authorization code is required.');
+    console.error('需要授权代码。');
     return false;
   }
 
@@ -214,41 +211,41 @@ async function authWithWeb(client: OAuth2Client): Promise<OauthWebLogin> {
         if (req.url!.indexOf('/oauth2callback') === -1) {
           res.writeHead(HTTP_REDIRECT, { Location: SIGN_IN_FAILURE_URL });
           res.end();
-          reject(new Error('Unexpected request: ' + req.url));
+          reject(new Error('意外请求：' + req.url));
         }
-        // acquire the code from the querystring, and close the web server.
+        // 从查询字符串中获取代码，并关闭 Web 服务器。
         const qs = new url.URL(req.url!, 'http://localhost:3000').searchParams;
         if (qs.get('error')) {
           res.writeHead(HTTP_REDIRECT, { Location: SIGN_IN_FAILURE_URL });
           res.end();
 
-          reject(new Error(`Error during authentication: ${qs.get('error')}`));
+          reject(new Error(`认证期间出错：${qs.get('error')}`));
         } else if (qs.get('state') !== state) {
-          res.end('State mismatch. Possible CSRF attack');
+          res.end('状态不匹配。可能的 CSRF 攻击');
 
-          reject(new Error('State mismatch. Possible CSRF attack'));
+          reject(new Error('状态不匹配。可能的 CSRF 攻击'));
         } else if (qs.get('code')) {
           const { tokens } = await client.getToken({
             code: qs.get('code')!,
             redirect_uri: redirectUri,
           });
           client.setCredentials(tokens);
-          // Retrieve and cache Google Account ID during authentication
+          // 在认证期间检索并缓存 Google 账户 ID
           try {
             await fetchAndCacheUserInfo(client);
           } catch (error) {
             console.error(
-              'Failed to retrieve Google Account ID during authentication:',
+              '认证期间检索 Google 账户 ID 失败：',
               error,
             );
-            // Don't fail the auth flow if Google Account ID retrieval fails
+            // 如果 Google 账户 ID 检索失败，不要使认证流程失败
           }
 
           res.writeHead(HTTP_REDIRECT, { Location: SIGN_IN_SUCCESS_URL });
           res.end();
           resolve();
         } else {
-          reject(new Error('No code found in request'));
+          reject(new Error('请求中未找到代码'));
         }
       } catch (e) {
         reject(e);
@@ -294,13 +291,13 @@ async function loadCachedCredentials(client: OAuth2Client): Promise<boolean> {
     const creds = await fs.readFile(keyFile, 'utf-8');
     client.setCredentials(JSON.parse(creds));
 
-    // This will verify locally that the credentials look good.
+    // 这将在本地验证凭据是否看起来正常。
     const { token } = await client.getAccessToken();
     if (!token) {
       return false;
     }
 
-    // This will check with the server to see if it hasn't been revoked.
+    // 这将与服务器检查以查看凭据是否未被撤销。
     await client.getTokenInfo(token);
 
     return true;
@@ -324,7 +321,7 @@ function getCachedCredentialPath(): string {
 export async function clearCachedCredentialFile() {
   try {
     await fs.rm(getCachedCredentialPath(), { force: true });
-    // Clear the Google Account ID cache when credentials are cleared
+    // 清除凭据时清除 Google 账户 ID 缓存
     await clearCachedGoogleAccount();
   } catch (_) {
     /* empty */
@@ -349,7 +346,7 @@ async function fetchAndCacheUserInfo(client: OAuth2Client): Promise<void> {
 
     if (!response.ok) {
       console.error(
-        'Failed to fetch user info:',
+        '获取用户信息失败：',
         response.status,
         response.statusText,
       );
@@ -361,6 +358,6 @@ async function fetchAndCacheUserInfo(client: OAuth2Client): Promise<void> {
       await cacheGoogleAccount(userInfo.email);
     }
   } catch (error) {
-    console.error('Error retrieving user info:', error);
+    console.error('检索用户信息时出错：', error);
   }
 }

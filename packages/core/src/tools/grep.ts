@@ -18,30 +18,30 @@ import { getErrorMessage, isNodeError } from '../utils/errors.js';
 import { isGitRepository } from '../utils/gitUtils.js';
 import { Config } from '../config/config.js';
 
-// --- Interfaces ---
+// --- 接口定义 ---
 
 /**
- * Parameters for the GrepTool
+ * GrepTool 的参数
  */
 export interface GrepToolParams {
   /**
-   * The regular expression pattern to search for in file contents
+   * 要在文件内容中搜索的正则表达式模式
    */
   pattern: string;
 
   /**
-   * The directory to search in (optional, defaults to current directory relative to root)
+   * 要搜索的目录（可选，默认为相对于根目录的当前目录）
    */
   path?: string;
 
   /**
-   * File pattern to include in the search (e.g. "*.js", "*.{ts,tsx}")
+   * 要包含在搜索中的文件模式（例如 "*.js", "*.{ts,tsx}"）
    */
   include?: string;
 }
 
 /**
- * Result object for a single grep match
+ * 单个 grep 匹配的结果对象
  */
 interface GrepMatch {
   filePath: string;
@@ -49,34 +49,34 @@ interface GrepMatch {
   line: string;
 }
 
-// --- GrepLogic Class ---
+// --- GrepLogic 类 ---
 
 /**
- * Implementation of the Grep tool logic (moved from CLI)
+ * Grep 工具逻辑的实现（从 CLI 移动而来）
  */
 export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
-  static readonly Name = 'search_file_content'; // Keep static name
+  static readonly Name = 'search_file_content'; // 保持静态名称
 
   constructor(private readonly config: Config) {
     super(
       GrepTool.Name,
       'SearchText',
-      'Searches for a regular expression pattern within the content of files in a specified directory (or current working directory). Can filter files by a glob pattern. Returns the lines containing matches, along with their file paths and line numbers.',
+      '在指定目录（或当前工作目录）的文件内容中搜索正则表达式模式。可以按 glob 模式过滤文件。返回包含匹配项的行，以及它们的文件路径和行号。',
       {
         properties: {
           pattern: {
             description:
-              "The regular expression (regex) pattern to search for within file contents (e.g., 'function\\s+myFunction', 'import\\s+\\{.*\\}\\s+from\\s+.*').",
+              "要在文件内容中搜索的正则表达式（regex）模式（例如 'function\\s+myFunction', 'import\\s+\\{.*\\}\\s+from\\s+.*'）。",
             type: Type.STRING,
           },
           path: {
             description:
-              'Optional: The absolute path to the directory to search within. If omitted, searches the current working directory.',
+              '可选：要搜索的目录的绝对路径。如果省略，则搜索当前工作目录。',
             type: Type.STRING,
           },
           include: {
             description:
-              "Optional: A glob pattern to filter which files are searched (e.g., '*.js', '*.{ts,tsx}', 'src/**'). If omitted, searches all files (respecting potential global ignores).",
+              "可选：用于过滤要搜索的文件的 glob 模式（例如 '*.js', '*.{ts,tsx}', 'src/**'）。如果省略，则搜索所有文件（遵循潜在的全局忽略规则）。",
             type: Type.STRING,
           },
         },
@@ -86,13 +86,13 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
     );
   }
 
-  // --- Validation Methods ---
+  // --- 验证方法 ---
 
   /**
-   * Checks if a path is within the root directory and resolves it.
-   * @param relativePath Path relative to the root directory (or undefined for root).
-   * @returns The absolute path if valid and exists.
-   * @throws {Error} If path is outside root, doesn't exist, or isn't a directory.
+   * 检查路径是否在根目录内并解析它。
+   * @param relativePath 相对于根目录的路径（或未定义表示根目录）。
+   * @returns 如果有效且存在，则返回绝对路径。
+   * @throws {Error} 如果路径在根目录外、不存在或不是目录。
    */
   private resolveAndValidatePath(relativePath?: string): string {
     const targetPath = path.resolve(
@@ -100,28 +100,28 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
       relativePath || '.',
     );
 
-    // Security Check: Ensure the resolved path is still within the root directory.
+    // 安全检查：确保解析后的路径仍在根目录内。
     if (
       !targetPath.startsWith(this.config.getTargetDir()) &&
       targetPath !== this.config.getTargetDir()
     ) {
       throw new Error(
-        `Path validation failed: Attempted path "${relativePath || '.'}" resolves outside the allowed root directory "${this.config.getTargetDir()}".`,
+        `路径验证失败：尝试的路径 "${relativePath || '.'}" 解析后超出了允许的根目录 "${this.config.getTargetDir()}"。`,
       );
     }
 
-    // Check existence and type after resolving
+    // 检查存在性和类型
     try {
       const stats = fs.statSync(targetPath);
       if (!stats.isDirectory()) {
-        throw new Error(`Path is not a directory: ${targetPath}`);
+        throw new Error(`路径不是目录: ${targetPath}`);
       }
     } catch (error: unknown) {
       if (isNodeError(error) && error.code !== 'ENOENT') {
-        throw new Error(`Path does not exist: ${targetPath}`);
+        throw new Error(`路径不存在: ${targetPath}`);
       }
       throw new Error(
-        `Failed to access path stats for ${targetPath}: ${error}`,
+        `无法访问路径 ${targetPath} 的状态: ${error}`,
       );
     }
 
@@ -129,9 +129,9 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
   }
 
   /**
-   * Validates the parameters for the tool
-   * @param params Parameters to validate
-   * @returns An error message string if invalid, null otherwise
+   * 验证工具的参数
+   * @param params 要验证的参数
+   * @returns 如果无效则返回错误消息字符串，否则返回 null
    */
   validateToolParams(params: GrepToolParams): string | null {
     const errors = SchemaValidator.validate(this.schema.parameters, params);
@@ -142,7 +142,7 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
     try {
       new RegExp(params.pattern);
     } catch (error) {
-      return `Invalid regular expression pattern provided: ${params.pattern}. Error: ${getErrorMessage(error)}`;
+      return `提供的正则表达式模式无效: ${params.pattern}. 错误: ${getErrorMessage(error)}`;
     }
 
     try {
@@ -151,15 +151,15 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
       return getErrorMessage(error);
     }
 
-    return null; // Parameters are valid
+    return null; // 参数有效
   }
 
-  // --- Core Execution ---
+  // --- 核心执行 ---
 
   /**
-   * Executes the grep search with the given parameters
-   * @param params Parameters for the grep search
-   * @returns Result of the grep search
+   * 使用给定参数执行 grep 搜索
+   * @param params grep 搜索的参数
+   * @returns grep 搜索的结果
    */
   async execute(
     params: GrepToolParams,
@@ -168,8 +168,8 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
     const validationError = this.validateToolParams(params);
     if (validationError) {
       return {
-        llmContent: `Error: Invalid parameters provided. Reason: ${validationError}`,
-        returnDisplay: `Model provided invalid parameters. Error: ${validationError}`,
+        llmContent: `错误: 提供了无效参数。原因: ${validationError}`,
+        returnDisplay: `模型提供了无效参数。错误: ${validationError}`,
       };
     }
 
@@ -186,8 +186,8 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
       });
 
       if (matches.length === 0) {
-        const noMatchMsg = `No matches found for pattern "${params.pattern}" in path "${searchDirDisplay}"${params.include ? ` (filter: "${params.include}")` : ''}.`;
-        return { llmContent: noMatchMsg, returnDisplay: `No matches found` };
+        const noMatchMsg = `在路径 "${searchDirDisplay}" 中未找到模式 "${params.pattern}" 的匹配项${params.include ? ` (过滤器: "${params.include}")` : ''}。`;
+        return { llmContent: noMatchMsg, returnDisplay: `未找到匹配项` };
       }
 
       const matchesByFile = matches.reduce(
@@ -208,12 +208,12 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
       );
 
       const matchCount = matches.length;
-      const matchTerm = matchCount === 1 ? 'match' : 'matches';
+      const matchTerm = matchCount === 1 ? '个匹配项' : '个匹配项';
 
-      let llmContent = `Found ${matchCount} ${matchTerm} for pattern "${params.pattern}" in path "${searchDirDisplay}"${params.include ? ` (filter: "${params.include}")` : ''}:\n---\n`;
+      let llmContent = `在路径 "${searchDirDisplay}" 中找到 ${matchCount} ${matchTerm}，模式为 "${params.pattern}"${params.include ? ` (过滤器: "${params.include}")` : ''}:\n---\n`;
 
       for (const filePath in matchesByFile) {
-        llmContent += `File: ${filePath}\n`;
+        llmContent += `文件: ${filePath}\n`;
         matchesByFile[filePath].forEach((match) => {
           const trimmedLine = match.line.trim();
           llmContent += `L${match.lineNumber}: ${trimmedLine}\n`;
@@ -223,24 +223,24 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
 
       return {
         llmContent: llmContent.trim(),
-        returnDisplay: `Found ${matchCount} ${matchTerm}`,
+        returnDisplay: `找到 ${matchCount} ${matchTerm}`,
       };
     } catch (error) {
-      console.error(`Error during GrepLogic execution: ${error}`);
+      console.error(`GrepLogic 执行期间出错: ${error}`);
       const errorMessage = getErrorMessage(error);
       return {
-        llmContent: `Error during grep search operation: ${errorMessage}`,
-        returnDisplay: `Error: ${errorMessage}`,
+        llmContent: `grep 搜索操作期间出错: ${errorMessage}`,
+        returnDisplay: `错误: ${errorMessage}`,
       };
     }
   }
 
-  // --- Grep Implementation Logic ---
+  // --- Grep 实现逻辑 ---
 
   /**
-   * Checks if a command is available in the system's PATH.
-   * @param {string} command The command name (e.g., 'git', 'grep').
-   * @returns {Promise<boolean>} True if the command is available, false otherwise.
+   * 检查命令是否在系统的 PATH 中可用。
+   * @param {string} command 命令名称（例如 'git', 'grep'）。
+   * @returns {Promise<boolean>} 如果命令可用则返回 true，否则返回 false。
    */
   private isCommandAvailable(command: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -261,31 +261,31 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
   }
 
   /**
-   * Parses the standard output of grep-like commands (git grep, system grep).
-   * Expects format: filePath:lineNumber:lineContent
-   * Handles colons within file paths and line content correctly.
-   * @param {string} output The raw stdout string.
-   * @param {string} basePath The absolute directory the search was run from, for relative paths.
-   * @returns {GrepMatch[]} Array of match objects.
+   * 解析类似 grep 命令（git grep, system grep）的标准输出。
+   * 期望格式: filePath:lineNumber:lineContent
+   * 正确处理文件路径和行内容中的冒号。
+   * @param {string} output 原始的 stdout 字符串。
+   * @param {string} basePath 搜索运行的绝对目录，用于相对路径。
+   * @returns {GrepMatch[]} 匹配对象数组。
    */
   private parseGrepOutput(output: string, basePath: string): GrepMatch[] {
     const results: GrepMatch[] = [];
     if (!output) return results;
 
-    const lines = output.split(EOL); // Use OS-specific end-of-line
+    const lines = output.split(EOL); // 使用操作系统特定的行结束符
 
     for (const line of lines) {
       if (!line.trim()) continue;
 
-      // Find the index of the first colon.
+      // 找到第一个冒号的索引。
       const firstColonIndex = line.indexOf(':');
-      if (firstColonIndex === -1) continue; // Malformed
+      if (firstColonIndex === -1) continue; // 格式错误
 
-      // Find the index of the second colon, searching *after* the first one.
+      // 找到第二个冒号的索引，在第一个冒号之后搜索。
       const secondColonIndex = line.indexOf(':', firstColonIndex + 1);
-      if (secondColonIndex === -1) continue; // Malformed
+      if (secondColonIndex === -1) continue; // 格式错误
 
-      // Extract parts based on the found colon indices
+      // 根据找到的冒号索引提取各部分
       const filePathRaw = line.substring(0, firstColonIndex);
       const lineNumberStr = line.substring(
         firstColonIndex + 1,
@@ -310,14 +310,14 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
   }
 
   /**
-   * Gets a description of the grep operation
-   * @param params Parameters for the grep operation
-   * @returns A string describing the grep
+   * 获取 grep 操作的描述
+   * @param params grep 操作的参数
+   * @returns 描述 grep 的字符串
    */
   getDescription(params: GrepToolParams): string {
     let description = `'${params.pattern}'`;
     if (params.include) {
-      description += ` in ${params.include}`;
+      description += ` 在 ${params.include} 中`;
     }
     if (params.path) {
       const resolvedPath = path.resolve(
@@ -325,26 +325,26 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
         params.path,
       );
       if (resolvedPath === this.config.getTargetDir() || params.path === '.') {
-        description += ` within ./`;
+        description += ` 于 ./ 内`;
       } else {
         const relativePath = makeRelative(
           resolvedPath,
           this.config.getTargetDir(),
         );
-        description += ` within ${shortenPath(relativePath)}`;
+        description += ` 于 ${shortenPath(relativePath)} 内`;
       }
     }
     return description;
   }
 
   /**
-   * Performs the actual search using the prioritized strategies.
-   * @param options Search options including pattern, absolute path, and include glob.
-   * @returns A promise resolving to an array of match objects.
+   * 使用优先策略执行实际搜索。
+   * @param options 搜索选项，包括模式、绝对路径和包含 glob。
+   * @returns 解析为匹配对象数组的 Promise。
    */
   private async performGrepSearch(options: {
     pattern: string;
-    path: string; // Expects absolute path
+    path: string; // 期望绝对路径
     include?: string;
     signal: AbortSignal;
   }): Promise<GrepMatch[]> {
@@ -352,7 +352,7 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
     let strategyUsed = 'none';
 
     try {
-      // --- Strategy 1: git grep ---
+      // --- 策略 1: git grep ---
       const isGit = isGitRepository(absolutePath);
       const gitAvailable = isGit && (await this.isCommandAvailable('git'));
 
@@ -382,29 +382,29 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
             child.stdout.on('data', (chunk) => stdoutChunks.push(chunk));
             child.stderr.on('data', (chunk) => stderrChunks.push(chunk));
             child.on('error', (err) =>
-              reject(new Error(`Failed to start git grep: ${err.message}`)),
+              reject(new Error(`无法启动 git grep: ${err.message}`)),
             );
             child.on('close', (code) => {
               const stdoutData = Buffer.concat(stdoutChunks).toString('utf8');
               const stderrData = Buffer.concat(stderrChunks).toString('utf8');
               if (code === 0) resolve(stdoutData);
               else if (code === 1)
-                resolve(''); // No matches
+                resolve(''); // 无匹配项
               else
                 reject(
-                  new Error(`git grep exited with code ${code}: ${stderrData}`),
+                  new Error(`git grep 退出码为 ${code}: ${stderrData}`),
                 );
             });
           });
           return this.parseGrepOutput(output, absolutePath);
         } catch (gitError: unknown) {
           console.debug(
-            `GrepLogic: git grep failed: ${getErrorMessage(gitError)}. Falling back...`,
+            `GrepLogic: git grep 失败: ${getErrorMessage(gitError)}. 回退到其他策略...`,
           );
         }
       }
 
-      // --- Strategy 2: System grep ---
+      // --- 策略 2: 系统 grep ---
       const grepAvailable = await this.isCommandAvailable('grep');
       if (grepAvailable) {
         strategyUsed = 'system grep';
@@ -429,7 +429,7 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
             const onData = (chunk: Buffer) => stdoutChunks.push(chunk);
             const onStderr = (chunk: Buffer) => {
               const stderrStr = chunk.toString();
-              // Suppress common harmless stderr messages
+              // 抑制常见的无害 stderr 消息
               if (
                 !stderrStr.includes('Permission denied') &&
                 !/grep:.*: Is a directory/i.test(stderrStr)
@@ -439,7 +439,7 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
             };
             const onError = (err: Error) => {
               cleanup();
-              reject(new Error(`Failed to start system grep: ${err.message}`));
+              reject(new Error(`无法启动系统 grep: ${err.message}`));
             };
             const onClose = (code: number | null) => {
               const stdoutData = Buffer.concat(stdoutChunks).toString('utf8');
@@ -449,15 +449,15 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
               cleanup();
               if (code === 0) resolve(stdoutData);
               else if (code === 1)
-                resolve(''); // No matches
+                resolve(''); // 无匹配项
               else {
                 if (stderrData)
                   reject(
                     new Error(
-                      `System grep exited with code ${code}: ${stderrData}`,
+                      `系统 grep 退出码为 ${code}: ${stderrData}`,
                     ),
                   );
-                else resolve(''); // Exit code > 1 but no stderr, likely just suppressed errors
+                else resolve(''); // 退出码 > 1 但无 stderr，可能是被抑制的错误
               }
             };
 
@@ -479,14 +479,14 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
           return this.parseGrepOutput(output, absolutePath);
         } catch (grepError: unknown) {
           console.debug(
-            `GrepLogic: System grep failed: ${getErrorMessage(grepError)}. Falling back...`,
+            `GrepLogic: 系统 grep 失败: ${getErrorMessage(grepError)}. 回退到其他策略...`,
           );
         }
       }
 
-      // --- Strategy 3: Pure JavaScript Fallback ---
+      // --- 策略 3: 纯 JavaScript 回退 ---
       console.debug(
-        'GrepLogic: Falling back to JavaScript grep implementation.',
+        'GrepLogic: 回退到 JavaScript grep 实现。',
       );
       strategyUsed = 'javascript fallback';
       const globPattern = include ? include : '**/*';
@@ -496,7 +496,7 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
         'bower_components/**',
         '.svn/**',
         '.hg/**',
-      ]; // Use glob patterns for ignores here
+      ]; // 此处使用 glob 模式进行忽略
 
       const filesStream = globStream(globPattern, {
         cwd: absolutePath,
@@ -527,10 +527,10 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
             }
           });
         } catch (readError: unknown) {
-          // Ignore errors like permission denied or file gone during read
+          // 忽略权限被拒或文件在读取过程中消失等错误
           if (!isNodeError(readError) || readError.code !== 'ENOENT') {
             console.debug(
-              `GrepLogic: Could not read/process ${fileAbsolutePath}: ${getErrorMessage(readError)}`,
+              `GrepLogic: 无法读取/处理 ${fileAbsolutePath}: ${getErrorMessage(readError)}`,
             );
           }
         }
@@ -539,9 +539,9 @@ export class GrepTool extends BaseTool<GrepToolParams, ToolResult> {
       return allMatches;
     } catch (error: unknown) {
       console.error(
-        `GrepLogic: Error in performGrepSearch (Strategy: ${strategyUsed}): ${getErrorMessage(error)}`,
+        `GrepLogic: performGrepSearch 中出错 (策略: ${strategyUsed}): ${getErrorMessage(error)}`,
       );
-      throw error; // Re-throw
+      throw error; // 重新抛出
     }
   }
 }

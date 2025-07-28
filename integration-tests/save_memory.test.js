@@ -12,9 +12,9 @@ test('should be able to save to memory', async (t) => {
   const rig = new TestRig();
   rig.setup(t.name);
 
-  const prompt = `remember that my favorite color is  blue.
+  const prompt = `记住我最喜欢的颜色是蓝色。
 
-  what is my favorite color? tell me that and surround it with $ symbol`;
+  我最喜欢的颜色是什么？告诉我并用 $ 符号包围它`;
   const result = await rig.run(prompt);
 
   assert.ok(result.toLowerCase().includes('$blue$'));

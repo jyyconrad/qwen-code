@@ -1,3 +1,4 @@
+
 /**
  * @license
  * Copyright 2025 Google LLC
@@ -30,16 +31,16 @@ export const CloudFreePrivacyNotice = ({
   });
 
   if (privacyState.isLoading) {
-    return <Text color={Colors.Gray}>Loading...</Text>;
+    return <Text color={Colors.Gray}>加载中...</Text>;
   }
 
   if (privacyState.error) {
     return (
       <Box flexDirection="column" marginY={1}>
         <Text color={Colors.AccentRed}>
-          Error loading Opt-in settings: {privacyState.error}
+          加载选择加入设置时出错: {privacyState.error}
         </Text>
-        <Text color={Colors.Gray}>Press Esc to exit.</Text>
+        <Text color={Colors.Gray}>按 Esc 退出。</Text>
       </Box>
     );
   }
@@ -49,52 +50,49 @@ export const CloudFreePrivacyNotice = ({
   }
 
   const items = [
-    { label: 'Yes', value: true },
-    { label: 'No', value: false },
+    { label: '是', value: true },
+    { label: '否', value: false },
   ];
 
   return (
     <Box flexDirection="column" marginY={1}>
       <Text bold color={Colors.AccentPurple}>
-        Gemini Code Assist for Individuals Privacy Notice
+        面向个人用户的 Gemini Code Assist 隐私声明
       </Text>
       <Newline />
       <Text>
-        This notice and our Privacy Policy
-        <Text color={Colors.AccentBlue}>[1]</Text> describe how Gemini Code
-        Assist handles your data. Please read them carefully.
+        本声明和我们的隐私政策
+        <Text color={Colors.AccentBlue}>[1]</Text> 描述了 Gemini Code
+        Assist 如何处理您的数据。请仔细阅读。
       </Text>
       <Newline />
       <Text>
-        When you use Gemini Code Assist for individuals with Gemini CLI, Google
-        collects your prompts, related code, generated output, code edits,
-        related feature usage information, and your feedback to provide,
-        improve, and develop Google products and services and machine learning
-        technologies.
+        当您将 Gemini CLI 与面向个人用户的 Gemini Code Assist 一起使用时，Google
+        会收集您的提示、相关代码、生成的输出、代码编辑、
+        相关功能使用信息以及您的反馈，以提供、
+        改进和开发 Google 产品和服务以及机器学习技术。
       </Text>
       <Newline />
       <Text>
-        To help with quality and improve our products (such as generative
-        machine-learning models), human reviewers may read, annotate, and
-        process the data collected above. We take steps to protect your privacy
-        as part of this process. This includes disconnecting the data from your
-        Google Account before reviewers see or annotate it, and storing those
-        disconnected copies for up to 18 months. Please don&apos;t submit
-        confidential information or any data you wouldn&apos;t want a reviewer
-        to see or Google to use to improve our products, services and
-        machine-learning technologies.
+        为了帮助提升产品质量并改进我们的产品（例如生成式
+        机器学习模型），人工审核员可能会阅读、标注和
+        处理上述收集的数据。我们会采取措施在此过程中保护您的隐私。
+        这包括在审核员看到或标注数据之前将其与您的
+        Google 账户断开连接，并将这些断开连接的副本存储最多 18 个月。
+        请不要提交机密信息或您不希望审核员看到或 Google 用于改进我们产品、
+        服务和机器学习技术的任何数据。
       </Text>
       <Newline />
       <Box flexDirection="column">
         <Text>
-          Allow Google to use this data to develop and improve our products?
+          允许 Google 使用此数据来开发和改进我们的产品？
         </Text>
         <RadioButtonSelect
           items={items}
           initialIndex={privacyState.dataCollectionOptIn ? 0 : 1}
           onSelect={(value) => {
             updateDataCollectionOptIn(value);
-            // Only exit if there was no error.
+            // 仅在没有错误时退出。
             if (!privacyState.error) {
               onExit();
             }
@@ -107,7 +105,7 @@ export const CloudFreePrivacyNotice = ({
         https://policies.google.com/privacy
       </Text>
       <Newline />
-      <Text color={Colors.Gray}>Press Enter to choose an option and exit.</Text>
+      <Text color={Colors.Gray}>按 Enter 选择选项并退出。</Text>
     </Box>
   );
 };

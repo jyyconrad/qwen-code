@@ -21,7 +21,7 @@ import {
   MINIMUM_MAX_HEIGHT,
 } from '../components/shared/MaxSizedBox.js';
 
-// Configure theming and parsing utilities.
+// 配置主题和解析工具。
 const lowlight = createLowlight(common);
 
 function renderHastNode(
@@ -30,17 +30,17 @@ function renderHastNode(
   inheritedColor: string | undefined,
 ): React.ReactNode {
   if (node.type === 'text') {
-    // Use the color passed down from parent element, if any
+    // 使用从父元素继承的颜色（如果有的话）
     return <Text color={inheritedColor}>{node.value}</Text>;
   }
 
-  // Handle Element Nodes: Determine color and pass it down, don't wrap
+  // 处理元素节点：确定颜色并向下传递，不进行包装
   if (node.type === 'element') {
     const nodeClasses: string[] =
       (node.properties?.className as string[]) || [];
     let elementColor: string | undefined = undefined;
 
-    // Find color defined specifically for this element's class
+    // 查找为此元素类专门定义的颜色
     for (let i = nodeClasses.length - 1; i >= 0; i--) {
       const color = theme.getInkColor(nodeClasses[i]);
       if (color) {
@@ -49,12 +49,12 @@ function renderHastNode(
       }
     }
 
-    // Determine the color to pass down: Use this element's specific color
-    // if found, otherwise, continue passing down the already inherited color.
+    // 确定要传递下去的颜色：如果找到此元素的特定颜色则使用它，
+    // 否则继续传递已继承的颜色。
     const colorToPassDown = elementColor || inheritedColor;
 
-    // Recursively render children, passing the determined color down
-    // Ensure child type matches expected HAST structure (ElementContent is common)
+    // 递归渲染子元素，将确定的颜色传递下去
+    // 确保子类型匹配预期的HAST结构（ElementContent是常见的）
     const children = node.children?.map(
       (child: ElementContent, index: number) => (
         <React.Fragment key={index}>
@@ -63,20 +63,20 @@ function renderHastNode(
       ),
     );
 
-    // Element nodes now only group children; color is applied by Text nodes.
-    // Use a React Fragment to avoid adding unnecessary elements.
+    // 元素节点现在只对子元素进行分组；颜色由Text节点应用。
+    // 使用React Fragment以避免添加不必要的元素。
     return <React.Fragment>{children}</React.Fragment>;
   }
 
-  // Handle Root Node: Start recursion with initial inherited color
+  // 处理根节点：使用初始继承颜色开始递归
   if (node.type === 'root') {
-    // Check if children array is empty - this happens when lowlight can't detect language – fallback to plain text
+    // 检查子数组是否为空 - 当lowlight无法检测语言时会发生这种情况 – 回退到纯文本
     if (!node.children || node.children.length === 0) {
       return null;
     }
 
-    // Pass down the initial inheritedColor (likely undefined from the top call)
-    // Ensure child type matches expected HAST structure (RootContent is common)
+    // 传递初始继承颜色（可能来自顶层调用的undefined）
+    // 确保子类型匹配预期的HAST结构（RootContent是常见的）
     return node.children?.map((child: RootContent, index: number) => (
       <React.Fragment key={index}>
         {renderHastNode(child, theme, inheritedColor)}
@@ -84,16 +84,16 @@ function renderHastNode(
     ));
   }
 
-  // Handle unknown or unsupported node types
+  // 处理未知或不支持的节点类型
   return null;
 }
 
 /**
- * Renders syntax-highlighted code for Ink applications using a selected theme.
+ * 为Ink应用程序渲染使用选定主题的语法高亮代码。
  *
- * @param code The code string to highlight.
- * @param language The language identifier (e.g., 'javascript', 'css', 'html')
- * @returns A React.ReactNode containing Ink <Text> elements for the highlighted code.
+ * @param code 要高亮的代码字符串。
+ * @param language 语言标识符（例如，'javascript', 'css', 'html'）
+ * @returns 包含高亮代码的Ink <Text> 元素的React.ReactNode。
  */
 export function colorizeCode(
   code: string,
@@ -105,14 +105,14 @@ export function colorizeCode(
   const activeTheme = themeManager.getActiveTheme();
 
   try {
-    // Render the HAST tree using the adapted theme
-    // Apply the theme's default foreground color to the top-level Text element
+    // 使用适配的主题渲染HAST树
+    // 将主题的默认前景色应用到顶层Text元素
     let lines = codeToHighlight.split('\n');
-    const padWidth = String(lines.length).length; // Calculate padding width based on number of lines
+    const padWidth = String(lines.length).length; // 根据行数计算填充宽度
 
     let hiddenLinesCount = 0;
 
-    // Optimization to avoid highlighting lines that cannot possibly be displayed.
+    // 优化以避免高亮不可能显示的行。
     if (availableHeight !== undefined) {
       availableHeight = Math.max(availableHeight, MINIMUM_MAX_HEIGHT);
       if (lines.length > availableHeight) {
@@ -160,10 +160,10 @@ export function colorizeCode(
       `[colorizeCode] Error highlighting code for language "${language}":`,
       error,
     );
-    // Fallback to plain text with default color on error
-    // Also display line numbers in fallback
+    // 出错时回退到带默认颜色的纯文本
+    // 回退时也显示行号
     const lines = codeToHighlight.split('\n');
-    const padWidth = String(lines.length).length; // Calculate padding width based on number of lines
+    const padWidth = String(lines.length).length; // 根据行数计算填充宽度
     return (
       <MaxSizedBox
         maxHeight={availableHeight}

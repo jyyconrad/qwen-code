@@ -6,7 +6,7 @@
 
 import { Colors } from '../colors.js';
 
-// --- Thresholds ---
+// --- 阈值 ---
 export const TOOL_SUCCESS_RATE_HIGH = 95;
 export const TOOL_SUCCESS_RATE_MEDIUM = 85;
 
@@ -16,7 +16,7 @@ export const USER_AGREEMENT_RATE_MEDIUM = 45;
 export const CACHE_EFFICIENCY_HIGH = 40;
 export const CACHE_EFFICIENCY_MEDIUM = 15;
 
-// --- Color Logic ---
+// --- 颜色逻辑 ---
 export const getStatusColor = (
   value: number,
   thresholds: { green: number; yellow: number },

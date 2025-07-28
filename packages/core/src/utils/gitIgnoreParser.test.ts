@@ -10,10 +10,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { isGitRepository } from './gitUtils.js';
 
-// Mock fs module
+// 模拟 fs 模块
 vi.mock('fs');
 
-// Mock gitUtils module
+// 模拟 gitUtils 模块
 vi.mock('./gitUtils.js');
 
 describe('GitIgnoreParser', () => {
@@ -22,7 +22,7 @@ describe('GitIgnoreParser', () => {
 
   beforeEach(() => {
     parser = new GitIgnoreParser(mockProjectRoot);
-    // Reset mocks before each test
+    // 在每次测试前重置模拟
     vi.mocked(fs.readFileSync).mockClear();
     vi.mocked(isGitRepository).mockReturnValue(true);
   });
@@ -31,14 +31,14 @@ describe('GitIgnoreParser', () => {
     vi.restoreAllMocks();
   });
 
-  describe('initialization', () => {
-    it('should initialize without errors when no .gitignore exists', () => {
+  describe('初始化', () => {
+    it('当不存在 .gitignore 时应无错误初始化', () => {
       expect(() => parser.loadGitRepoPatterns()).not.toThrow();
     });
 
-    it('should load .gitignore patterns when file exists', () => {
+    it('当文件存在时应加载 .gitignore 模式', () => {
       const gitignoreContent = `
-# Comment
+# 注释
 node_modules/
 *.log
 /dist
@@ -61,7 +61,7 @@ node_modules/
       expect(parser.isIgnored('.env')).toBe(true);
     });
 
-    it('should handle git exclude file', () => {
+    it('应处理 git 排除文件', () => {
       vi.mocked(fs.readFileSync).mockImplementation((filePath) => {
         if (
           filePath === path.join(mockProjectRoot, '.git', 'info', 'exclude')
@@ -77,7 +77,7 @@ node_modules/
       expect(parser.isIgnored('src/file.tmp')).toBe(true);
     });
 
-    it('should handle custom patterns file name', () => {
+    it('应处理自定义模式文件名', () => {
       vi.mocked(isGitRepository).mockReturnValue(false);
       vi.mocked(fs.readFileSync).mockImplementation((filePath) => {
         if (filePath === path.join(mockProjectRoot, '.geminiignore')) {
@@ -92,7 +92,7 @@ node_modules/
       expect(parser.isIgnored('src/file.tmp')).toBe(true);
     });
 
-    it('should initialize without errors when no .geminiignore exists', () => {
+    it('当不存在 .geminiignore 时应无错误初始化', () => {
       expect(() => parser.loadPatterns('.geminiignore')).not.toThrow();
     });
   });
@@ -111,7 +111,7 @@ src/*.tmp
       parser.loadGitRepoPatterns();
     });
 
-    it('should always ignore .git directory', () => {
+    it('应始终忽略 .git 目录', () => {
       expect(parser.isIgnored('.git')).toBe(true);
       expect(parser.isIgnored('.git/config')).toBe(true);
       expect(parser.isIgnored(path.join(mockProjectRoot, '.git', 'HEAD'))).toBe(
@@ -119,52 +119,52 @@ src/*.tmp
       );
     });
 
-    it('should ignore files matching patterns', () => {
+    it('应忽略匹配模式的文件', () => {
       expect(parser.isIgnored('node_modules/package/index.js')).toBe(true);
       expect(parser.isIgnored('app.log')).toBe(true);
       expect(parser.isIgnored('logs/app.log')).toBe(true);
       expect(parser.isIgnored('dist/bundle.js')).toBe(true);
       expect(parser.isIgnored('.env')).toBe(true);
-      expect(parser.isIgnored('config/.env')).toBe(false); // .env is anchored to root
+      expect(parser.isIgnored('config/.env')).toBe(false); // .env 锚定到根目录
     });
 
-    it('should ignore files with path-specific patterns', () => {
+    it('应忽略具有路径特定模式的文件', () => {
       expect(parser.isIgnored('src/temp.tmp')).toBe(true);
       expect(parser.isIgnored('other/temp.tmp')).toBe(false);
     });
 
-    it('should handle negation patterns', () => {
+    it('应处理否定模式', () => {
       expect(parser.isIgnored('src/important.tmp')).toBe(false);
     });
 
-    it('should not ignore files that do not match patterns', () => {
+    it('不应忽略不匹配模式的文件', () => {
       expect(parser.isIgnored('src/index.ts')).toBe(false);
       expect(parser.isIgnored('README.md')).toBe(false);
     });
 
-    it('should handle absolute paths correctly', () => {
+    it('应正确处理绝对路径', () => {
       const absolutePath = path.join(mockProjectRoot, 'node_modules', 'lib');
       expect(parser.isIgnored(absolutePath)).toBe(true);
     });
 
-    it('should handle paths outside project root by not ignoring them', () => {
+    it('应通过不忽略它们来处理项目根目录外的路径', () => {
       const outsidePath = path.resolve(mockProjectRoot, '../other/file.txt');
       expect(parser.isIgnored(outsidePath)).toBe(false);
     });
 
-    it('should handle relative paths correctly', () => {
+    it('应正确处理相对路径', () => {
       expect(parser.isIgnored('node_modules/some-package')).toBe(true);
       expect(parser.isIgnored('../some/other/file.txt')).toBe(false);
     });
 
-    it('should normalize path separators on Windows', () => {
+    it('应在 Windows 上规范化路径分隔符', () => {
       expect(parser.isIgnored('node_modules\\package')).toBe(true);
       expect(parser.isIgnored('src\\temp.tmp')).toBe(true);
     });
   });
 
   describe('getIgnoredPatterns', () => {
-    it('should return the raw patterns added', () => {
+    it('应返回添加的原始模式', () => {
       const gitignoreContent = '*.log\n!important.log';
       vi.mocked(fs.readFileSync).mockReturnValueOnce(gitignoreContent);
 

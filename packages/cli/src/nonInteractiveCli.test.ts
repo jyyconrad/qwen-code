@@ -10,7 +10,7 @@ import { runNonInteractive } from './nonInteractiveCli.js';
 import { Config, GeminiClient, ToolRegistry } from '@iflytek/iflycode-core';
 import { GenerateContentResponse, Part, FunctionCall } from '@google/genai';
 
-// Mock dependencies
+// 模拟依赖项
 vi.mock('@iflytek/iflycode-core', async () => {
   const actualCore = await vi.importActual<
     typeof import('@iflytek/iflycode-core')
@@ -58,20 +58,20 @@ describe('runNonInteractive', () => {
     } as unknown as Config;
 
     mockProcessStdoutWrite = vi.fn().mockImplementation(() => true);
-    process.stdout.write = mockProcessStdoutWrite as any; // Use any to bypass strict signature matching for mock
+    process.stdout.write = mockProcessStdoutWrite as any; // 使用 any 绕过严格签名匹配以进行模拟
     mockProcessExit = vi
       .fn()
       .mockImplementation((_code?: number) => undefined as never);
-    process.exit = mockProcessExit as any; // Use any for process.exit mock
+    process.exit = mockProcessExit as any; // 使用 any 进行 process.exit 模拟
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    // Restore original process methods if they were globally patched
-    // This might require storing the original methods before patching them in beforeEach
+    // 如果全局修补了原始进程方法，则恢复它们
+    // 这可能需要在 beforeEach 中修补它们之前存储原始方法
   });
 
-  it('should process input and write text output', async () => {
+  it('应处理输入并写入文本输出', async () => {
     const inputStream = (async function* () {
       yield {
         candidates: [{ content: { parts: [{ text: 'Hello' }] } }],
@@ -99,7 +99,7 @@ describe('runNonInteractive', () => {
     expect(mockProcessStdoutWrite).toHaveBeenCalledWith('\n');
   });
 
-  it('should handle a single tool call and respond', async () => {
+  it('应处理单个工具调用并响应', async () => {
     const functionCall: FunctionCall = {
       id: 'fc1',
       name: 'testTool',
@@ -153,7 +153,7 @@ describe('runNonInteractive', () => {
     expect(mockProcessStdoutWrite).toHaveBeenCalledWith('Final answer');
   });
 
-  it('should handle error during tool execution', async () => {
+  it('应处理工具执行期间的错误', async () => {
     const functionCall: FunctionCall = {
       id: 'fcError',
       name: 'errorTool',
@@ -199,7 +199,7 @@ describe('runNonInteractive', () => {
 
     expect(mockCoreExecuteToolCall).toHaveBeenCalled();
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Error executing tool errorTool: Tool execution failed badly',
+      '执行工具 errorTool 时出错: Tool execution failed badly',
     );
     expect(mockChat.sendMessageStream).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -212,7 +212,7 @@ describe('runNonInteractive', () => {
     );
   });
 
-  it('should exit with error if sendMessageStream throws initially', async () => {
+  it('如果 sendMessageStream 最初抛出错误则应退出并显示错误', async () => {
     const apiError = new Error('API connection failed');
     mockChat.sendMessageStream.mockRejectedValue(apiError);
     const consoleErrorSpy = vi
@@ -222,11 +222,11 @@ describe('runNonInteractive', () => {
     await runNonInteractive(mockConfig, 'Initial fail', 'prompt-id-4');
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[API Error: API connection failed]',
+      '[API 错误: API connection failed]',
     );
   });
 
-  it('should not exit if a tool is not found, and should send error back to model', async () => {
+  it('如果未找到工具不应退出，并应将错误发送回模型', async () => {
     const functionCall: FunctionCall = {
       id: 'fcNotFound',
       name: 'nonExistentTool',
@@ -278,7 +278,7 @@ describe('runNonInteractive', () => {
     );
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Error executing tool nonExistentTool: Tool "nonExistentTool" not found in registry.',
+      '执行工具 nonExistentTool 时出错: Tool "nonExistentTool" not found in registry.',
     );
 
     expect(mockProcessExit).not.toHaveBeenCalled();
@@ -296,7 +296,7 @@ describe('runNonInteractive', () => {
     );
   });
 
-  it('should exit when max session turns are exceeded', async () => {
+  it('当超过最大会话轮次时应退出', async () => {
     const functionCall: FunctionCall = {
       id: 'fcLoop',
       name: 'loopTool',
@@ -310,7 +310,7 @@ describe('runNonInteractive', () => {
       },
     };
 
-    // Config with a max turn of 1
+    // 配置最大轮次为 1
     vi.mocked(mockConfig.getMaxSessionTurns).mockReturnValue(1);
 
     const { executeToolCall: mockCoreExecuteToolCall } = await import(
@@ -337,7 +337,7 @@ describe('runNonInteractive', () => {
     expect(mockChat.sendMessageStream).toHaveBeenCalledTimes(1);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       `
- Reached max session turns for this session. Increase the number of turns by specifying maxSessionTurns in settings.json.`,
+ 已达到此会话的最大轮次。通过在 settings.json 中指定 maxSessionTurns 来增加轮次数量。`,
     );
     expect(mockProcessExit).not.toHaveBeenCalled();
   });

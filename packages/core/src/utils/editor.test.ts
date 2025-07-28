@@ -30,7 +30,7 @@ vi.mock('child_process', () => ({
 
 const originalPlatform = process.platform;
 
-describe('editor utils', () => {
+describe('编辑器工具', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.SANDBOX;
@@ -66,7 +66,7 @@ describe('editor utils', () => {
 
     for (const { editor, command, win32Command } of testCases) {
       describe(`${editor}`, () => {
-        it(`should return true if "${command}" command exists on non-windows`, () => {
+        it(`如果 "${command}" 命令在非 Windows 系统上存在则应返回 true`, () => {
           Object.defineProperty(process, 'platform', { value: 'linux' });
           (execSync as Mock).mockReturnValue(
             Buffer.from(`/usr/bin/${command}`),
@@ -77,7 +77,7 @@ describe('editor utils', () => {
           });
         });
 
-        it(`should return false if "${command}" command does not exist on non-windows`, () => {
+        it(`如果 "${command}" 命令在非 Windows 系统上不存在则应返回 false`, () => {
           Object.defineProperty(process, 'platform', { value: 'linux' });
           (execSync as Mock).mockImplementation(() => {
             throw new Error();
@@ -85,7 +85,7 @@ describe('editor utils', () => {
           expect(checkHasEditorType(editor)).toBe(false);
         });
 
-        it(`should return true if "${win32Command}" command exists on windows`, () => {
+        it(`如果 "${win32Command}" 命令在 Windows 上存在则应返回 true`, () => {
           Object.defineProperty(process, 'platform', { value: 'win32' });
           (execSync as Mock).mockReturnValue(
             Buffer.from(`C:\\Program Files\\...\\${win32Command}`),
@@ -96,7 +96,7 @@ describe('editor utils', () => {
           });
         });
 
-        it(`should return false if "${win32Command}" command does not exist on windows`, () => {
+        it(`如果 "${win32Command}" 命令在 Windows 上不存在则应返回 false`, () => {
           Object.defineProperty(process, 'platform', { value: 'win32' });
           (execSync as Mock).mockImplementation(() => {
             throw new Error();
@@ -121,7 +121,7 @@ describe('editor utils', () => {
     ];
 
     for (const { editor, command, win32Command } of guiEditors) {
-      it(`should return the correct command for ${editor} on non-windows`, () => {
+      it(`应为 ${editor} 在非 Windows 系统上返回正确的命令`, () => {
         Object.defineProperty(process, 'platform', { value: 'linux' });
         const diffCommand = getDiffCommand('old.txt', 'new.txt', editor);
         expect(diffCommand).toEqual({
@@ -130,7 +130,7 @@ describe('editor utils', () => {
         });
       });
 
-      it(`should return the correct command for ${editor} on windows`, () => {
+      it(`应为 ${editor} 在 Windows 系统上返回正确的命令`, () => {
         Object.defineProperty(process, 'platform', { value: 'win32' });
         const diffCommand = getDiffCommand('old.txt', 'new.txt', editor);
         expect(diffCommand).toEqual({
@@ -149,7 +149,7 @@ describe('editor utils', () => {
     ];
 
     for (const { editor, command } of terminalEditors) {
-      it(`should return the correct command for ${editor}`, () => {
+      it(`应为 ${editor} 返回正确的命令`, () => {
         const diffCommand = getDiffCommand('old.txt', 'new.txt', editor);
         expect(diffCommand).toEqual({
           command,
@@ -176,8 +176,8 @@ describe('editor utils', () => {
       });
     }
 
-    it('should return null for an unsupported editor', () => {
-      // @ts-expect-error Testing unsupported editor
+    it('应为不支持的编辑器返回 null', () => {
+      // @ts-expect-error 测试不支持的编辑器
       const command = getDiffCommand('old.txt', 'new.txt', 'foobar');
       expect(command).toBeNull();
     });
@@ -192,7 +192,7 @@ describe('editor utils', () => {
       'zed',
     ];
     for (const editor of spawnEditors) {
-      it(`should call spawn for ${editor}`, async () => {
+      it(`应为 ${editor} 调用 spawn`, async () => {
         const mockSpawn = {
           on: vi.fn((event, cb) => {
             if (event === 'close') {
@@ -221,7 +221,7 @@ describe('editor utils', () => {
         );
       });
 
-      it(`should reject if spawn for ${editor} fails`, async () => {
+      it(`如果 ${editor} 的 spawn 调用失败则应拒绝`, async () => {
         const mockError = new Error('spawn error');
         const mockSpawn = {
           on: vi.fn((event, cb) => {
@@ -236,7 +236,7 @@ describe('editor utils', () => {
         );
       });
 
-      it(`should reject if ${editor} exits with non-zero code`, async () => {
+      it(`如果 ${editor} 以非零代码退出则应拒绝`, async () => {
         const mockSpawn = {
           on: vi.fn((event, cb) => {
             if (event === 'close') {
@@ -253,7 +253,7 @@ describe('editor utils', () => {
 
     const execSyncEditors: EditorType[] = ['vim', 'neovim'];
     for (const editor of execSyncEditors) {
-      it(`should call execSync for ${editor} on non-windows`, async () => {
+      it(`在非 Windows 系统上应为 ${editor} 调用 execSync`, async () => {
         Object.defineProperty(process, 'platform', { value: 'linux' });
         await openDiff('old.txt', 'new.txt', editor);
         expect(execSync).toHaveBeenCalledTimes(1);
@@ -267,7 +267,7 @@ describe('editor utils', () => {
         });
       });
 
-      it(`should call execSync for ${editor} on windows`, async () => {
+      it(`在 Windows 系统上应为 ${editor} 调用 execSync`, async () => {
         Object.defineProperty(process, 'platform', { value: 'win32' });
         await openDiff('old.txt', 'new.txt', editor);
         expect(execSync).toHaveBeenCalledTimes(1);
@@ -282,34 +282,34 @@ describe('editor utils', () => {
       });
     }
 
-    it('should log an error if diff command is not available', async () => {
+    it('如果差分命令不可用则应记录错误', async () => {
       const consoleErrorSpy = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
-      // @ts-expect-error Testing unsupported editor
+      // @ts-expect-error 测试不支持的编辑器
       await openDiff('old.txt', 'new.txt', 'foobar');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'No diff tool available. Install a supported editor.',
+        '没有可用的差分工具。请安装受支持的编辑器。',
       );
     });
   });
 
   describe('allowEditorTypeInSandbox', () => {
-    it('should allow vim in sandbox mode', () => {
+    it('应在沙盒模式下允许 vim', () => {
       process.env.SANDBOX = 'sandbox';
       expect(allowEditorTypeInSandbox('vim')).toBe(true);
     });
 
-    it('should allow vim when not in sandbox mode', () => {
+    it('在非沙盒模式下应允许 vim', () => {
       expect(allowEditorTypeInSandbox('vim')).toBe(true);
     });
 
-    it('should allow neovim in sandbox mode', () => {
+    it('应在沙盒模式下允许 neovim', () => {
       process.env.SANDBOX = 'sandbox';
       expect(allowEditorTypeInSandbox('neovim')).toBe(true);
     });
 
-    it('should allow neovim when not in sandbox mode', () => {
+    it('在非沙盒模式下应允许 neovim', () => {
       expect(allowEditorTypeInSandbox('neovim')).toBe(true);
     });
 
@@ -321,55 +321,55 @@ describe('editor utils', () => {
       'zed',
     ];
     for (const editor of guiEditors) {
-      it(`should not allow ${editor} in sandbox mode`, () => {
+      it(`在沙盒模式下不应允许 ${editor}`, () => {
         process.env.SANDBOX = 'sandbox';
         expect(allowEditorTypeInSandbox(editor)).toBe(false);
       });
 
-      it(`should allow ${editor} when not in sandbox mode`, () => {
+      it(`在非沙盒模式下应允许 ${editor}`, () => {
         expect(allowEditorTypeInSandbox(editor)).toBe(true);
       });
     }
   });
 
   describe('isEditorAvailable', () => {
-    it('should return false for undefined editor', () => {
+    it('对于未定义的编辑器应返回 false', () => {
       expect(isEditorAvailable(undefined)).toBe(false);
     });
 
-    it('should return false for empty string editor', () => {
+    it('对于空字符串编辑器应返回 false', () => {
       expect(isEditorAvailable('')).toBe(false);
     });
 
-    it('should return false for invalid editor type', () => {
+    it('对于无效的编辑器类型应返回 false', () => {
       expect(isEditorAvailable('invalid-editor')).toBe(false);
     });
 
-    it('should return true for vscode when installed and not in sandbox mode', () => {
+    it('当已安装且不在沙盒模式下时，对于 vscode 应返回 true', () => {
       (execSync as Mock).mockReturnValue(Buffer.from('/usr/bin/code'));
       expect(isEditorAvailable('vscode')).toBe(true);
     });
 
-    it('should return false for vscode when not installed and not in sandbox mode', () => {
+    it('当未安装且不在沙盒模式下时，对于 vscode 应返回 false', () => {
       (execSync as Mock).mockImplementation(() => {
         throw new Error();
       });
       expect(isEditorAvailable('vscode')).toBe(false);
     });
 
-    it('should return false for vscode when installed and in sandbox mode', () => {
+    it('当已安装但在沙盒模式下时，对于 vscode 应返回 false', () => {
       (execSync as Mock).mockReturnValue(Buffer.from('/usr/bin/code'));
       process.env.SANDBOX = 'sandbox';
       expect(isEditorAvailable('vscode')).toBe(false);
     });
 
-    it('should return true for vim when installed and in sandbox mode', () => {
+    it('当已安装且在沙盒模式下时，对于 vim 应返回 true', () => {
       (execSync as Mock).mockReturnValue(Buffer.from('/usr/bin/vim'));
       process.env.SANDBOX = 'sandbox';
       expect(isEditorAvailable('vim')).toBe(true);
     });
 
-    it('should return true for neovim when installed and in sandbox mode', () => {
+    it('当已安装且在沙盒模式下时，对于 neovim 应返回 true', () => {
       (execSync as Mock).mockReturnValue(Buffer.from('/usr/bin/nvim'));
       process.env.SANDBOX = 'sandbox';
       expect(isEditorAvailable('neovim')).toBe(true);

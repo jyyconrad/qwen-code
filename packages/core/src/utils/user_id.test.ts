@@ -9,14 +9,14 @@ import { getInstallationId } from './user_id.js';
 
 describe('user_id', () => {
   describe('getInstallationId', () => {
-    it('should return a valid UUID format string', () => {
+    it('应返回一个有效的 UUID 格式字符串', () => {
       const installationId = getInstallationId();
 
       expect(installationId).toBeDefined();
       expect(typeof installationId).toBe('string');
       expect(installationId.length).toBeGreaterThan(0);
 
-      // Should return the same ID on subsequent calls (consistent)
+      // 后续调用应返回相同的 ID（一致性）
       const secondCall = getInstallationId();
       expect(secondCall).toBe(installationId);
     });

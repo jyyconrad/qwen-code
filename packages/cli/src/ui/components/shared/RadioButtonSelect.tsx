@@ -9,8 +9,8 @@ import { Text, Box, useInput } from 'ink';
 import { Colors } from '../../colors.js';
 
 /**
- * Represents a single option for the RadioButtonSelect.
- * Requires a label for display and a value to be returned on selection.
+ * 表示 RadioButtonSelect 的单个选项。
+ * 需要一个用于显示的标签和一个在选择时返回的值。
  */
 export interface RadioSelectItem<T> {
   label: string;
@@ -21,31 +21,31 @@ export interface RadioSelectItem<T> {
 }
 
 /**
- * Props for the RadioButtonSelect component.
- * @template T The type of the value associated with each radio item.
+ * RadioButtonSelect 组件的属性。
+ * @template T 与每个单选项目关联的值的类型。
  */
 export interface RadioButtonSelectProps<T> {
-  /** An array of items to display as radio options. */
+  /** 要显示为单选选项的项目数组。 */
   items: Array<RadioSelectItem<T>>;
-  /** The initial index selected */
+  /** 初始选中的索引 */
   initialIndex?: number;
-  /** Function called when an item is selected. Receives the `value` of the selected item. */
+  /** 选择项目时调用的函数。接收所选项目的 `value`。 */
   onSelect: (value: T) => void;
-  /** Function called when an item is highlighted. Receives the `value` of the selected item. */
+  /** 项目高亮时调用的函数。接收所选项目的 `value`。 */
   onHighlight?: (value: T) => void;
-  /** Whether this select input is currently focused and should respond to input. */
+  /** 此选择输入是否当前聚焦并应响应输入。 */
   isFocused?: boolean;
-  /** Whether to show the scroll arrows. */
+  /** 是否显示滚动箭头。 */
   showScrollArrows?: boolean;
-  /** The maximum number of items to show at once. */
+  /** 一次显示的最大项目数。 */
   maxItemsToShow?: number;
 }
 
 /**
- * A custom component that displays a list of items with radio buttons,
- * supporting scrolling and keyboard navigation.
+ * 自定义组件，显示带有单选按钮的项目列表，
+ * 支持滚动和键盘导航。
  *
- * @template T The type of the value associated with each radio item.
+ * @template T 与每个单选项目关联的值的类型。
  */
 export function RadioButtonSelect<T>({
   items,
@@ -56,7 +56,7 @@ export function RadioButtonSelect<T>({
   showScrollArrows = false,
   maxItemsToShow = 10,
 }: RadioButtonSelectProps<T>): React.JSX.Element {
-  // Ensure initialIndex is within bounds
+  // 确保 initialIndex 在有效范围内
   const safeInitialIndex =
     items.length > 0
       ? Math.max(0, Math.min(initialIndex, items.length - 1))
@@ -64,7 +64,7 @@ export function RadioButtonSelect<T>({
   const [activeIndex, setActiveIndex] = useState(safeInitialIndex);
   const [scrollOffset, setScrollOffset] = useState(0);
 
-  // Ensure activeIndex is always within bounds when items change
+  // 当项目更改时确保 activeIndex 始终在有效范围内
   useEffect(() => {
     if (items.length === 0) {
       setActiveIndex(0);
@@ -106,7 +106,7 @@ export function RadioButtonSelect<T>({
         }
       }
       if (key.return) {
-        // Add bounds check before accessing items[activeIndex]
+        // 在访问 items[activeIndex] 前添加边界检查
         if (
           activeIndex >= 0 &&
           activeIndex < items.length &&
@@ -116,7 +116,7 @@ export function RadioButtonSelect<T>({
         }
       }
 
-      // Enable selection directly from number keys.
+      // 允许通过数字键直接选择。
       if (/^[1-9]$/.test(input)) {
         const targetIndex = Number.parseInt(input, 10) - 1;
         if (targetIndex >= 0 && targetIndex < visibleItems.length) {

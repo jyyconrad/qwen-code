@@ -1,21 +1,19 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// 根据 Apache 许可证 2.0 版（“许可证”）获得许可；
+// 除非符合许可证要求，否则您不得使用此文件。
+// 您可以获得许可证的副本在以下网址：
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// 除非适用法律要求或书面同意，否则根据许可证分发的软件
+// 是基于“按原样”分发的，不附带任何明示或暗示的担保。
+// 请参阅许可证以了解特定语言的管理权限和限制。
 
 import { execSync } from 'child_process';
 import { existsSync } from 'fs';
@@ -25,17 +23,17 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 
-// npm install if node_modules was removed (e.g. via npm run clean or scripts/clean.js)
+// 如果 node_modules 被删除（例如通过 npm run clean 或 scripts/clean.js），则执行 npm install
 if (!existsSync(join(root, 'node_modules'))) {
   execSync('npm install', { stdio: 'inherit', cwd: root });
 }
 
-// build all workspaces/packages
+// 构建所有工作区/包
 execSync('npm run generate', { stdio: 'inherit', cwd: root });
 execSync('npm run build --workspaces', { stdio: 'inherit', cwd: root });
 
-// also build container image if sandboxing is enabled
-// skip (-s) npm install + build since we did that above
+// 如果启用了沙箱，也构建容器镜像
+// 跳过 (-s) npm install + build，因为我们已经在上面执行过了
 try {
   execSync('node scripts/sandbox_command.js -q', {
     stdio: 'inherit',
@@ -51,5 +49,5 @@ try {
     });
   }
 } catch {
-  // ignore
+  // 忽略
 }

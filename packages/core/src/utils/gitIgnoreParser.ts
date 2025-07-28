@@ -10,7 +10,9 @@ import ignore, { type Ignore } from 'ignore';
 import { isGitRepository } from './gitUtils.js';
 
 export interface GitIgnoreFilter {
+  // 检查文件是否被忽略
   isIgnored(filePath: string): boolean;
+  // 获取所有模式
   getPatterns(): string[];
 }
 
@@ -23,10 +25,11 @@ export class GitIgnoreParser implements GitIgnoreFilter {
     this.projectRoot = path.resolve(projectRoot);
   }
 
+  // 加载 Git 仓库的忽略模式
   loadGitRepoPatterns(): void {
     if (!isGitRepository(this.projectRoot)) return;
 
-    // Always ignore .git directory regardless of .gitignore content
+    // 无论 .gitignore 内容如何，始终忽略 .git 目录
     this.addPatterns(['.git']);
 
     const patternFiles = ['.gitignore', path.join('.git', 'info', 'exclude')];
@@ -35,13 +38,14 @@ export class GitIgnoreParser implements GitIgnoreFilter {
     }
   }
 
+  // 从文件加载模式
   loadPatterns(patternsFileName: string): void {
     const patternsFilePath = path.join(this.projectRoot, patternsFileName);
     let content: string;
     try {
       content = fs.readFileSync(patternsFilePath, 'utf-8');
     } catch (_error) {
-      // ignore file not found
+      // 忽略文件未找到的情况
       return;
     }
     const patterns = (content ?? '')
@@ -56,6 +60,7 @@ export class GitIgnoreParser implements GitIgnoreFilter {
     this.patterns.push(...patterns);
   }
 
+  // 检查文件是否被忽略
   isIgnored(filePath: string): boolean {
     const relativePath = path.isAbsolute(filePath)
       ? path.relative(this.projectRoot, filePath)
@@ -73,6 +78,7 @@ export class GitIgnoreParser implements GitIgnoreFilter {
     return this.ig.ignores(normalizedPath);
   }
 
+  // 获取所有模式
   getPatterns(): string[] {
     return this.patterns;
   }

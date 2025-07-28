@@ -12,8 +12,8 @@ import { shortAsciiLogo, longAsciiLogo } from './AsciiArt.js';
 import { getAsciiArtWidth } from '../utils/textUtils.js';
 
 interface HeaderProps {
-  customAsciiArt?: string; // For user-defined ASCII art
-  terminalWidth: number; // For responsive logo
+  customAsciiArt?: string; // 用户自定义的 ASCII 艺术字
+  terminalWidth: number; // 用于响应式 logo
   version: string;
   nightly: boolean;
 }

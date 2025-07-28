@@ -26,19 +26,19 @@ export class DiscoveredTool extends BaseTool<ToolParams, ToolResult> {
     const callCommand = config.getToolCallCommand()!;
     description += `
 
-This tool was discovered from the project by executing the command \`${discoveryCmd}\` on project root.
-When called, this tool will execute the command \`${callCommand} ${name}\` on project root.
-Tool discovery and call commands can be configured in project or user settings.
+该工具是通过在项目根目录执行命令 \`${discoveryCmd}\` 发现的。
+调用时，该工具将在项目根目录执行命令 \`${callCommand} ${name}\`。
+工具发现和调用命令可在项目或用户设置中配置。
 
-When called, the tool call command is executed as a subprocess.
-On success, tool output is returned as a json string.
-Otherwise, the following information is returned:
+调用时，工具调用命令将作为子进程执行。
+成功时，工具输出将作为 JSON 字符串返回。
+否则，将返回以下信息：
 
-Stdout: Output on stdout stream. Can be \`(empty)\` or partial.
-Stderr: Output on stderr stream. Can be \`(empty)\` or partial.
-Error: Error or \`(none)\` if no error was reported for the subprocess.
-Exit Code: Exit code or \`(none)\` if terminated by signal.
-Signal: Signal number or \`(none)\` if no signal was received.
+Stdout: stdout 流上的输出。可以是 \`(empty)\` 或部分输出。
+Stderr: stderr 流上的输出。可以是 \`(empty)\` 或部分输出。
+Error: 错误信息，如果子进程未报告错误则为 \`(none)\`。
+Exit Code: 退出代码，如果由信号终止则为 \`(none)\`。
+Signal: 信号编号，如果未收到信号则为 \`(none)\`。
 `;
     super(
       name,
@@ -101,7 +101,7 @@ Signal: Signal number or \`(none)\` if no signal was received.
       child.on('close', onClose);
     });
 
-    // if there is any error, non-zero exit code, signal, or stderr, return error details instead of stdout
+    // 如果有任何错误、非零退出代码、信号或 stderr，则返回错误详情而不是 stdout
     if (error || code !== 0 || signal || stderr) {
       const llmContent = [
         `Stdout: ${stdout || '(empty)'}`,
@@ -132,25 +132,25 @@ export class ToolRegistry {
   }
 
   /**
-   * Registers a tool definition.
-   * @param tool - The tool object containing schema and execution logic.
+   * 注册工具定义。
+   * @param tool - 包含模式和执行逻辑的工具对象。
    */
   registerTool(tool: Tool): void {
     if (this.tools.has(tool.name)) {
-      // Decide on behavior: throw error, log warning, or allow overwrite
+      // 决定行为：抛出错误、记录警告或允许覆盖
       console.warn(
-        `Tool with name "${tool.name}" is already registered. Overwriting.`,
+        `名为 "${tool.name}" 的工具已注册。将被覆盖。`,
       );
     }
     this.tools.set(tool.name, tool);
   }
 
   /**
-   * Discovers tools from project (if available and configured).
-   * Can be called multiple times to update discovered tools.
+   * 从项目中发现工具（如果可用且已配置）。
+   * 可多次调用以更新发现的工具。
    */
   async discoverTools(): Promise<void> {
-    // remove any previously discovered tools
+    // 移除之前发现的任何工具
     for (const tool of this.tools.values()) {
       if (tool instanceof DiscoveredTool || tool instanceof DiscoveredMCPTool) {
         this.tools.delete(tool.name);
@@ -159,7 +159,7 @@ export class ToolRegistry {
 
     await this.discoverAndRegisterToolsFromCommand();
 
-    // discover tools using MCP servers, if configured
+    // 如果已配置，使用 MCP 服务器发现工具
     await discoverMcpTools(
       this.config.getMcpServers() ?? {},
       this.config.getMcpServerCommand(),
@@ -178,7 +178,7 @@ export class ToolRegistry {
       const cmdParts = parse(discoveryCmd);
       if (cmdParts.length === 0) {
         throw new Error(
-          'Tool discovery command is empty or contains only whitespace.',
+          '工具发现命令为空或仅包含空白字符。',
         );
       }
       const proc = spawn(cmdParts[0] as string, cmdParts.slice(1) as string[]);
@@ -187,8 +187,8 @@ export class ToolRegistry {
       let stderr = '';
       const stderrDecoder = new StringDecoder('utf8');
       let sizeLimitExceeded = false;
-      const MAX_STDOUT_SIZE = 10 * 1024 * 1024; // 10MB limit
-      const MAX_STDERR_SIZE = 10 * 1024 * 1024; // 10MB limit
+      const MAX_STDOUT_SIZE = 10 * 1024 * 1024; // 10MB 限制
+      const MAX_STDERR_SIZE = 10 * 1024 * 1024; // 10MB 限制
 
       let stdoutByteLength = 0;
       let stderrByteLength = 0;
@@ -224,29 +224,29 @@ export class ToolRegistry {
           if (sizeLimitExceeded) {
             return reject(
               new Error(
-                `Tool discovery command output exceeded size limit of ${MAX_STDOUT_SIZE} bytes.`,
+                `工具发现命令输出超过 ${MAX_STDOUT_SIZE} 字节的大小限制。`,
               ),
             );
           }
 
           if (code !== 0) {
-            console.error(`Command failed with code ${code}`);
+            console.error(`命令失败，退出代码 ${code}`);
             console.error(stderr);
             return reject(
-              new Error(`Tool discovery command failed with exit code ${code}`),
+              new Error(`工具发现命令失败，退出代码 ${code}`),
             );
           }
           resolve();
         });
       });
 
-      // execute discovery command and extract function declarations (w/ or w/o "tool" wrappers)
+      // 执行发现命令并提取函数声明（带或不带 "tool" 包装器）
       const functions: FunctionDeclaration[] = [];
       const discoveredItems = JSON.parse(stdout.trim());
 
       if (!discoveredItems || !Array.isArray(discoveredItems)) {
         throw new Error(
-          'Tool discovery command did not return a JSON array of tools.',
+          '工具发现命令未返回工具的 JSON 数组。',
         );
       }
 
@@ -261,13 +261,13 @@ export class ToolRegistry {
           }
         }
       }
-      // register each function as a tool
+      // 将每个函数注册为工具
       for (const func of functions) {
         if (!func.name) {
-          console.warn('Discovered a tool with no name. Skipping.');
+          console.warn('发现了一个没有名称的工具。跳过。');
           continue;
         }
-        // Sanitize the parameters before registering the tool.
+        // 在注册工具之前清理参数。
         const parameters =
           func.parameters &&
           typeof func.parameters === 'object' &&
@@ -285,16 +285,16 @@ export class ToolRegistry {
         );
       }
     } catch (e) {
-      console.error(`Tool discovery command "${discoveryCmd}" failed:`, e);
+      console.error(`工具发现命令 "${discoveryCmd}" 失败:`, e);
       throw e;
     }
   }
 
   /**
-   * Retrieves the list of tool schemas (FunctionDeclaration array).
-   * Extracts the declarations from the ToolListUnion structure.
-   * Includes discovered (vs registered) tools if configured.
-   * @returns An array of FunctionDeclarations.
+   * 获取工具模式列表（FunctionDeclaration 数组）。
+   * 从 ToolListUnion 结构中提取声明。
+   * 如果已配置，包括发现的（相对于注册的）工具。
+   * @returns FunctionDeclarations 数组。
    */
   getFunctionDeclarations(): FunctionDeclaration[] {
     const declarations: FunctionDeclaration[] = [];
@@ -305,14 +305,14 @@ export class ToolRegistry {
   }
 
   /**
-   * Returns an array of all registered and discovered tool instances.
+   * 返回所有已注册和发现的工具实例数组。
    */
   getAllTools(): Tool[] {
     return Array.from(this.tools.values());
   }
 
   /**
-   * Returns an array of tools registered from a specific MCP server.
+   * 返回从特定 MCP 服务器注册的工具数组。
    */
   getToolsByServer(serverName: string): Tool[] {
     const serverTools: Tool[] = [];
@@ -325,7 +325,7 @@ export class ToolRegistry {
   }
 
   /**
-   * Get the definition of a specific tool.
+   * 获取特定工具的定义。
    */
   getTool(name: string): Tool | undefined {
     return this.tools.get(name);
@@ -333,26 +333,26 @@ export class ToolRegistry {
 }
 
 /**
- * Sanitizes a schema object in-place to ensure compatibility with the Gemini API.
+ * 就地清理模式对象以确保与 Gemini API 的兼容性。
  *
- * NOTE: This function mutates the passed schema object.
+ * 注意：此函数会直接修改传入的模式对象。
  *
- * It performs the following actions:
- * - Removes the `default` property when `anyOf` is present.
- * - Removes unsupported `format` values from string properties, keeping only 'enum' and 'date-time'.
- * - Recursively sanitizes nested schemas within `anyOf`, `items`, and `properties`.
- * - Handles circular references within the schema to prevent infinite loops.
+ * 它执行以下操作：
+ * - 当存在 `anyOf` 时移除 `default` 属性。
+ * - 从字符串属性中移除不支持的 `format` 值，仅保留 'enum' 和 'date-time'。
+ * - 递归清理 `anyOf`、`items` 和 `properties` 中的嵌套模式。
+ * - 处理模式内的循环引用以防止无限循环。
  *
- * @param schema The schema object to sanitize. It will be modified directly.
+ * @param schema 要清理的模式对象。将直接修改。
  */
 export function sanitizeParameters(schema?: Schema) {
   _sanitizeParameters(schema, new Set<Schema>());
 }
 
 /**
- * Internal recursive implementation for sanitizeParameters.
- * @param schema The schema object to sanitize.
- * @param visited A set used to track visited schema objects during recursion.
+ * sanitizeParameters 的内部递归实现。
+ * @param schema 要清理的模式对象。
+ * @param visited 用于在递归过程中跟踪已访问模式对象的集合。
  */
 function _sanitizeParameters(schema: Schema | undefined, visited: Set<Schema>) {
   if (!schema || visited.has(schema)) {
@@ -361,7 +361,7 @@ function _sanitizeParameters(schema: Schema | undefined, visited: Set<Schema>) {
   visited.add(schema);
 
   if (schema.anyOf) {
-    // Vertex AI gets confused if both anyOf and default are set.
+    // Vertex AI 在同时设置 anyOf 和 default 时会混淆。
     schema.default = undefined;
     for (const item of schema.anyOf) {
       if (typeof item !== 'boolean') {
@@ -379,7 +379,7 @@ function _sanitizeParameters(schema: Schema | undefined, visited: Set<Schema>) {
       }
     }
   }
-  // Vertex AI only supports 'enum' and 'date-time' for STRING format.
+  // Vertex AI 仅支持 STRING 类型的 'enum' 和 'date-time' 格式。
   if (schema.type === Type.STRING) {
     if (
       schema.format &&

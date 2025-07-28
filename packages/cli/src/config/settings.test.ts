@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /// <reference types="vitest/globals" />
 
-// Mock 'os' first.
-import * as osActual from 'os'; // Import for type info for the mock factory
+// 首先模拟 'os' 模块。
+import * as osActual from 'os'; // 导入以获取模拟工厂的类型信息
 vi.mock('os', async (importOriginal) => {
   const actualOs = await importOriginal<typeof osActual>();
   return {
@@ -17,18 +17,18 @@ vi.mock('os', async (importOriginal) => {
   };
 });
 
-// Mock './settings.js' to ensure it uses the mocked 'os.homedir()' for its internal constants.
+// 模拟 './settings.js' 以确保其内部常量使用模拟的 'os.homedir()'。
 vi.mock('./settings.js', async (importActual) => {
   const originalModule = await importActual<typeof import('./settings.js')>();
   return {
-    __esModule: true, // Ensure correct module shape
-    ...originalModule, // Re-export all original members
-    // We are relying on originalModule's USER_SETTINGS_PATH being constructed with mocked os.homedir()
+    __esModule: true, // 确保正确的模块结构
+    ...originalModule, // 重新导出所有原始成员
+    // 我们依赖 originalModule 的 USER_SETTINGS_PATH 是使用模拟的 os.homedir() 构建的
   };
 });
 
-// NOW import everything else, including the (now effectively re-exported) settings.js
-import * as pathActual from 'path'; // Restored for MOCK_WORKSPACE_SETTINGS_PATH
+// 现在导入其他所有内容，包括（现在实际上是重新导出的）settings.js
+import * as pathActual from 'path'; // 为 MOCK_WORKSPACE_SETTINGS_PATH 恢复
 import {
   describe,
   it,
@@ -39,20 +39,20 @@ import {
   type Mocked,
   type Mock,
 } from 'vitest';
-import * as fs from 'fs'; // fs will be mocked separately
-import stripJsonComments from 'strip-json-comments'; // Will be mocked separately
+import * as fs from 'fs'; // fs 将被单独模拟
+import stripJsonComments from 'strip-json-comments'; // 将被单独模拟
 
-// These imports will get the versions from the vi.mock('./settings.js', ...) factory.
+// 这些导入将从 vi.mock('./settings.js', ...) 工厂获取版本。
 import {
   loadSettings,
-  USER_SETTINGS_PATH, // This IS the mocked path.
+  USER_SETTINGS_PATH, // 这是模拟的路径。
   SYSTEM_SETTINGS_PATH,
-  SETTINGS_DIRECTORY_NAME, // This is from the original module, but used by the mock.
+  SETTINGS_DIRECTORY_NAME, // 这来自原始模块，但被模拟使用。
   SettingScope,
 } from './settings.js';
 
 const MOCK_WORKSPACE_DIR = '/mock/workspace';
-// Use the (mocked) SETTINGS_DIRECTORY_NAME for consistency
+// 使用（模拟的）SETTINGS_DIRECTORY_NAME 以保持一致性
 const MOCK_WORKSPACE_SETTINGS_PATH = pathActual.join(
   MOCK_WORKSPACE_DIR,
   SETTINGS_DIRECTORY_NAME,
@@ -64,7 +64,7 @@ vi.mock('strip-json-comments', () => ({
   default: vi.fn((content) => content),
 }));
 
-describe('Settings Loading and Merging', () => {
+describe('设置加载和合并', () => {
   let mockFsExistsSync: Mocked<typeof fs.existsSync>;
   let mockStripJsonComments: Mocked<typeof stripJsonComments>;
   let mockFsMkdirSync: Mocked<typeof fs.mkdirSync>;
@@ -81,7 +81,7 @@ describe('Settings Loading and Merging', () => {
       (jsonString: string) => jsonString,
     );
     (mockFsExistsSync as Mock).mockReturnValue(false);
-    (fs.readFileSync as Mock).mockReturnValue('{}'); // Return valid empty JSON
+    (fs.readFileSync as Mock).mockReturnValue('{}'); // 返回有效的空 JSON
     (mockFsMkdirSync as Mock).mockImplementation(() => undefined);
   });
 
@@ -90,7 +90,7 @@ describe('Settings Loading and Merging', () => {
   });
 
   describe('loadSettings', () => {
-    it('should load empty settings if no files exist', () => {
+    it('如果不存在任何文件，应加载空设置', () => {
       const settings = loadSettings(MOCK_WORKSPACE_DIR);
       expect(settings.system.settings).toEqual({});
       expect(settings.user.settings).toEqual({});
@@ -99,7 +99,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.errors.length).toBe(0);
     });
 
-    it('should load system settings if only system file exists', () => {
+    it('如果只有系统文件存在，应加载系统设置', () => {
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) => p === SYSTEM_SETTINGS_PATH,
       );
@@ -127,8 +127,8 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged).toEqual(systemSettingsContent);
     });
 
-    it('should load user settings if only user file exists', () => {
-      const expectedUserSettingsPath = USER_SETTINGS_PATH; // Use the path actually resolved by the (mocked) module
+    it('如果只有用户文件存在，应加载用户设置', () => {
+      const expectedUserSettingsPath = USER_SETTINGS_PATH; // 使用由（模拟的）模块实际解析的路径
 
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) => p === expectedUserSettingsPath,
@@ -156,7 +156,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged).toEqual(userSettingsContent);
     });
 
-    it('should load workspace settings if only workspace file exists', () => {
+    it('如果只有工作区文件存在，应加载工作区设置', () => {
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) => p === MOCK_WORKSPACE_SETTINGS_PATH,
       );
@@ -183,7 +183,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged).toEqual(workspaceSettingsContent);
     });
 
-    it('should merge user and workspace settings, with workspace taking precedence', () => {
+    it('应合并用户和工作区设置，工作区优先', () => {
       (mockFsExistsSync as Mock).mockReturnValue(true);
       const userSettingsContent = {
         theme: 'dark',
@@ -218,7 +218,7 @@ describe('Settings Loading and Merging', () => {
       });
     });
 
-    it('should merge system, user and workspace settings, with system taking precedence over workspace, and workspace over user', () => {
+    it('应合并系统、用户和工作区设置，系统优先于工作区，工作区优先于用户', () => {
       (mockFsExistsSync as Mock).mockReturnValue(true);
       const systemSettingsContent = {
         theme: 'system-theme',
@@ -262,7 +262,7 @@ describe('Settings Loading and Merging', () => {
       });
     });
 
-    it('should handle contextFileName correctly when only in user settings', () => {
+    it('当仅在用户设置中存在 contextFileName 时，应正确处理', () => {
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) => p === USER_SETTINGS_PATH,
       );
@@ -279,7 +279,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged.contextFileName).toBe('CUSTOM.md');
     });
 
-    it('should handle contextFileName correctly when only in workspace settings', () => {
+    it('当仅在工作区设置中存在 contextFileName 时，应正确处理', () => {
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) => p === MOCK_WORKSPACE_SETTINGS_PATH,
       );
@@ -298,7 +298,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged.contextFileName).toBe('PROJECT_SPECIFIC.md');
     });
 
-    it('should default contextFileName to undefined if not in any settings file', () => {
+    it('如果任何设置文件中都不存在 contextFileName，则默认为 undefined', () => {
       (mockFsExistsSync as Mock).mockReturnValue(true);
       const userSettingsContent = { theme: 'dark' };
       const workspaceSettingsContent = { sandbox: true };
@@ -316,7 +316,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged.contextFileName).toBeUndefined();
     });
 
-    it('should load telemetry setting from user settings', () => {
+    it('应从用户设置加载遥测设置', () => {
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) => p === USER_SETTINGS_PATH,
       );
@@ -332,7 +332,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged.telemetry).toBe(true);
     });
 
-    it('should load telemetry setting from workspace settings', () => {
+    it('应从工作区设置加载遥测设置', () => {
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) => p === MOCK_WORKSPACE_SETTINGS_PATH,
       );
@@ -348,7 +348,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged.telemetry).toBe(false);
     });
 
-    it('should prioritize workspace telemetry setting over user setting', () => {
+    it('应优先使用工作区遥测设置而非用户设置', () => {
       (mockFsExistsSync as Mock).mockReturnValue(true);
       const userSettingsContent = { telemetry: true };
       const workspaceSettingsContent = { telemetry: false };
@@ -365,15 +365,15 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged.telemetry).toBe(false);
     });
 
-    it('should have telemetry as undefined if not in any settings file', () => {
-      (mockFsExistsSync as Mock).mockReturnValue(false); // No settings files exist
+    it('如果任何设置文件中都不存在遥测设置，则应为 undefined', () => {
+      (mockFsExistsSync as Mock).mockReturnValue(false); // 不存在设置文件
       (fs.readFileSync as Mock).mockReturnValue('{}');
       const settings = loadSettings(MOCK_WORKSPACE_DIR);
       expect(settings.merged.telemetry).toBeUndefined();
     });
 
-    it('should handle JSON parsing errors gracefully', () => {
-      (mockFsExistsSync as Mock).mockReturnValue(true); // Both files "exist"
+    it('应优雅地处理 JSON 解析错误', () => {
+      (mockFsExistsSync as Mock).mockReturnValue(true); // 两个文件都“存在”
       const invalidJsonContent = 'invalid json';
       const userReadError = new SyntaxError(
         "Expected ',' or '}' after property value in JSON at position 10",
@@ -385,33 +385,33 @@ describe('Settings Loading and Merging', () => {
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === USER_SETTINGS_PATH) {
-            // Simulate JSON.parse throwing for user settings
+            // 模拟 JSON.parse 在用户设置中抛出异常
             vi.spyOn(JSON, 'parse').mockImplementationOnce(() => {
               throw userReadError;
             });
-            return invalidJsonContent; // Content that would cause JSON.parse to throw
+            return invalidJsonContent; // 会导致 JSON.parse 抛出异常的内容
           }
           if (p === MOCK_WORKSPACE_SETTINGS_PATH) {
-            // Simulate JSON.parse throwing for workspace settings
+            // 模拟 JSON.parse 在工作区设置中抛出异常
             vi.spyOn(JSON, 'parse').mockImplementationOnce(() => {
               throw workspaceReadError;
             });
             return invalidJsonContent;
           }
-          return '{}'; // Default for other reads
+          return '{}'; // 其他读取的默认值
         },
       );
 
       const settings = loadSettings(MOCK_WORKSPACE_DIR);
 
-      // Check that settings are empty due to parsing errors
+      // 检查由于解析错误设置是否为空
       expect(settings.user.settings).toEqual({});
       expect(settings.workspace.settings).toEqual({});
       expect(settings.merged).toEqual({});
 
-      // Check that error objects are populated in settings.errors
+      // 检查 settings.errors 中是否填充了错误对象
       expect(settings.errors).toBeDefined();
-      // Assuming both user and workspace files cause errors and are added in order
+      // 假设用户和工作区文件都会导致错误，并按顺序添加
       expect(settings.errors.length).toEqual(2);
 
       const userError = settings.errors.find(
@@ -426,11 +426,11 @@ describe('Settings Loading and Merging', () => {
       expect(workspaceError).toBeDefined();
       expect(workspaceError?.message).toBe(workspaceReadError.message);
 
-      // Restore JSON.parse mock if it was spied on specifically for this test
-      vi.restoreAllMocks(); // Or more targeted restore if needed
+      // 如果为此测试专门监视了 JSON.parse，则恢复它
+      vi.restoreAllMocks(); // 或者如果需要更精确的恢复
     });
 
-    it('should resolve environment variables in user settings', () => {
+    it('应解析用户设置中的环境变量', () => {
       process.env.TEST_API_KEY = 'user_api_key_from_env';
       const userSettingsContent = {
         apiKey: '$TEST_API_KEY',
@@ -456,7 +456,7 @@ describe('Settings Loading and Merging', () => {
       delete process.env.TEST_API_KEY;
     });
 
-    it('should resolve environment variables in workspace settings', () => {
+    it('应解析工作区设置中的环境变量', () => {
       process.env.WORKSPACE_ENDPOINT = 'workspace_endpoint_from_env';
       const workspaceSettingsContent = {
         endpoint: '${WORKSPACE_ENDPOINT}/api',
@@ -484,23 +484,23 @@ describe('Settings Loading and Merging', () => {
       delete process.env.WORKSPACE_ENDPOINT;
     });
 
-    it('should prioritize user env variables over workspace env variables if keys clash after resolution', () => {
+    it('如果解析后键冲突，应优先使用用户环境变量而非工作区环境变量', () => {
       const userSettingsContent = { configValue: '$SHARED_VAR' };
       const workspaceSettingsContent = { configValue: '$SHARED_VAR' };
 
       (mockFsExistsSync as Mock).mockReturnValue(true);
       const originalSharedVar = process.env.SHARED_VAR;
-      // Temporarily delete to ensure a clean slate for the test's specific manipulations
+      // 暂时删除以确保测试操作的干净环境
       delete process.env.SHARED_VAR;
 
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === USER_SETTINGS_PATH) {
-            process.env.SHARED_VAR = 'user_value_for_user_read'; // Set for user settings read
+            process.env.SHARED_VAR = 'user_value_for_user_read'; // 为用户设置读取设置
             return JSON.stringify(userSettingsContent);
           }
           if (p === MOCK_WORKSPACE_SETTINGS_PATH) {
-            process.env.SHARED_VAR = 'workspace_value_for_workspace_read'; // Set for workspace settings read
+            process.env.SHARED_VAR = 'workspace_value_for_workspace_read'; // 为工作区设置读取设置
             return JSON.stringify(workspaceSettingsContent);
           }
           return '{}';
@@ -515,36 +515,36 @@ describe('Settings Loading and Merging', () => {
       expect(settings.workspace.settings.configValue).toBe(
         'workspace_value_for_workspace_read',
       );
-      // Merged should take workspace's resolved value
+      // 合并值应采用工作区的解析值
       expect(settings.merged.configValue).toBe(
         'workspace_value_for_workspace_read',
       );
 
-      // Restore original environment variable state
+      // 恢复原始环境变量状态
       if (originalSharedVar !== undefined) {
         process.env.SHARED_VAR = originalSharedVar;
       } else {
-        delete process.env.SHARED_VAR; // Ensure it's deleted if it wasn't there before
+        delete process.env.SHARED_VAR; // 如果之前不存在则确保删除
       }
     });
 
-    it('should prioritize workspace env variables over user env variables if keys clash after resolution', () => {
+    it('如果解析后键冲突，应优先使用工作区环境变量而非用户环境变量', () => {
       const userSettingsContent = { configValue: '$SHARED_VAR' };
       const workspaceSettingsContent = { configValue: '$SHARED_VAR' };
 
       (mockFsExistsSync as Mock).mockReturnValue(true);
       const originalSharedVar = process.env.SHARED_VAR;
-      // Temporarily delete to ensure a clean slate for the test's specific manipulations
+      // 暂时删除以确保测试操作的干净环境
       delete process.env.SHARED_VAR;
 
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === USER_SETTINGS_PATH) {
-            process.env.SHARED_VAR = 'user_value_for_user_read'; // Set for user settings read
+            process.env.SHARED_VAR = 'user_value_for_user_read'; // 为用户设置读取设置
             return JSON.stringify(userSettingsContent);
           }
           if (p === MOCK_WORKSPACE_SETTINGS_PATH) {
-            process.env.SHARED_VAR = 'workspace_value_for_workspace_read'; // Set for workspace settings read
+            process.env.SHARED_VAR = 'workspace_value_for_workspace_read'; // 为工作区设置读取设置
             return JSON.stringify(workspaceSettingsContent);
           }
           return '{}';
@@ -559,36 +559,36 @@ describe('Settings Loading and Merging', () => {
       expect(settings.workspace.settings.configValue).toBe(
         'workspace_value_for_workspace_read',
       );
-      // Merged should take workspace's resolved value
+      // 合并值应采用工作区的解析值
       expect(settings.merged.configValue).toBe(
         'workspace_value_for_workspace_read',
       );
 
-      // Restore original environment variable state
+      // 恢复原始环境变量状态
       if (originalSharedVar !== undefined) {
         process.env.SHARED_VAR = originalSharedVar;
       } else {
-        delete process.env.SHARED_VAR; // Ensure it's deleted if it wasn't there before
+        delete process.env.SHARED_VAR; // 如果之前不存在则确保删除
       }
     });
 
-    it('should prioritize system env variables over workspace env variables if keys clash after resolution', () => {
+    it('如果解析后键冲突，应优先使用系统环境变量而非工作区环境变量', () => {
       const workspaceSettingsContent = { configValue: '$SHARED_VAR' };
       const systemSettingsContent = { configValue: '$SHARED_VAR' };
 
       (mockFsExistsSync as Mock).mockReturnValue(true);
       const originalSharedVar = process.env.SHARED_VAR;
-      // Temporarily delete to ensure a clean slate for the test's specific manipulations
+      // 暂时删除以确保测试操作的干净环境
       delete process.env.SHARED_VAR;
 
       (fs.readFileSync as Mock).mockImplementation(
         (p: fs.PathOrFileDescriptor) => {
           if (p === SYSTEM_SETTINGS_PATH) {
-            process.env.SHARED_VAR = 'system_value_for_system_read'; // Set for system settings read
+            process.env.SHARED_VAR = 'system_value_for_system_read'; // 为系统设置读取设置
             return JSON.stringify(systemSettingsContent);
           }
           if (p === MOCK_WORKSPACE_SETTINGS_PATH) {
-            process.env.SHARED_VAR = 'workspace_value_for_workspace_read'; // Set for workspace settings read
+            process.env.SHARED_VAR = 'workspace_value_for_workspace_read'; // 为工作区设置读取设置
             return JSON.stringify(workspaceSettingsContent);
           }
           return '{}';
@@ -603,18 +603,18 @@ describe('Settings Loading and Merging', () => {
       expect(settings.workspace.settings.configValue).toBe(
         'workspace_value_for_workspace_read',
       );
-      // Merged should take workspace's resolved value
+      // 合并值应采用系统解析值
       expect(settings.merged.configValue).toBe('system_value_for_system_read');
 
-      // Restore original environment variable state
+      // 恢复原始环境变量状态
       if (originalSharedVar !== undefined) {
         process.env.SHARED_VAR = originalSharedVar;
       } else {
-        delete process.env.SHARED_VAR; // Ensure it's deleted if it wasn't there before
+        delete process.env.SHARED_VAR; // 如果之前不存在则确保删除
       }
     });
 
-    it('should leave unresolved environment variables as is', () => {
+    it('应保留未解析的环境变量原样', () => {
       const userSettingsContent = { apiKey: '$UNDEFINED_VAR' };
       (mockFsExistsSync as Mock).mockImplementation(
         (p: fs.PathLike) => p === USER_SETTINGS_PATH,
@@ -632,7 +632,7 @@ describe('Settings Loading and Merging', () => {
       expect(settings.merged.apiKey).toBe('$UNDEFINED_VAR');
     });
 
-    it('should resolve multiple environment variables in a single string', () => {
+    it('应解析单个字符串中的多个环境变量', () => {
       process.env.VAR_A = 'valueA';
       process.env.VAR_B = 'valueB';
       const userSettingsContent = { path: '/path/$VAR_A/${VAR_B}/end' };
@@ -652,7 +652,7 @@ describe('Settings Loading and Merging', () => {
       delete process.env.VAR_B;
     });
 
-    it('should resolve environment variables in arrays', () => {
+    it('应解析数组中的环境变量', () => {
       process.env.ITEM_1 = 'item1_env';
       process.env.ITEM_2 = 'item2_env';
       const userSettingsContent = { list: ['$ITEM_1', '${ITEM_2}', 'literal'] };
@@ -676,7 +676,7 @@ describe('Settings Loading and Merging', () => {
       delete process.env.ITEM_2;
     });
 
-    it('should correctly pass through null, boolean, and number types, and handle undefined properties', () => {
+    it('应正确传递 null、boolean 和 number 类型，并处理 undefined 属性', () => {
       process.env.MY_ENV_STRING = 'env_string_value';
       process.env.MY_ENV_STRING_NESTED = 'env_string_nested_value';
 
@@ -727,7 +727,7 @@ describe('Settings Loading and Merging', () => {
       delete process.env.MY_ENV_STRING_NESTED;
     });
 
-    it('should resolve multiple concatenated environment variables in a single string value', () => {
+    it('应解析单个字符串值中的多个连接环境变量', () => {
       process.env.TEST_HOST = 'myhost';
       process.env.TEST_PORT = '9090';
       const userSettingsContent = {
@@ -752,13 +752,13 @@ describe('Settings Loading and Merging', () => {
     });
   });
 
-  describe('LoadedSettings class', () => {
-    it('setValue should update the correct scope and recompute merged settings', () => {
+  describe('LoadedSettings 类', () => {
+    it('setValue 应更新正确的范围并重新计算合并设置', () => {
       (mockFsExistsSync as Mock).mockReturnValue(false);
       const loadedSettings = loadSettings(MOCK_WORKSPACE_DIR);
 
       vi.mocked(fs.writeFileSync).mockImplementation(() => {});
-      // mkdirSync is mocked in beforeEach to return undefined, which is fine for void usage
+      // mkdirSync 在 beforeEach 中被模拟为返回 undefined，这对 void 使用是正常的
 
       loadedSettings.setValue(SettingScope.User, 'theme', 'matrix');
       expect(loadedSettings.user.settings.theme).toBe('matrix');
@@ -778,14 +778,14 @@ describe('Settings Loading and Merging', () => {
         'MY_AGENTS.md',
       );
       expect(loadedSettings.merged.contextFileName).toBe('MY_AGENTS.md');
-      expect(loadedSettings.merged.theme).toBe('matrix'); // User setting should still be there
+      expect(loadedSettings.merged.theme).toBe('matrix'); // 用户设置应仍然存在
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         MOCK_WORKSPACE_SETTINGS_PATH,
         JSON.stringify({ contextFileName: 'MY_AGENTS.md' }, null, 2),
         'utf-8',
       );
 
-      // System theme overrides user and workspace themes
+      // 系统主题覆盖用户和工作区主题
       loadedSettings.setValue(SettingScope.System, 'theme', 'ocean');
 
       expect(loadedSettings.system.settings.theme).toBe('ocean');

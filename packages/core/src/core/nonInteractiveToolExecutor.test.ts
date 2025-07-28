@@ -31,10 +31,10 @@ describe('executeToolCall', () => {
     mockTool = {
       name: 'testTool',
       displayName: 'Test Tool',
-      description: 'A tool for testing',
+      description: '用于测试的工具',
       schema: {
         name: 'testTool',
-        description: 'A tool for testing',
+        description: '用于测试的工具',
         parameters: {
           type: Type.OBJECT,
           properties: {
@@ -55,13 +55,13 @@ describe('executeToolCall', () => {
 
     mockToolRegistry = {
       getTool: vi.fn(),
-      // Add other ToolRegistry methods if needed, or use a more complete mock
+      // 如有需要，添加其他 ToolRegistry 方法，或使用更完整的模拟
     } as unknown as ToolRegistry;
 
     abortController = new AbortController();
   });
 
-  it('should execute a tool successfully', async () => {
+  it('应成功执行工具', async () => {
     const request: ToolCallRequestInfo = {
       callId: 'call1',
       name: 'testTool',
@@ -70,8 +70,8 @@ describe('executeToolCall', () => {
       prompt_id: 'prompt-id-1',
     };
     const toolResult: ToolResult = {
-      llmContent: 'Tool executed successfully',
-      returnDisplay: 'Success!',
+      llmContent: '工具执行成功',
+      returnDisplay: '成功！',
     };
     vi.mocked(mockToolRegistry.getTool).mockReturnValue(mockTool);
     vi.mocked(mockTool.execute).mockResolvedValue(toolResult);
@@ -90,18 +90,18 @@ describe('executeToolCall', () => {
     );
     expect(response.callId).toBe('call1');
     expect(response.error).toBeUndefined();
-    expect(response.resultDisplay).toBe('Success!');
+    expect(response.resultDisplay).toBe('成功！');
     expect(response.responseParts).toEqual({
       functionResponse: {
         name: 'testTool',
         id: 'call1',
-        response: { output: 'Tool executed successfully' },
+        response: { output: '工具执行成功' },
       },
     });
   });
 
-  it('should return an error if tool is not found', async () => {
-    const request: ToolCallRequestInfo = {
+  it('如果未找到工具应返回错误', async () => {
+      const request: ToolCallRequestInfo = {
       callId: 'call2',
       name: 'nonExistentTool',
       args: {},
@@ -120,23 +120,23 @@ describe('executeToolCall', () => {
     expect(response.callId).toBe('call2');
     expect(response.error).toBeInstanceOf(Error);
     expect(response.error?.message).toBe(
-      'Tool "nonExistentTool" not found in registry.',
+      '工具 "nonExistentTool" 在注册表中未找到。',
     );
     expect(response.resultDisplay).toBe(
-      'Tool "nonExistentTool" not found in registry.',
+      '工具 "nonExistentTool" 在注册表中未找到。',
     );
     expect(response.responseParts).toEqual([
       {
         functionResponse: {
           name: 'nonExistentTool',
           id: 'call2',
-          response: { error: 'Tool "nonExistentTool" not found in registry.' },
+          response: { error: '工具 "nonExistentTool" 在注册表中未找到。' },
         },
       },
     ]);
   });
 
-  it('should return an error if tool execution fails', async () => {
+  it('如果工具执行失败应返回错误', async () => {
     const request: ToolCallRequestInfo = {
       callId: 'call3',
       name: 'testTool',
@@ -144,7 +144,7 @@ describe('executeToolCall', () => {
       isClientInitiated: false,
       prompt_id: 'prompt-id-3',
     };
-    const executionError = new Error('Tool execution failed');
+    const executionError = new Error('工具执行失败');
     vi.mocked(mockToolRegistry.getTool).mockReturnValue(mockTool);
     vi.mocked(mockTool.execute).mockRejectedValue(executionError);
 
@@ -157,19 +157,19 @@ describe('executeToolCall', () => {
 
     expect(response.callId).toBe('call3');
     expect(response.error).toBe(executionError);
-    expect(response.resultDisplay).toBe('Tool execution failed');
+    expect(response.resultDisplay).toBe('工具执行失败');
     expect(response.responseParts).toEqual([
       {
         functionResponse: {
           name: 'testTool',
           id: 'call3',
-          response: { error: 'Tool execution failed' },
+          response: { error: '工具执行失败' },
         },
       },
     ]);
   });
 
-  it('should handle cancellation during tool execution', async () => {
+  it('应处理工具执行期间的取消操作', async () => {
     const request: ToolCallRequestInfo = {
       callId: 'call4',
       name: 'testTool',
@@ -177,7 +177,7 @@ describe('executeToolCall', () => {
       isClientInitiated: false,
       prompt_id: 'prompt-id-4',
     };
-    const cancellationError = new Error('Operation cancelled');
+    const cancellationError = new Error('操作已取消');
     vi.mocked(mockToolRegistry.getTool).mockReturnValue(mockTool);
 
     vi.mocked(mockTool.execute).mockImplementation(async (_args, signal) => {
@@ -188,11 +188,11 @@ describe('executeToolCall', () => {
         signal?.addEventListener('abort', () => {
           reject(cancellationError);
         });
-        // Simulate work that might happen if not aborted immediately
+        // 模拟如果未立即中止可能发生的工作
         const timeoutId = setTimeout(
           () =>
             reject(
-              new Error('Should have been cancelled if not aborted prior'),
+              new Error('如果之前未中止，应已被取消'),
             ),
           100,
         );
@@ -200,7 +200,7 @@ describe('executeToolCall', () => {
       });
     });
 
-    abortController.abort(); // Abort before calling
+    abortController.abort(); // 调用前中止
     const response = await executeToolCall(
       mockConfig,
       request,
@@ -210,10 +210,10 @@ describe('executeToolCall', () => {
 
     expect(response.callId).toBe('call4');
     expect(response.error?.message).toBe(cancellationError.message);
-    expect(response.resultDisplay).toBe('Operation cancelled');
+    expect(response.resultDisplay).toBe('操作已取消');
   });
 
-  it('should correctly format llmContent with inlineData', async () => {
+  it('应正确格式化包含 inlineData 的 llmContent', async () => {
     const request: ToolCallRequestInfo = {
       callId: 'call5',
       name: 'testTool',
@@ -226,7 +226,7 @@ describe('executeToolCall', () => {
     };
     const toolResult: ToolResult = {
       llmContent: [imageDataPart],
-      returnDisplay: 'Image processed',
+      returnDisplay: '图像已处理',
     };
     vi.mocked(mockToolRegistry.getTool).mockReturnValue(mockTool);
     vi.mocked(mockTool.execute).mockResolvedValue(toolResult);
@@ -238,14 +238,14 @@ describe('executeToolCall', () => {
       abortController.signal,
     );
 
-    expect(response.resultDisplay).toBe('Image processed');
+    expect(response.resultDisplay).toBe('图像已处理');
     expect(response.responseParts).toEqual([
       {
         functionResponse: {
           name: 'testTool',
           id: 'call5',
           response: {
-            output: 'Binary content of type image/png was processed.',
+            output: '已处理类型为 image/png 的二进制内容。',
           },
         },
       },

@@ -63,24 +63,24 @@ export function useCompletion(
     if (suggestions.length === 0) return;
 
     setActiveSuggestionIndex((prevActiveIndex) => {
-      // Calculate new active index, handling wrap-around
+      // 计算新的激活索引，处理循环滚动
       const newActiveIndex =
         prevActiveIndex <= 0 ? suggestions.length - 1 : prevActiveIndex - 1;
 
-      // Adjust scroll position based on the new active index
+      // 根据新激活索引调整滚动位置
       setVisibleStartIndex((prevVisibleStart) => {
-        // Case 1: Wrapped around to the last item
+        // 情况 1：循环滚动到最后一项
         if (
           newActiveIndex === suggestions.length - 1 &&
           suggestions.length > MAX_SUGGESTIONS_TO_SHOW
         ) {
           return Math.max(0, suggestions.length - MAX_SUGGESTIONS_TO_SHOW);
         }
-        // Case 2: Scrolled above the current visible window
+        // 情况 2：滚动超出当前可见窗口上方
         if (newActiveIndex < prevVisibleStart) {
           return newActiveIndex;
         }
-        // Otherwise, keep the current scroll position
+        // 否则保持当前滚动位置
         return prevVisibleStart;
       });
 
@@ -92,25 +92,25 @@ export function useCompletion(
     if (suggestions.length === 0) return;
 
     setActiveSuggestionIndex((prevActiveIndex) => {
-      // Calculate new active index, handling wrap-around
+      // 计算新的激活索引，处理循环滚动
       const newActiveIndex =
         prevActiveIndex >= suggestions.length - 1 ? 0 : prevActiveIndex + 1;
 
-      // Adjust scroll position based on the new active index
+      // 根据新激活索引调整滚动位置
       setVisibleStartIndex((prevVisibleStart) => {
-        // Case 1: Wrapped around to the first item
+        // 情况 1：循环滚动到第一项
         if (
           newActiveIndex === 0 &&
           suggestions.length > MAX_SUGGESTIONS_TO_SHOW
         ) {
           return 0;
         }
-        // Case 2: Scrolled below the current visible window
+        // 情况 2：滚动超出当前可见窗口下方
         const visibleEndIndex = prevVisibleStart + MAX_SUGGESTIONS_TO_SHOW;
         if (newActiveIndex >= visibleEndIndex) {
           return newActiveIndex - MAX_SUGGESTIONS_TO_SHOW + 1;
         }
-        // Otherwise, keep the current scroll position
+        // 否则保持当前滚动位置
         return prevVisibleStart;
       });
 
@@ -130,20 +130,20 @@ export function useCompletion(
       const fullPath = trimmedQuery.substring(1);
       const hasTrailingSpace = trimmedQuery.endsWith(' ');
 
-      // Get all non-empty parts of the command.
+      // 获取命令的所有非空部分。
       const rawParts = fullPath.split(/\s+/).filter((p) => p);
 
       let commandPathParts = rawParts;
       let partial = '';
 
-      // If there's no trailing space, the last part is potentially a partial segment.
-      // We tentatively separate it.
+      // 如果没有尾随空格，最后一部分可能是不完整的段。
+      // 我们暂时将其分离。
       if (!hasTrailingSpace && rawParts.length > 0) {
         partial = rawParts[rawParts.length - 1];
         commandPathParts = rawParts.slice(0, -1);
       }
 
-      // Traverse the Command Tree using the tentative completed path
+      // 使用暂定的完整路径遍历命令树
       let currentLevel: SlashCommand[] | undefined = slashCommands;
       let leafCommand: SlashCommand | null = null;
 
@@ -166,7 +166,7 @@ export function useCompletion(
         }
       }
 
-      // Handle the Ambiguous Case
+      // 处理模糊情况
       if (!hasTrailingSpace && currentLevel) {
         const exactMatchAsParent = currentLevel.find(
           (cmd) =>
@@ -175,19 +175,19 @@ export function useCompletion(
         );
 
         if (exactMatchAsParent) {
-          // It's a perfect match for a parent command. Override our initial guess.
-          // Treat it as a completed command path.
+          // 它与父命令完全匹配。覆盖我们的初始猜测。
+          // 将其视为完整的命令路径。
           leafCommand = exactMatchAsParent;
           currentLevel = exactMatchAsParent.subCommands;
-          partial = ''; // We now want to suggest ALL of its sub-commands.
+          partial = ''; // 现在我们想要建议其所有子命令。
         }
       }
 
       const depth = commandPathParts.length;
 
-      // Provide Suggestions based on the now-corrected context
+      // 根据已修正的上下文提供建议
 
-      // Argument Completion
+      // 参数补全
       if (
         leafCommand?.completion &&
         (hasTrailingSpace ||
@@ -208,7 +208,7 @@ export function useCompletion(
         return;
       }
 
-      // Command/Sub-command Completion
+      // 命令/子命令补全
       const commandsToSearch = currentLevel || [];
       if (commandsToSearch.length > 0) {
         let potentialSuggestions = commandsToSearch.filter(
@@ -217,8 +217,8 @@ export function useCompletion(
             (cmd.name.startsWith(partial) || cmd.altName?.startsWith(partial)),
         );
 
-        // If a user's input is an exact match and it is a leaf command,
-        // enter should submit immediately.
+        // 如果用户的输入完全匹配且是叶命令，
+        // 回车应立即提交。
         if (potentialSuggestions.length > 0 && !hasTrailingSpace) {
           const perfectMatch = potentialSuggestions.find(
             (s) => s.name === partial,
@@ -241,12 +241,12 @@ export function useCompletion(
         return;
       }
 
-      // If we fall through, no suggestions are available.
+      // 如果我们执行到这里，表示没有可用建议。
       resetCompletionState();
       return;
     }
 
-    // Handle At Command Completion
+    // 处理 @ 命令补全
     const atIndex = query.lastIndexOf('@');
     if (atIndex === -1) {
       resetCompletionState();
@@ -279,8 +279,8 @@ export function useCompletion(
       },
       currentRelativePath = '',
       depth = 0,
-      maxDepth = 10, // Limit recursion depth
-      maxResults = 50, // Limit number of results
+      maxDepth = 10, // 限制递归深度
+      maxResults = 50, // 限制结果数量
     ): Promise<Suggestion[]> => {
       if (depth > maxDepth) {
         return [];
@@ -299,12 +299,12 @@ export function useCompletion(
             path.join(startDir, entry.name),
           );
 
-          // Conditionally ignore dotfiles
+          // 条件性忽略点文件
           if (!searchPrefix.startsWith('.') && entry.name.startsWith('.')) {
             continue;
           }
 
-          // Check if this entry should be ignored by filtering options
+          // 检查此条目是否应被过滤选项忽略
           if (
             fileDiscovery &&
             fileDiscovery.shouldIgnoreFile(entryPathFromRoot, filterOptions)
@@ -329,7 +329,7 @@ export function useCompletion(
               foundSuggestions = foundSuggestions.concat(
                 await findFilesRecursively(
                   path.join(startDir, entry.name),
-                  searchPrefix, // Pass original searchPrefix for recursive calls
+                  searchPrefix, // 为递归调用传递原始 searchPrefix
                   fileDiscovery,
                   filterOptions,
                   entryPathRelative,
@@ -342,7 +342,7 @@ export function useCompletion(
           }
         }
       } catch (_err) {
-        // Ignore errors like permission denied or ENOENT during recursive search
+        // 忽略递归搜索期间的权限被拒或 ENOENT 等错误
       }
       return foundSuggestions.slice(0, maxResults);
     };
@@ -376,7 +376,7 @@ export function useCompletion(
             return !fileDiscoveryService.shouldIgnoreFile(
               s.label,
               filterOptions,
-            ); // relative path
+            ); // 相对路径
           }
           return true;
         })
@@ -398,7 +398,7 @@ export function useCompletion(
       };
 
       try {
-        // If there's no slash, or it's the root, do a recursive search from cwd
+        // 如果没有斜杠，或在根目录，从 cwd 进行递归搜索
         if (
           partialPath.indexOf('/') === -1 &&
           prefix &&
@@ -419,16 +419,16 @@ export function useCompletion(
             );
           }
         } else {
-          // Original behavior: list files in the specific directory
+          // 原始行为：列出特定目录中的文件
           const lowerPrefix = prefix.toLowerCase();
           const entries = await fs.readdir(baseDirAbsolute, {
             withFileTypes: true,
           });
 
-          // Filter entries using git-aware filtering
+          // 使用 git 感知过滤筛选条目
           const filteredEntries = [];
           for (const entry of entries) {
-            // Conditionally ignore dotfiles
+            // 条件性忽略点文件
             if (!prefix.startsWith('.') && entry.name.startsWith('.')) {
               continue;
             }
@@ -452,12 +452,12 @@ export function useCompletion(
             const label = entry.isDirectory() ? entry.name + '/' : entry.name;
             return {
               label,
-              value: escapePath(label), // Value for completion should be just the name part
+              value: escapePath(label), // 补全的值应仅为名称部分
             };
           });
         }
 
-        // Sort by depth, then directories first, then alphabetically
+        // 按深度排序，然后目录优先，最后按字母顺序
         fetchedSuggestions.sort((a, b) => {
           const depthA = (a.label.match(/\//g) || []).length;
           const depthB = (b.label.match(/\//g) || []).length;
@@ -471,7 +471,7 @@ export function useCompletion(
           if (aIsDir && !bIsDir) return -1;
           if (!aIsDir && bIsDir) return 1;
 
-          // exclude extension when comparing
+          // 比较时不包括扩展名
           const filenameA = a.label.substring(
             0,
             a.label.length - path.extname(a.label).length,
@@ -500,7 +500,7 @@ export function useCompletion(
           }
         } else {
           console.error(
-            `Error fetching completion suggestions for ${partialPath}: ${getErrorMessage(error)}`,
+            `获取 ${partialPath} 的补全建议时出错: ${getErrorMessage(error)}`,
           );
           if (isMounted) {
             resetCompletionState();

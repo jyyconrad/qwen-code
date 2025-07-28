@@ -6,29 +6,29 @@
 
 import fs from 'fs';
 import path from 'path';
-import os from 'os'; // Import os module
+import os from 'os'; // 导入 os 模块
 
-// --- Configuration ---
-const cliPackageDir = path.resolve('packages', 'cli'); // Base directory for the CLI package
-const buildTimestampPath = path.join(cliPackageDir, 'dist', '.last_build'); // Path to the timestamp file within the CLI package
-const sourceDirs = [path.join(cliPackageDir, 'src')]; // Source directory within the CLI package
+// --- 配置 ---
+const cliPackageDir = path.resolve('packages', 'cli'); // CLI 包的基础目录
+const buildTimestampPath = path.join(cliPackageDir, 'dist', '.last_build'); // CLI 包中时间戳文件的路径
+const sourceDirs = [path.join(cliPackageDir, 'src')]; // CLI 包中的源代码目录
 const filesToWatch = [
   path.join(cliPackageDir, 'package.json'),
   path.join(cliPackageDir, 'tsconfig.json'),
-]; // Specific files within the CLI package
-const buildDir = path.join(cliPackageDir, 'dist'); // Build output directory within the CLI package
-const warningsFilePath = path.join(os.tmpdir(), 'gemini-cli-warnings.txt'); // Temp file for warnings
+]; // CLI 包中的特定文件
+const buildDir = path.join(cliPackageDir, 'dist'); // CLI 包中的构建输出目录
+const warningsFilePath = path.join(os.tmpdir(), 'gemini-cli-warnings.txt'); // 警告信息的临时文件
 // ---------------------
 
 function getMtime(filePath) {
   try {
-    return fs.statSync(filePath).mtimeMs; // Use mtimeMs for higher precision
+    return fs.statSync(filePath).mtimeMs; // 使用 mtimeMs 以获得更高精度
   } catch (err) {
     if (err.code === 'ENOENT') {
-      return null; // File doesn't exist
+      return null; // 文件不存在
     }
-    console.error(`Error getting stats for ${filePath}:`, err);
-    process.exit(1); // Exit on unexpected errors getting stats
+    console.error(`获取 ${filePath} 状态时出错:`, err);
+    process.exit(1); // 获取状态时出现意外错误则退出
   }
 }
 
@@ -36,7 +36,7 @@ function findSourceFiles(dir, allFiles = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    // Simple check to avoid recursing into node_modules or build dir itself
+    // 简单检查以避免递归进入 node_modules 或构建目录本身
     if (
       entry.isDirectory() &&
       entry.name !== 'node_modules' &&
@@ -50,99 +50,99 @@ function findSourceFiles(dir, allFiles = []) {
   return allFiles;
 }
 
-console.log('Checking build status...');
+console.log('正在检查构建状态...');
 
-// Clean up old warnings file before check
+// 检查前清理旧的警告文件
 try {
   if (fs.existsSync(warningsFilePath)) {
     fs.unlinkSync(warningsFilePath);
   }
 } catch (err) {
   console.warn(
-    `[Check Script] Warning: Could not delete previous warnings file: ${err.message}`,
+    `[检查脚本] 警告: 无法删除之前的警告文件: ${err.message}`,
   );
 }
 
 const buildMtime = getMtime(buildTimestampPath);
 if (!buildMtime) {
-  // If build is missing, write that as a warning and exit(0) so app can display it
-  const errorMessage = `ERROR: Build timestamp file (${path.relative(process.cwd(), buildTimestampPath)}) not found. Run \`npm run build\` first.`;
-  console.error(errorMessage); // Still log error here
+  // 如果构建缺失，将其作为警告写入并退出(0)，以便应用程序可以显示它
+  const errorMessage = `错误: 未找到构建时间戳文件 (${path.relative(process.cwd(), buildTimestampPath)})。请先运行 \`npm run build\`。`;
+  console.error(errorMessage); // 仍在此处记录错误
   try {
     fs.writeFileSync(warningsFilePath, errorMessage);
   } catch (writeErr) {
     console.error(
-      `[Check Script] Error writing missing build warning file: ${writeErr.message}`,
+      `[检查脚本] 写入缺失构建警告文件时出错: ${writeErr.message}`,
     );
   }
-  process.exit(0); // Allow app to start and show the error
+  process.exit(0); // 允许应用程序启动并显示错误
 }
 
 let newerSourceFileFound = false;
-const warningMessages = []; // Collect warnings here
+const warningMessages = []; // 在此处收集警告
 const allSourceFiles = [];
 
-// Collect files from specified directories
+// 从指定目录收集文件
 sourceDirs.forEach((dir) => {
   const dirPath = path.resolve(dir);
   if (fs.existsSync(dirPath)) {
     findSourceFiles(dirPath, allSourceFiles);
   } else {
-    console.warn(`Warning: Source directory "${dir}" not found.`);
+    console.warn(`警告: 未找到源代码目录 "${dir}"。`);
   }
 });
 
-// Add specific files
+// 添加特定文件
 filesToWatch.forEach((file) => {
   const filePath = path.resolve(file);
   if (fs.existsSync(filePath)) {
     allSourceFiles.push(filePath);
   } else {
-    console.warn(`Warning: Watched file "${file}" not found.`);
+    console.warn(`警告: 未找到监视的文件 "${file}"。`);
   }
 });
 
-// Check modification times
+// 检查修改时间
 for (const file of allSourceFiles) {
   const sourceMtime = getMtime(file);
   const relativePath = path.relative(process.cwd(), file);
   const isNewer = sourceMtime && sourceMtime > buildMtime;
 
   if (isNewer) {
-    const warning = `Warning: Source file "${relativePath}" has been modified since the last build.`;
-    console.warn(warning); // Keep console warning for script debugging
+    const warning = `警告: 源文件 "${relativePath}" 在上次构建后已被修改。`;
+    console.warn(warning); // 保留控制台警告以便脚本调试
     warningMessages.push(warning);
     newerSourceFileFound = true;
-    // break; // Uncomment to stop checking after the first newer file
+    // break; // 取消注释以在找到第一个较新的文件后停止检查
   }
 }
 
 if (newerSourceFileFound) {
   const finalWarning =
-    '\nRun "npm run build" to incorporate changes before starting.';
+    '\n请运行 "npm run build" 以在启动前包含更改。';
   warningMessages.push(finalWarning);
   console.warn(finalWarning);
 
-  // Write warnings to the temp file
+  // 将警告写入临时文件
   try {
     fs.writeFileSync(warningsFilePath, warningMessages.join('\n'));
-    // Removed debug log
+    // 移除了调试日志
   } catch (err) {
-    console.error(`[Check Script] Error writing warnings file: ${err.message}`);
-    // Proceed without writing, app won't show warnings
+    console.error(`[检查脚本] 写入警告文件时出错: ${err.message}`);
+    // 即使无法写入也继续执行，应用程序将不会显示警告
   }
 } else {
-  console.log('Build is up-to-date.');
-  // Ensure no stale warning file exists if build is ok
+  console.log('构建已是最新。');
+  // 如果构建正常，确保没有过期的警告文件存在
   try {
     if (fs.existsSync(warningsFilePath)) {
       fs.unlinkSync(warningsFilePath);
     }
   } catch (err) {
     console.warn(
-      `[Check Script] Warning: Could not delete previous warnings file: ${err.message}`,
+      `[检查脚本] 警告: 无法删除之前的警告文件: ${err.message}`,
     );
   }
 }
 
-process.exit(0); // Always exit successfully so the app starts
+process.exit(0); // 始终成功退出以便应用程序启动

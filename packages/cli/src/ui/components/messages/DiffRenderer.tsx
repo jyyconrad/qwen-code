@@ -33,14 +33,14 @@ function parseDiffWithLineNumbers(diffContent: string): DiffLine[] {
       currentNewLine = parseInt(hunkMatch[2], 10);
       inHunk = true;
       result.push({ type: 'hunk', content: line });
-      // We need to adjust the starting point because the first line number applies to the *first* actual line change/context,
-      // but we increment *before* pushing that line. So decrement here.
+      // 我们需要调整起始点，因为第一个行号适用于第一个实际的行更改/上下文，
+      // 但我们是在推送该行之前进行递增。所以这里先递减。
       currentOldLine--;
       currentNewLine--;
       continue;
     }
     if (!inHunk) {
-      // Skip standard Git header lines more robustly
+      // 更健壮地跳过标准 Git 头部行
       if (
         line.startsWith('--- ') ||
         line.startsWith('+++ ') ||
@@ -53,25 +53,25 @@ function parseDiffWithLineNumbers(diffContent: string): DiffLine[] {
         line.startsWith('deleted file mode')
       )
         continue;
-      // If it's not a hunk or header, skip (or handle as 'other' if needed)
+      // 如果不是区块或头部，则跳过（或根据需要处理为 'other'）
       continue;
     }
     if (line.startsWith('+')) {
-      currentNewLine++; // Increment before pushing
+      currentNewLine++; // 推送前递增
       result.push({
         type: 'add',
         newLine: currentNewLine,
         content: line.substring(1),
       });
     } else if (line.startsWith('-')) {
-      currentOldLine++; // Increment before pushing
+      currentOldLine++; // 推送前递增
       result.push({
         type: 'del',
         oldLine: currentOldLine,
         content: line.substring(1),
       });
     } else if (line.startsWith(' ')) {
-      currentOldLine++; // Increment before pushing
+      currentOldLine++; // 推送前递增
       currentNewLine++;
       result.push({
         type: 'context',
@@ -80,7 +80,7 @@ function parseDiffWithLineNumbers(diffContent: string): DiffLine[] {
         content: line.substring(1),
       });
     } else if (line.startsWith('\\')) {
-      // Handle "\ No newline at end of file"
+      // 处理 "\ No newline at end of file"
       result.push({ type: 'other', content: line });
     }
   }
@@ -95,7 +95,7 @@ interface DiffRendererProps {
   terminalWidth: number;
 }
 
-const DEFAULT_TAB_WIDTH = 4; // Spaces per tab for normalization
+const DEFAULT_TAB_WIDTH = 4; // 每个制表符规范化为空格数
 
 export const DiffRenderer: React.FC<DiffRendererProps> = ({
   diffContent,
@@ -105,7 +105,7 @@ export const DiffRenderer: React.FC<DiffRendererProps> = ({
   terminalWidth,
 }) => {
   if (!diffContent || typeof diffContent !== 'string') {
-    return <Text color={Colors.AccentYellow}>No diff content.</Text>;
+    return <Text color={Colors.AccentYellow}>无差异内容。</Text>;
   }
 
   const parsedLines = parseDiffWithLineNumbers(diffContent);
@@ -113,12 +113,12 @@ export const DiffRenderer: React.FC<DiffRendererProps> = ({
   if (parsedLines.length === 0) {
     return (
       <Box borderStyle="round" borderColor={Colors.Gray} padding={1}>
-        <Text dimColor>No changes detected.</Text>
+        <Text dimColor>未检测到更改。</Text>
       </Box>
     );
   }
 
-  // Check if the diff represents a new file (only additions and header lines)
+  // 检查差异是否表示新文件（仅包含添加和头部行）
   const isNewFile = parsedLines.every(
     (line) =>
       line.type === 'add' ||
@@ -131,12 +131,12 @@ export const DiffRenderer: React.FC<DiffRendererProps> = ({
   let renderedOutput;
 
   if (isNewFile) {
-    // Extract only the added lines' content
+    // 仅提取添加行的内容
     const addedContent = parsedLines
       .filter((line) => line.type === 'add')
       .map((line) => line.content)
       .join('\n');
-    // Attempt to infer language from filename, default to plain text if no filename
+    // 尝试从文件名推断语言，如果没有文件名则默认为纯文本
     const fileExtension = filename?.split('.').pop() || null;
     const language = fileExtension
       ? getLanguageFromExtension(fileExtension)
@@ -167,13 +167,13 @@ const renderDiffContent = (
   availableTerminalHeight: number | undefined,
   terminalWidth: number,
 ) => {
-  // 1. Normalize whitespace (replace tabs with spaces) *before* further processing
+  // 1. 规范化空白字符（将制表符替换为空格）在进一步处理之前
   const normalizedLines = parsedLines.map((line) => ({
     ...line,
     content: line.content.replace(/\t/g, ' '.repeat(tabWidth)),
   }));
 
-  // Filter out non-displayable lines (hunks, potentially 'other') using the normalized list
+  // 使用规范化列表过滤掉不可显示的行（区块，可能的 'other'）
   const displayableLines = normalizedLines.filter(
     (l) => l.type !== 'hunk' && l.type !== 'other',
   );
@@ -181,22 +181,22 @@ const renderDiffContent = (
   if (displayableLines.length === 0) {
     return (
       <Box borderStyle="round" borderColor={Colors.Gray} padding={1}>
-        <Text dimColor>No changes detected.</Text>
+        <Text dimColor>未检测到更改。</Text>
       </Box>
     );
   }
 
-  // Calculate the minimum indentation across all displayable lines
-  let baseIndentation = Infinity; // Start high to find the minimum
+  // 计算所有可显示行的最小缩进
+  let baseIndentation = Infinity; // 从高值开始以找到最小值
   for (const line of displayableLines) {
-    // Only consider lines with actual content for indentation calculation
+    // 仅考虑有实际内容的行来计算缩进
     if (line.content.trim() === '') continue;
 
-    const firstCharIndex = line.content.search(/\S/); // Find index of first non-whitespace char
-    const currentIndent = firstCharIndex === -1 ? 0 : firstCharIndex; // Indent is 0 if no non-whitespace found
+    const firstCharIndex = line.content.search(/\S/); // 查找第一个非空白字符的索引
+    const currentIndent = firstCharIndex === -1 ? 0 : firstCharIndex; // 如果没有找到非空白字符则缩进为 0
     baseIndentation = Math.min(baseIndentation, currentIndent);
   }
-  // If baseIndentation remained Infinity (e.g., no displayable lines with content), default to 0
+  // 如果 baseIndentation 仍为 Infinity（例如，没有有内容的可显示行），则默认为 0
   if (!isFinite(baseIndentation)) {
     baseIndentation = 0;
   }
@@ -215,12 +215,12 @@ const renderDiffContent = (
       key={key}
     >
       {displayableLines.reduce<React.ReactNode[]>((acc, line, index) => {
-        // Determine the relevant line number for gap calculation based on type
+        // 根据类型确定用于间隙计算的相关行号
         let relevantLineNumberForGapCalc: number | null = null;
         if (line.type === 'add' || line.type === 'context') {
           relevantLineNumberForGapCalc = line.newLine ?? null;
         } else if (line.type === 'del') {
-          // For deletions, the gap is typically in relation to the original file's line numbering
+          // 对于删除，间隙通常与原始文件的行号相关
           relevantLineNumberForGapCalc = line.oldLine ?? null;
         }
 
@@ -254,9 +254,9 @@ const renderDiffContent = (
             gutterNumStr = (line.oldLine ?? '').toString();
             color = 'red';
             prefixSymbol = '-';
-            // For deletions, update lastLineNumber based on oldLine if it's advancing.
-            // This helps manage gaps correctly if there are multiple consecutive deletions
-            // or if a deletion is followed by a context line far away in the original file.
+            // 对于删除，如果行号在递增，则基于 oldLine 更新 lastLineNumber。
+            // 这有助于正确管理间隙，如果有多行连续删除
+            // 或删除后跟着原始文件中相距很远的上下文行。
             if (line.oldLine !== undefined) {
               lastLineNumber = line.oldLine;
             }
@@ -308,5 +308,5 @@ const getLanguageFromExtension = (extension: string): string | null => {
     cpp: 'cpp',
     rb: 'ruby',
   };
-  return languageMap[extension] || null; // Return null if extension not found
+  return languageMap[extension] || null; // 如果未找到扩展名则返回 null
 };

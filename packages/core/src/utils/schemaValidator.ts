@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * 版权所有 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,19 +10,19 @@ import * as ajv from 'ajv';
 const ajValidator = new ajv.Ajv();
 
 /**
- * Simple utility to validate objects against JSON Schemas
+ * 用于根据 JSON Schema 验证对象的简单工具
  */
 export class SchemaValidator {
   /**
-   * Returns null if the data confroms to the schema described by schema (or if schema
-   *  is null). Otherwise, returns a string describing the error.
+   * 如果数据符合 schema 所描述的结构（或 schema 为 null）则返回 null。
+   * 否则，返回描述错误的字符串。
    */
   static validate(schema: Schema | undefined, data: unknown): string | null {
     if (!schema) {
       return null;
     }
     if (typeof data !== 'object' || data === null) {
-      return 'Value of params must be an object';
+      return '参数值必须为对象';
     }
     const validate = ajValidator.compile(this.toObjectSchema(schema));
     const valid = validate(data);
@@ -33,9 +33,9 @@ export class SchemaValidator {
   }
 
   /**
-   * Converts @google/genai's Schema to an object compatible with avj.
-   * This is necessry because it represents Types as an Enum (with
-   * UPPERCASE values) and minItems and minLength as strings, when they should be numbers.
+   * 将 @google/genai 的 Schema 转换为与 avj 兼容的对象。
+   * 这是必要的，因为它将类型表示为枚举（使用大写值），
+   * 并将 minItems 和 minLength 表示为字符串，而它们应为数字。
    */
   private static toObjectSchema(schema: Schema): object {
     const newSchema: Record<string, unknown> = { ...schema };

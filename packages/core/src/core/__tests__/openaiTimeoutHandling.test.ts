@@ -23,7 +23,7 @@ vi.mock('../../utils/openaiLogger.js', () => ({
   },
 }));
 
-describe('OpenAIContentGenerator Timeout Handling', () => {
+describe('OpenAIContentGenerator 超时处理', () => {
   let generator: OpenAIContentGenerator;
   let mockConfig: Config;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,8 +62,8 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
     vi.restoreAllMocks();
   });
 
-  describe('timeout error identification through actual requests', () => {
-    it('should handle various timeout error formats correctly', async () => {
+  describe('通过实际请求识别超时错误', () => {
+    it('应正确处理各种超时错误格式', async () => {
       const timeoutErrors = [
         new Error('Request timeout'),
         new Error('Connection timed out'),
@@ -86,7 +86,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
         try {
           await generator.generateContent(request);
         } catch (thrownError: unknown) {
-          // Should contain timeout-specific messaging and troubleshooting tips
+          // 应包含超时特定的消息和故障排除提示
           const errorMessage =
             thrownError instanceof Error
               ? thrownError.message
@@ -98,7 +98,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
       }
     });
 
-    it('should handle non-timeout errors without timeout messaging', async () => {
+    it('应处理非超时错误而不包含超时消息', async () => {
       const nonTimeoutErrors = [
         new Error('Invalid API key'),
         new Error('Rate limit exceeded'),
@@ -118,7 +118,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
         try {
           await generator.generateContent(request);
         } catch (thrownError: unknown) {
-          // Should NOT contain timeout-specific messaging
+          // 不应包含超时特定的消息
           const errorMessage =
             thrownError instanceof Error
               ? thrownError.message
@@ -131,8 +131,8 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
     });
   });
 
-  describe('generateContent timeout handling', () => {
-    it('should handle timeout errors with helpful message', async () => {
+  describe('generateContent 超时处理', () => {
+    it('应使用有帮助的消息处理超时错误', async () => {
       // Mock timeout error
       const timeoutError = new Error('Request timeout');
       mockOpenAIClient.chat.completions.create.mockRejectedValue(timeoutError);
@@ -147,7 +147,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
       );
     });
 
-    it('should handle non-timeout errors normally', async () => {
+    it('应正常处理非超时错误', async () => {
       // Mock non-timeout error
       const apiError = new Error('Invalid API key');
       mockOpenAIClient.chat.completions.create.mockRejectedValue(apiError);
@@ -162,7 +162,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
       );
     });
 
-    it('should include troubleshooting tips for timeout errors', async () => {
+    it('应在超时错误中包含故障排除提示', async () => {
       const timeoutError = new Error('Connection timed out');
       mockOpenAIClient.chat.completions.create.mockRejectedValue(timeoutError);
 
@@ -185,8 +185,8 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
     });
   });
 
-  describe('generateContentStream timeout handling', () => {
-    it('should handle streaming timeout errors', async () => {
+  describe('generateContentStream 超时处理', () => {
+    it('应处理流式传输超时错误', async () => {
       const timeoutError = new Error('Streaming timeout');
       mockOpenAIClient.chat.completions.create.mockRejectedValue(timeoutError);
 
@@ -200,7 +200,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
       );
     });
 
-    it('should include streaming-specific troubleshooting tips', async () => {
+    it('应包含流式传输特定的故障排除提示', async () => {
       const timeoutError = new Error('request timed out');
       mockOpenAIClient.chat.completions.create.mockRejectedValue(timeoutError);
 
@@ -225,11 +225,11 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
     });
   });
 
-  describe('timeout configuration', () => {
-    it('should use default timeout configuration', () => {
+  describe('超时配置', () => {
+    it('应使用默认超时配置', () => {
       new OpenAIContentGenerator('test-key', 'gpt-4', mockConfig);
 
-      // Verify OpenAI client was created with timeout config
+      // 验证 OpenAI 客户端是否使用超时配置创建
       expect(OpenAI).toHaveBeenCalledWith({
         apiKey: 'test-key',
         baseURL: '',
@@ -238,7 +238,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
       });
     });
 
-    it('should use custom timeout from config', () => {
+    it('应使用配置中的自定义超时', () => {
       const customConfig = {
         getContentGeneratorConfig: vi.fn().mockReturnValue({
           timeout: 300000, // 5 minutes
@@ -256,7 +256,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
       });
     });
 
-    it('should handle missing timeout config gracefully', () => {
+    it('应在缺少超时配置时优雅处理', () => {
       const noTimeoutConfig = {
         getContentGeneratorConfig: vi.fn().mockReturnValue({}),
       } as unknown as Config;
@@ -272,8 +272,8 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
     });
   });
 
-  describe('token estimation on timeout', () => {
-    it('should estimate tokens even when request times out', async () => {
+  describe('超时时的令牌估算', () => {
+    it('即使请求超时也应估算令牌', async () => {
       const timeoutError = new Error('Request timeout');
       mockOpenAIClient.chat.completions.create.mockRejectedValue(timeoutError);
 
@@ -297,7 +297,7 @@ describe('OpenAIContentGenerator Timeout Handling', () => {
       }
     });
 
-    it('should fall back to character-based estimation if countTokens fails', async () => {
+    it('如果 countTokens 失败则回退到基于字符的估算', async () => {
       const timeoutError = new Error('Request timeout');
       mockOpenAIClient.chat.completions.create.mockRejectedValue(timeoutError);
 

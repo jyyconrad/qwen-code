@@ -10,10 +10,10 @@ import { FileDiscoveryService } from './fileDiscoveryService.js';
 import { GitIgnoreParser } from '../utils/gitIgnoreParser.js';
 import * as gitUtils from '../utils/gitUtils.js';
 
-// Mock the GitIgnoreParser
+// 模拟 GitIgnoreParser
 vi.mock('../utils/gitIgnoreParser.js');
 
-// Mock gitUtils module
+// 模拟 gitUtils 模块
 vi.mock('../utils/gitUtils.js');
 
 describe('FileDiscoveryService', () => {
@@ -39,8 +39,8 @@ describe('FileDiscoveryService', () => {
     vi.restoreAllMocks();
   });
 
-  describe('initialization', () => {
-    it('should initialize git ignore parser by default', () => {
+  describe('初始化', () => {
+    it('默认应初始化 git ignore 解析器', () => {
       service = new FileDiscoveryService(mockProjectRoot);
       expect(GitIgnoreParser).toHaveBeenCalledWith(mockProjectRoot);
       expect(GitIgnoreParser).toHaveBeenCalledTimes(2);
@@ -48,7 +48,7 @@ describe('FileDiscoveryService', () => {
       expect(mockGitIgnoreParser.loadPatterns).toHaveBeenCalled();
     });
 
-    it('should not initialize git ignore parser when not a git repo', () => {
+    it('当不是 git 仓库时不应初始化 git ignore 解析器', () => {
       vi.mocked(gitUtils.isGitRepository).mockReturnValue(false);
       service = new FileDiscoveryService(mockProjectRoot);
 
@@ -66,7 +66,7 @@ describe('FileDiscoveryService', () => {
       service = new FileDiscoveryService(mockProjectRoot);
     });
 
-    it('should filter out git-ignored files by default', () => {
+    it('默认应过滤掉 git 忽略的文件', () => {
       const files = [
         'src/index.ts',
         'node_modules/package/index.js',
@@ -80,7 +80,7 @@ describe('FileDiscoveryService', () => {
       expect(filtered).toEqual(['src/index.ts', 'README.md', 'dist/bundle.js']);
     });
 
-    it('should not filter files when respectGitIgnore is false', () => {
+    it('当 respectGitIgnore 为 false 时不应对文件进行过滤', () => {
       const files = [
         'src/index.ts',
         'node_modules/package/index.js',
@@ -92,7 +92,7 @@ describe('FileDiscoveryService', () => {
       expect(filtered).toEqual(files);
     });
 
-    it('should handle empty file list', () => {
+    it('应处理空文件列表', () => {
       const filtered = service.filterFiles([]);
       expect(filtered).toEqual([]);
     });
@@ -106,24 +106,24 @@ describe('FileDiscoveryService', () => {
       service = new FileDiscoveryService(mockProjectRoot);
     });
 
-    it('should return true for git-ignored files', () => {
+    it('应对 git 忽略的文件返回 true', () => {
       expect(service.shouldGitIgnoreFile('node_modules/package/index.js')).toBe(
         true,
       );
     });
 
-    it('should return false for non-ignored files', () => {
+    it('应对未忽略的文件返回 false', () => {
       expect(service.shouldGitIgnoreFile('src/index.ts')).toBe(false);
     });
   });
 
-  describe('edge cases', () => {
-    it('should handle relative project root paths', () => {
+  describe('边界情况', () => {
+    it('应处理相对项目根路径', () => {
       const relativeService = new FileDiscoveryService('./relative/path');
       expect(relativeService).toBeInstanceOf(FileDiscoveryService);
     });
 
-    it('should handle filterFiles with undefined options', () => {
+    it('应处理带有未定义选项的 filterFiles', () => {
       const files = ['src/index.ts'];
       const filtered = service.filterFiles(files, undefined);
       expect(filtered).toEqual(files);

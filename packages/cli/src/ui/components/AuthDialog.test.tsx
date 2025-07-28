@@ -26,7 +26,7 @@ describe('AuthDialog', () => {
     process.env = originalEnv;
   });
 
-  it('should show an error if the initial auth type is invalid', () => {
+  it('如果初始认证类型无效，应显示错误', () => {
     process.env.GEMINI_API_KEY = '';
 
     const settings: LoadedSettings = new LoadedSettings(
@@ -51,17 +51,17 @@ describe('AuthDialog', () => {
       <AuthDialog
         onSelect={() => {}}
         settings={settings}
-        initialErrorMessage="GEMINI_API_KEY  environment variable not found"
+        initialErrorMessage="未找到 GEMINI_API_KEY 环境变量"
       />,
     );
 
     expect(lastFrame()).toContain(
-      'GEMINI_API_KEY  environment variable not found',
+      '未找到 GEMINI_API_KEY 环境变量',
     );
   });
 
-  describe('GEMINI_API_KEY environment variable', () => {
-    it('should detect GEMINI_API_KEY environment variable', () => {
+  describe('GEMINI_API_KEY 环境变量', () => {
+    it('应检测 GEMINI_API_KEY 环境变量', () => {
       process.env.GEMINI_API_KEY = 'foobar';
 
       const settings: LoadedSettings = new LoadedSettings(
@@ -82,12 +82,12 @@ describe('AuthDialog', () => {
         <AuthDialog onSelect={() => {}} settings={settings} />,
       );
 
-      // Since the auth dialog only shows OpenAI option now,
-      // it won't show GEMINI_API_KEY messages
+      // 由于认证对话框现在只显示 OpenAI 选项，
+      // 它不会显示 GEMINI_API_KEY 消息
       expect(lastFrame()).toContain('OpenAI');
     });
 
-    it('should not show the GEMINI_API_KEY message if GEMINI_DEFAULT_AUTH_TYPE is set to something else', () => {
+    it('如果 GEMINI_DEFAULT_AUTH_TYPE 设置为其他值，则不应显示 GEMINI_API_KEY 消息', () => {
       process.env.GEMINI_API_KEY = 'foobar';
       process.env.GEMINI_DEFAULT_AUTH_TYPE = AuthType.LOGIN_WITH_GOOGLE;
 
@@ -110,11 +110,11 @@ describe('AuthDialog', () => {
       );
 
       expect(lastFrame()).not.toContain(
-        'Existing API key detected (GEMINI_API_KEY)',
+        '检测到现有 API 密钥 (GEMINI_API_KEY)',
       );
     });
 
-    it('should show the GEMINI_API_KEY message if GEMINI_DEFAULT_AUTH_TYPE is set to use api key', () => {
+    it('如果 GEMINI_DEFAULT_AUTH_TYPE 设置为使用 API 密钥，则应显示 GEMINI_API_KEY 消息', () => {
       process.env.GEMINI_API_KEY = 'foobar';
       process.env.GEMINI_DEFAULT_AUTH_TYPE = AuthType.USE_GEMINI;
 
@@ -136,14 +136,14 @@ describe('AuthDialog', () => {
         <AuthDialog onSelect={() => {}} settings={settings} />,
       );
 
-      // Since the auth dialog only shows OpenAI option now,
-      // it won't show GEMINI_API_KEY messages
+      // 由于认证对话框现在只显示 OpenAI 选项，
+      // 它不会显示 GEMINI_API_KEY 消息
       expect(lastFrame()).toContain('OpenAI');
     });
   });
 
-  describe('GEMINI_DEFAULT_AUTH_TYPE environment variable', () => {
-    it('should select the auth type specified by GEMINI_DEFAULT_AUTH_TYPE', () => {
+  describe('GEMINI_DEFAULT_AUTH_TYPE 环境变量', () => {
+    it('应选择由 GEMINI_DEFAULT_AUTH_TYPE 指定的认证类型', () => {
       process.env.GEMINI_DEFAULT_AUTH_TYPE = AuthType.LOGIN_WITH_GOOGLE;
 
       const settings: LoadedSettings = new LoadedSettings(
@@ -164,11 +164,11 @@ describe('AuthDialog', () => {
         <AuthDialog onSelect={() => {}} settings={settings} />,
       );
 
-      // Since only OpenAI is available, it should be selected by default
+      // 由于只有 OpenAI 可用，它应该默认被选中
       expect(lastFrame()).toContain('● OpenAI');
     });
 
-    it('should fall back to default if GEMINI_DEFAULT_AUTH_TYPE is not set', () => {
+    it('如果未设置 GEMINI_DEFAULT_AUTH_TYPE，应回退到默认值', () => {
       const settings: LoadedSettings = new LoadedSettings(
         {
           settings: {
@@ -187,11 +187,11 @@ describe('AuthDialog', () => {
         <AuthDialog onSelect={() => {}} settings={settings} />,
       );
 
-      // Default is OpenAI (the only option)
+      // 默认是 OpenAI（唯一选项）
       expect(lastFrame()).toContain('● OpenAI');
     });
 
-    it('should show an error and fall back to default if GEMINI_DEFAULT_AUTH_TYPE is invalid', () => {
+    it('如果 GEMINI_DEFAULT_AUTH_TYPE 无效，应显示错误并回退到默认值', () => {
       process.env.GEMINI_DEFAULT_AUTH_TYPE = 'invalid-auth-type';
 
       const settings: LoadedSettings = new LoadedSettings(
@@ -212,13 +212,13 @@ describe('AuthDialog', () => {
         <AuthDialog onSelect={() => {}} settings={settings} />,
       );
 
-      // Since the auth dialog doesn't show GEMINI_DEFAULT_AUTH_TYPE errors anymore,
-      // it will just show the default OpenAI option
+      // 由于认证对话框不再显示 GEMINI_DEFAULT_AUTH_TYPE 错误，
+      // 它只会显示默认的 OpenAI 选项
       expect(lastFrame()).toContain('● OpenAI');
     });
   });
 
-  // it('should prevent exiting when no auth method is selected and show error message', async () => {
+  // it('当未选择认证方法时应阻止退出并显示错误消息', async () => {
   //   const onSelect = vi.fn();
   //   const settings: LoadedSettings = new LoadedSettings(
   //     {
@@ -243,19 +243,19 @@ describe('AuthDialog', () => {
   //   );
   //   await wait();
 
-  //   // Simulate pressing escape key
-  //   stdin.write('\u001b'); // ESC key
-  //   await wait(100); // Increased wait time for CI environment
+  //   // 模拟按下 escape 键
+  //   stdin.write('\u001b'); // ESC 键
+  //   await wait(100); // 为 CI 环境增加等待时间
 
-  //   // Should show error message instead of calling onSelect
+  //   // 应显示错误消息而不是调用 onSelect
   //   expect(lastFrame()).toContain(
-  //     'You must select an auth method to proceed. Press Ctrl+C twice to exit.',
+  //     '您必须选择一个认证方法才能继续。按两次 Ctrl+C 退出。',
   //   );
   //   expect(onSelect).not.toHaveBeenCalled();
   //   unmount();
   // });
 
-  it('should not exit if there is already an error message', async () => {
+  it('如果已有错误消息，则不应退出', async () => {
     const onSelect = vi.fn();
     const settings: LoadedSettings = new LoadedSettings(
       {
@@ -273,23 +273,23 @@ describe('AuthDialog', () => {
       <AuthDialog
         onSelect={onSelect}
         settings={settings}
-        initialErrorMessage="Initial error"
+        initialErrorMessage="初始错误"
       />,
     );
     await wait();
 
-    expect(lastFrame()).toContain('Initial error');
+    expect(lastFrame()).toContain('初始错误');
 
-    // Simulate pressing escape key
-    stdin.write('\u001b'); // ESC key
+    // 模拟按下 escape 键
+    stdin.write('\u001b'); // ESC 键
     await wait();
 
-    // Should not call onSelect
+    // 不应调用 onSelect
     expect(onSelect).not.toHaveBeenCalled();
     unmount();
   });
 
-  it('should allow exiting when auth method is already selected', async () => {
+  it('当认证方法已选择时应允许退出', async () => {
     const onSelect = vi.fn();
     const settings: LoadedSettings = new LoadedSettings(
       {
@@ -314,11 +314,11 @@ describe('AuthDialog', () => {
     );
     await wait();
 
-    // Simulate pressing escape key
-    stdin.write('\u001b'); // ESC key
+    // 模拟按下 escape 键
+    stdin.write('\u001b'); // ESC 键
     await wait();
 
-    // Should call onSelect with undefined to exit
+    // 应调用 onSelect 并传入 undefined 以退出
     expect(onSelect).toHaveBeenCalledWith(undefined, SettingScope.User);
     unmount();
   });

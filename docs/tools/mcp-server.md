@@ -1,64 +1,64 @@
-# MCP servers with the Gemini CLI
+# 通过 Gemini CLI 使用 MCP 服务器
 
-This document provides a guide to configuring and using Model Context Protocol (MCP) servers with the Gemini CLI.
+本文档提供了在 Gemini CLI 中配置和使用模型上下文协议（Model Context Protocol，MCP）服务器的指南。
 
-## What is an MCP server?
+## 什么是 MCP 服务器？
 
-An MCP server is an application that exposes tools and resources to the Gemini CLI through the Model Context Protocol, allowing it to interact with external systems and data sources. MCP servers act as a bridge between the Gemini model and your local environment or other services like APIs.
+MCP 服务器是一种通过模型上下文协议向 Gemini CLI 暴露工具和资源的应用程序，使其能够与外部系统和数据源进行交互。MCP 服务器充当 Gemini 模型与本地环境或其他服务（如 API）之间的桥梁。
 
-An MCP server enables the Gemini CLI to:
+MCP 服务器使 Gemini CLI 能够：
 
-- **Discover tools:** List available tools, their descriptions, and parameters through standardized schema definitions.
-- **Execute tools:** Call specific tools with defined arguments and receive structured responses.
-- **Access resources:** Read data from specific resources (though the Gemini CLI primarily focuses on tool execution).
+- **发现工具：** 通过标准化的模式定义列出可用工具及其描述和参数。
+- **执行工具：** 使用定义的参数调用特定工具并接收结构化响应。
+- **访问资源：** 从特定资源读取数据（尽管 Gemini CLI 主要关注工具执行）。
 
-With an MCP server, you can extend the Gemini CLI's capabilities to perform actions beyond its built-in features, such as interacting with databases, APIs, custom scripts, or specialized workflows.
+通过 MCP 服务器，您可以扩展 Gemini CLI 的功能，使其能够执行超出其内置功能的操作，例如与数据库、API、自定义脚本或特定工作流进行交互。
 
-## Core Integration Architecture
+## 核心集成架构
 
-The Gemini CLI integrates with MCP servers through a sophisticated discovery and execution system built into the core package (`packages/core/src/tools/`):
+Gemini CLI 通过内置在核心包（`packages/core/src/tools/`）中的复杂发现和执行系统与 MCP 服务器集成：
 
-### Discovery Layer (`mcp-client.ts`)
+### 发现层（`mcp-client.ts`）
 
-The discovery process is orchestrated by `discoverMcpTools()`, which:
+发现过程由 `discoverMcpTools()` 协调，其执行以下操作：
 
-1. **Iterates through configured servers** from your `settings.json` `mcpServers` configuration
-2. **Establishes connections** using appropriate transport mechanisms (Stdio, SSE, or Streamable HTTP)
-3. **Fetches tool definitions** from each server using the MCP protocol
-4. **Sanitizes and validates** tool schemas for compatibility with the Gemini API
-5. **Registers tools** in the global tool registry with conflict resolution
+1. **遍历配置的服务器** 来自你的 `settings.json` 中的 `mcpServers` 配置
+2. **建立连接** 使用适当的传输机制（Stdio、SSE 或可流式 HTTP）
+3. **获取工具定义** 使用 MCP 协议从每个服务器获取
+4. **清理和验证** 工具模式以确保与 Gemini API 的兼容性
+5. **注册工具** 到全局工具注册表并处理冲突
 
-### Execution Layer (`mcp-tool.ts`)
+### 执行层（`mcp-tool.ts`）
 
-Each discovered MCP tool is wrapped in a `DiscoveredMCPTool` instance that:
+每个发现的 MCP 工具都被封装在 `DiscoveredMCPTool` 实例中，其执行以下操作：
 
-- **Handles confirmation logic** based on server trust settings and user preferences
-- **Manages tool execution** by calling the MCP server with proper parameters
-- **Processes responses** for both the LLM context and user display
-- **Maintains connection state** and handles timeouts
+- **处理确认逻辑** 基于服务器信任设置和用户偏好
+- **管理工具执行** 通过正确参数调用 MCP 服务器
+- **处理响应** 用于 LLM 上下文和用户显示
+- **维护连接状态** 并处理超时
 
-### Transport Mechanisms
+### 传输机制
 
-The Gemini CLI supports three MCP transport types:
+Gemini CLI 支持三种 MCP 传输类型：
 
-- **Stdio Transport:** Spawns a subprocess and communicates via stdin/stdout
-- **SSE Transport:** Connects to Server-Sent Events endpoints
-- **Streamable HTTP Transport:** Uses HTTP streaming for communication
+- **Stdio 传输：** 启动子进程并通过 stdin/stdout 通信
+- **SSE 传输：** 连接到 Server-Sent Events 端点
+- **可流式 HTTP 传输：** 使用 HTTP 流进行通信
 
-## How to set up your MCP server
+## 如何设置你的 MCP 服务器
 
-The Gemini CLI uses the `mcpServers` configuration in your `settings.json` file to locate and connect to MCP servers. This configuration supports multiple servers with different transport mechanisms.
+Gemini CLI 使用 `settings.json` 文件中的 `mcpServers` 配置来定位和连接 MCP 服务器。此配置支持使用不同传输机制的多个服务器。
 
-### Configure the MCP server in settings.json
+### 在 settings.json 中配置 MCP 服务器
 
-You can configure MCP servers at the global level in the `~/.iflycode/settings.json` file or in your project's root directory, create or open the `.iflycode/settings.json` file. Within the file, add the `mcpServers` configuration block.
+你可以在全局级别 `~/.iflycode/settings.json` 文件中配置 MCP 服务器，或者在你的项目根目录中创建或打开 `.iflycode/settings.json` 文件。在文件中添加 `mcpServers` 配置块。
 
-### Configuration Structure
+### 配置结构
 
-Add an `mcpServers` object to your `settings.json` file:
+在 `settings.json` 文件中添加一个 `mcpServers` 对象：
 
 ```json
-{ ...file contains other config objects
+{ ...文件包含其他配置对象
   "mcpServers": {
     "serverName": {
       "command": "path/to/server",
@@ -74,28 +74,28 @@ Add an `mcpServers` object to your `settings.json` file:
 }
 ```
 
-### Configuration Properties
+### 配置属性
 
-Each server configuration supports the following properties:
+每个服务器配置支持以下属性：
 
-#### Required (one of the following)
+#### 必填（以下之一）
 
-- **`command`** (string): Path to the executable for Stdio transport
-- **`url`** (string): SSE endpoint URL (e.g., `"http://localhost:8080/sse"`)
-- **`httpUrl`** (string): HTTP streaming endpoint URL
+- **`command`**（字符串）：用于 Stdio 传输的可执行文件路径
+- **`url`**（字符串）：SSE 端点 URL（例如 `"http://localhost:8080/sse"`）
+- **`httpUrl`**（字符串）：HTTP 流端点 URL
 
-#### Optional
+#### 可选
 
-- **`args`** (string[]): Command-line arguments for Stdio transport
-- **`headers`** (object): Custom HTTP headers when using `url` or `httpUrl`
-- **`env`** (object): Environment variables for the server process. Values can reference environment variables using `$VAR_NAME` or `${VAR_NAME}` syntax
-- **`cwd`** (string): Working directory for Stdio transport
-- **`timeout`** (number): Request timeout in milliseconds (default: 600,000ms = 10 minutes)
-- **`trust`** (boolean): When `true`, bypasses all tool call confirmations for this server (default: `false`)
+- **`args`**（字符串数组）：用于 Stdio 传输的命令行参数
+- **`headers`**（对象）：使用 `url` 或 `httpUrl` 时的自定义 HTTP 头
+- **`env`**（对象）：服务器进程的环境变量。值可以使用 `$VAR_NAME` 或 `${VAR_NAME}` 语法引用环境变量
+- **`cwd`**（字符串）：用于 Stdio 传输的工作目录
+- **`timeout`**（数字）：请求超时时间（毫秒，默认：600,000ms = 10 分钟）
+- **`trust`**（布尔值）：为 `true` 时，绕过对此服务器的所有工具调用确认（默认：`false`）
 
-### Example Configurations
+### 示例配置
 
-#### Python MCP Server (Stdio)
+#### Python MCP 服务器（Stdio）
 
 ```json
 {
@@ -114,7 +114,7 @@ Each server configuration supports the following properties:
 }
 ```
 
-#### Node.js MCP Server (Stdio)
+#### Node.js MCP 服务器（Stdio）
 
 ```json
 {
@@ -129,7 +129,7 @@ Each server configuration supports the following properties:
 }
 ```
 
-#### Docker-based MCP Server
+#### 基于 Docker 的 MCP 服务器
 
 ```json
 {
@@ -154,7 +154,7 @@ Each server configuration supports the following properties:
 }
 ```
 
-#### HTTP-based MCP Server
+#### 基于 HTTP 的 MCP 服务器
 
 ```json
 {
@@ -167,7 +167,7 @@ Each server configuration supports the following properties:
 }
 ```
 
-#### HTTP-based MCP Server with Custom Headers
+#### 带自定义头的基于 HTTP 的 MCP 服务器
 
 ```json
 {
@@ -185,263 +185,263 @@ Each server configuration supports the following properties:
 }
 ```
 
-## Discovery Process Deep Dive
+## 发现过程详解
 
-When the Gemini CLI starts, it performs MCP server discovery through the following detailed process:
+当 Gemini CLI 启动时，它通过以下详细过程执行 MCP 服务器发现：
 
-### 1. Server Iteration and Connection
+### 1. 服务器迭代和连接
 
-For each configured server in `mcpServers`:
+对于 `mcpServers` 中的每个配置服务器：
 
-1. **Status tracking begins:** Server status is set to `CONNECTING`
-2. **Transport selection:** Based on configuration properties:
+1. **开始状态跟踪：** 服务器状态设置为 `CONNECTING`
+2. **传输选择：** 基于配置属性：
    - `httpUrl` → `StreamableHTTPClientTransport`
    - `url` → `SSEClientTransport`
    - `command` → `StdioClientTransport`
-3. **Connection establishment:** The MCP client attempts to connect with the configured timeout
-4. **Error handling:** Connection failures are logged and the server status is set to `DISCONNECTED`
+3. **建立连接：** MCP 客户端尝试使用配置的超时时间连接
+4. **错误处理：** 记录连接失败并将服务器状态设置为 `DISCONNECTED`
 
-### 2. Tool Discovery
+### 2. 工具发现
 
-Upon successful connection:
+成功连接后：
 
-1. **Tool listing:** The client calls the MCP server's tool listing endpoint
-2. **Schema validation:** Each tool's function declaration is validated
-3. **Name sanitization:** Tool names are cleaned to meet Gemini API requirements:
-   - Invalid characters (non-alphanumeric, underscore, dot, hyphen) are replaced with underscores
-   - Names longer than 63 characters are truncated with middle replacement (`___`)
+1. **工具列表：** 客户端调用 MCP 服务器的工具列表端点
+2. **模式验证：** 验证每个工具的函数声明
+3. **名称清理：** 工具名称经过清理以满足 Gemini API 要求：
+   - 非字母数字、下划线、点、连字符的字符替换为下划线
+   - 超过 63 个字符的名称被截断，中间替换为 `___`
 
-### 3. Conflict Resolution
+### 3. 冲突解决
 
-When multiple servers expose tools with the same name:
+当多个服务器暴露相同名称的工具时：
 
-1. **First registration wins:** The first server to register a tool name gets the unprefixed name
-2. **Automatic prefixing:** Subsequent servers get prefixed names: `serverName__toolName`
-3. **Registry tracking:** The tool registry maintains mappings between server names and their tools
+1. **首次注册优先：** 第一个注册工具名称的服务器获得无前缀名称
+2. **自动加前缀：** 后续服务器获得带前缀的名称：`serverName__toolName`
+3. **注册表跟踪：** 工具注册表维护服务器名称与其工具之间的映射
 
-### 4. Schema Processing
+### 4. 模式处理
 
-Tool parameter schemas undergo sanitization for Gemini API compatibility:
+工具参数模式经过清理以确保与 Gemini API 兼容：
 
-- **`$schema` properties** are removed
-- **`additionalProperties`** are stripped
-- **`anyOf` with `default`** have their default values removed (Vertex AI compatibility)
-- **Recursive processing** applies to nested schemas
+- 删除 `$schema` 属性
+- 删除 `additionalProperties`
+- 删除 `anyOf` 中带有 `default` 的默认值（与 Vertex AI 兼容）
+- 对嵌套模式进行递归处理
 
-### 5. Connection Management
+### 5. 连接管理
 
-After discovery:
+发现后：
 
-- **Persistent connections:** Servers that successfully register tools maintain their connections
-- **Cleanup:** Servers that provide no usable tools have their connections closed
-- **Status updates:** Final server statuses are set to `CONNECTED` or `DISCONNECTED`
+- **持久连接：** 成功注册工具的服务器保持其连接
+- **清理：** 提供无可用工具的服务器关闭其连接
+- **状态更新：** 最终服务器状态设置为 `CONNECTED` 或 `DISCONNECTED`
 
-## Tool Execution Flow
+## 工具执行流程
 
-When the Gemini model decides to use an MCP tool, the following execution flow occurs:
+当 Gemini 模型决定使用 MCP 工具时，将发生以下执行流程：
 
-### 1. Tool Invocation
+### 1. 工具调用
 
-The model generates a `FunctionCall` with:
+模型生成一个 `FunctionCall`，包含：
 
-- **Tool name:** The registered name (potentially prefixed)
-- **Arguments:** JSON object matching the tool's parameter schema
+- **工具名称：** 注册的名称（可能带前缀）
+- **参数：** 匹配工具参数模式的 JSON 对象
 
-### 2. Confirmation Process
+### 2. 确认过程
 
-Each `DiscoveredMCPTool` implements sophisticated confirmation logic:
+每个 `DiscoveredMCPTool` 实现了复杂的确认逻辑：
 
-#### Trust-based Bypass
+#### 基于信任的绕过
 
 ```typescript
 if (this.trust) {
-  return false; // No confirmation needed
+  return false; // 无需确认
 }
 ```
 
-#### Dynamic Allow-listing
+#### 动态白名单
 
-The system maintains internal allow-lists for:
+系统维护内部白名单用于：
 
-- **Server-level:** `serverName` → All tools from this server are trusted
-- **Tool-level:** `serverName.toolName` → This specific tool is trusted
+- **服务器级别：** `serverName` → 此服务器的所有工具受信任
+- **工具级别：** `serverName.toolName` → 此特定工具受信任
 
-#### User Choice Handling
+#### 用户选择处理
 
-When confirmation is required, users can choose:
+当需要确认时，用户可以选择：
 
-- **Proceed once:** Execute this time only
-- **Always allow this tool:** Add to tool-level allow-list
-- **Always allow this server:** Add to server-level allow-list
-- **Cancel:** Abort execution
+- **仅此次执行：** 仅此次执行
+- **始终允许此工具：** 添加到工具级白名单
+- **始终允许此服务器：** 添加到服务器级白名单
+- **取消：** 中止执行
 
-### 3. Execution
+### 3. 执行
 
-Upon confirmation (or trust bypass):
+确认（或信任绕过）后：
 
-1. **Parameter preparation:** Arguments are validated against the tool's schema
-2. **MCP call:** The underlying `CallableTool` invokes the server with:
+1. **参数准备：** 验证参数是否符合工具模式
+2. **MCP 调用：** 底层 `CallableTool` 使用以下内容调用服务器：
 
    ```typescript
    const functionCalls = [
      {
-       name: this.serverToolName, // Original server tool name
+       name: this.serverToolName, // 原始服务器工具名称
        args: params,
      },
    ];
    ```
 
-3. **Response processing:** Results are formatted for both LLM context and user display
+3. **响应处理：** 格式化结果以供语言模型上下文和用户显示
 
-### 4. Response Handling
+### 4. 响应处理
 
-The execution result contains:
+执行结果包含：
 
-- **`llmContent`:** Raw response parts for the language model's context
-- **`returnDisplay`:** Formatted output for user display (often JSON in markdown code blocks)
+- **`llmContent`：** 供语言模型使用的原始响应部分
+- **`returnDisplay`：** 供用户显示的格式化输出（通常为 Markdown 代码块中的 JSON）
 
-## How to interact with your MCP server
+## 如何与你的 MCP 服务器交互
 
-### Using the `/mcp` Command
+### 使用 `/mcp` 命令
 
-The `/mcp` command provides comprehensive information about your MCP server setup:
+`/mcp` 命令提供有关你的 MCP 服务器设置的全面信息：
 
 ```bash
 /mcp
 ```
 
-This displays:
+这将显示：
 
-- **Server list:** All configured MCP servers
-- **Connection status:** `CONNECTED`, `CONNECTING`, or `DISCONNECTED`
-- **Server details:** Configuration summary (excluding sensitive data)
-- **Available tools:** List of tools from each server with descriptions
-- **Discovery state:** Overall discovery process status
+- **服务器列表：** 所有配置的 MCP 服务器
+- **连接状态：** `CONNECTED`、`CONNECTING` 或 `DISCONNECTED`
+- **服务器详情：** 配置摘要（不包括敏感数据）
+- **可用工具：** 每个服务器的工具列表及其描述
+- **发现状态：** 整体发现过程的状态
 
-### Example `/mcp` Output
+### 示例 `/mcp` 输出
 
 ```
-MCP Servers Status:
+MCP 服务器状态：
 
-📡 pythonTools (CONNECTED)
-  Command: python -m my_mcp_server --port 8080
-  Working Directory: ./mcp-servers/python
-  Timeout: 15000ms
-  Tools: calculate_sum, file_analyzer, data_processor
+📡 pythonTools (已连接)
+  命令: python -m my_mcp_server --port 8080
+  工作目录: ./mcp-servers/python
+  超时: 15000ms
+  工具: calculate_sum, file_analyzer, data_processor
 
-🔌 nodeServer (DISCONNECTED)
-  Command: node dist/server.js --verbose
-  Error: Connection refused
+🔌 nodeServer (已断开)
+  命令: node dist/server.js --verbose
+  错误: 连接被拒绝
 
-🐳 dockerizedServer (CONNECTED)
-  Command: docker run -i --rm -e API_KEY my-mcp-server:latest
-  Tools: docker__deploy, docker__status
+🐳 dockerizedServer (已连接)
+  命令: docker run -i --rm -e API_KEY my-mcp-server:latest
+  工具: docker__deploy, docker__status
 
-Discovery State: COMPLETED
+发现状态: 已完成
 ```
 
-### Tool Usage
+### 工具使用
 
-Once discovered, MCP tools are available to the Gemini model like built-in tools. The model will automatically:
+一旦发现，MCP 工具将像内置工具一样可供 Gemini 模型使用。模型将自动：
 
-1. **Select appropriate tools** based on your requests
-2. **Present confirmation dialogs** (unless the server is trusted)
-3. **Execute tools** with proper parameters
-4. **Display results** in a user-friendly format
+1. **根据你的请求选择适当的工具**
+2. **显示确认对话框**（除非服务器受信任）
+3. **使用正确参数执行工具**
+4. **以用户友好的格式显示结果**
 
-## Status Monitoring and Troubleshooting
+## 状态监控和故障排除
 
-### Connection States
+### 连接状态
 
-The MCP integration tracks several states:
+MCP 集成跟踪以下状态：
 
-#### Server Status (`MCPServerStatus`)
+#### 服务器状态（`MCPServerStatus`）
 
-- **`DISCONNECTED`:** Server is not connected or has errors
-- **`CONNECTING`:** Connection attempt in progress
-- **`CONNECTED`:** Server is connected and ready
+- **`DISCONNECTED`：** 服务器未连接或有错误
+- **`CONNECTING`：** 正在尝试连接
+- **`CONNECTED`：** 服务器已连接并就绪
 
-#### Discovery State (`MCPDiscoveryState`)
+#### 发现状态（`MCPDiscoveryState`）
 
-- **`NOT_STARTED`:** Discovery hasn't begun
-- **`IN_PROGRESS`:** Currently discovering servers
-- **`COMPLETED`:** Discovery finished (with or without errors)
+- **`NOT_STARTED`：** 尚未开始发现
+- **`IN_PROGRESS`：** 正在发现服务器
+- **`COMPLETED`：** 发现完成（无论是否出错）
 
-### Common Issues and Solutions
+### 常见问题及解决方案
 
-#### Server Won't Connect
+#### 服务器无法连接
 
-**Symptoms:** Server shows `DISCONNECTED` status
+**症状：** 服务器显示 `DISCONNECTED` 状态
 
-**Troubleshooting:**
+**故障排除：**
 
-1. **Check configuration:** Verify `command`, `args`, and `cwd` are correct
-2. **Test manually:** Run the server command directly to ensure it works
-3. **Check dependencies:** Ensure all required packages are installed
-4. **Review logs:** Look for error messages in the CLI output
-5. **Verify permissions:** Ensure the CLI can execute the server command
+1. **检查配置：** 验证 `command`、`args` 和 `cwd` 是否正确
+2. **手动测试：** 直接运行服务器命令以确保其正常工作
+3. **检查依赖项：** 确保所有必需的包已安装
+4. **查看日志：** 在 CLI 输出中查找错误消息
+5. **验证权限：** 确保 CLI 可以执行服务器命令
 
-#### No Tools Discovered
+#### 未发现工具
 
-**Symptoms:** Server connects but no tools are available
+**症状：** 服务器连接但无可用工具
 
-**Troubleshooting:**
+**故障排除：**
 
-1. **Verify tool registration:** Ensure your server actually registers tools
-2. **Check MCP protocol:** Confirm your server implements the MCP tool listing correctly
-3. **Review server logs:** Check stderr output for server-side errors
-4. **Test tool listing:** Manually test your server's tool discovery endpoint
+1. **验证工具注册：** 确保你的服务器实际注册了工具
+2. **检查 MCP 协议：** 确认你的服务器正确实现了 MCP 工具列表
+3. **查看服务器日志：** 检查 stderr 输出中的服务器端错误
+4. **手动测试工具列表：** 手动测试你的服务器的工具发现端点
 
-#### Tools Not Executing
+#### 工具无法执行
 
-**Symptoms:** Tools are discovered but fail during execution
+**症状：** 工具被发现但在执行期间失败
 
-**Troubleshooting:**
+**故障排除：**
 
-1. **Parameter validation:** Ensure your tool accepts the expected parameters
-2. **Schema compatibility:** Verify your input schemas are valid JSON Schema
-3. **Error handling:** Check if your tool is throwing unhandled exceptions
-4. **Timeout issues:** Consider increasing the `timeout` setting
+1. **参数验证：** 确保你的工具接受预期的参数
+2. **模式兼容性：** 验证你的输入模式是否为有效的 JSON Schema
+3. **错误处理：** 检查你的工具是否抛出未处理的异常
+4. **超时问题：** 考虑增加 `timeout` 设置
 
-#### Sandbox Compatibility
+#### 沙箱兼容性
 
-**Symptoms:** MCP servers fail when sandboxing is enabled
+**症状：** 启用沙箱时 MCP 服务器失败
 
-**Solutions:**
+**解决方案：**
 
-1. **Docker-based servers:** Use Docker containers that include all dependencies
-2. **Path accessibility:** Ensure server executables are available in the sandbox
-3. **Network access:** Configure sandbox to allow necessary network connections
-4. **Environment variables:** Verify required environment variables are passed through
+1. **基于 Docker 的服务器：** 使用包含所有依赖项的 Docker 容器
+2. **路径可访问性：** 确保服务器可执行文件在沙箱中可用
+3. **网络访问：** 配置沙箱以允许必要的网络连接
+4. **环境变量：** 验证所需环境变量是否已传递
 
-### Debugging Tips
+### 调试技巧
 
-1. **Enable debug mode:** Run the CLI with `--debug` for verbose output
-2. **Check stderr:** MCP server stderr is captured and logged (INFO messages filtered)
-3. **Test isolation:** Test your MCP server independently before integrating
-4. **Incremental setup:** Start with simple tools before adding complex functionality
-5. **Use `/mcp` frequently:** Monitor server status during development
+1. **启用调试模式：** 使用 `--debug` 运行 CLI 以获取详细输出
+2. **检查 stderr：** MCP 服务器 stderr 被捕获并记录（INFO 消息被过滤）
+3. **独立测试：** 在集成之前独立测试你的 MCP 服务器
+4. **逐步设置：** 从简单工具开始，再添加复杂功能
+5. **频繁使用 `/mcp`：** 在开发期间监控服务器状态
 
-## Important Notes
+## 重要注意事项
 
-### Security Considerations
+### 安全考虑
 
-- **Trust settings:** The `trust` option bypasses all confirmation dialogs. Use cautiously and only for servers you completely control
-- **Access tokens:** Be security-aware when configuring environment variables containing API keys or tokens
-- **Sandbox compatibility:** When using sandboxing, ensure MCP servers are available within the sandbox environment
-- **Private data:** Using broadly scoped personal access tokens can lead to information leakage between repositories
+- **信任设置：** `trust` 选项绕过所有确认对话框。谨慎使用，仅用于你完全控制的服务器
+- **访问令牌：** 配置包含 API 密钥或令牌的环境变量时要保持安全意识
+- **沙箱兼容性：** 使用沙箱时，确保 MCP 服务器在沙箱环境中可用
+- **私有数据：** 使用广泛作用域的个人访问令牌可能导致仓库之间的信息泄露
 
-### Performance and Resource Management
+### 性能和资源管理
 
-- **Connection persistence:** The CLI maintains persistent connections to servers that successfully register tools
-- **Automatic cleanup:** Connections to servers providing no tools are automatically closed
-- **Timeout management:** Configure appropriate timeouts based on your server's response characteristics
-- **Resource monitoring:** MCP servers run as separate processes and consume system resources
+- **连接持久性：** CLI 保持对成功注册工具的服务器的持久连接
+- **自动清理：** 对未提供工具的服务器的连接会自动关闭
+- **超时管理：** 根据服务器的响应特性配置适当的超时
+- **资源监控：** MCP 服务器作为单独的进程运行并消耗系统资源
 
-### Schema Compatibility
+### 模式兼容性
 
-- **Property stripping:** The system automatically removes certain schema properties (`$schema`, `additionalProperties`) for Gemini API compatibility
-- **Name sanitization:** Tool names are automatically sanitized to meet API requirements
-- **Conflict resolution:** Tool name conflicts between servers are resolved through automatic prefixing
+- **属性删除：** 系统自动删除某些模式属性（`$schema`、`additionalProperties`）以确保与 Gemini API 兼容
+- **名称清理：** 工具名称自动清理以满足 API 要求
+- **冲突解决：** 服务器之间的工具名称冲突通过自动加前缀解决
 
-This comprehensive integration makes MCP servers a powerful way to extend the Gemini CLI's capabilities while maintaining security, reliability, and ease of use.
+这种全面的集成使 MCP 服务器成为扩展 Gemini CLI 功能的强大方式，同时保持安全性、可靠性和易用性。
